@@ -34,7 +34,7 @@ jobs:
       - name: Run Tests & Linter
         id: build-step
         if: ${{ github.ref != 'refs/heads/ci-cd' }}
-        run: ./gradlew test pmdMain
+        run: ./gradlew test main
 
       - name: SonarCloud Scan
         if: ${{ github.ref != 'refs/heads/ci-cd' }}
