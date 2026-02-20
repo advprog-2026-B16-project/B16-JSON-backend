@@ -43,5 +43,6 @@ tasks.withType<Test> {
 }
 
 pmd {
-    ignoreFailures = false
+    toolVersion = "6.55.0"
+    ruleSets = listOf("category/java/bestpractices")
 }
