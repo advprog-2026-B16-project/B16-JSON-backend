@@ -1,5 +1,6 @@
 plugins {
     java
+    id("pmd")
     id("org.springframework.boot") version "3.2.2"
     id("io.spring.dependency-management") version "1.1.7"
 }
@@ -39,4 +40,8 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+pmd {
+    ignoreFailures = false
 }
