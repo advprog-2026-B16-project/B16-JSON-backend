@@ -28,5 +28,4 @@ public class UserController {
         return new ResponseEntity<>(this.userService.getAllUsers(), HttpStatus.OK);
     }
 
-
 }

@@ -10,94 +10,79 @@ class UserTest {
     private User user;
 
     @BeforeEach
-    void setUp() throws Exception {
-        var constructor = User.class.getDeclaredConstructor();
-        constructor.setAccessible(true);
-        user = constructor.newInstance();
+    void setUp() {
+        user = new User();
     }
 
     @Test
-    void testDefaultUserIdIsNull() {
-        assertNull(user.getUserId());
+    void testDefaultUsernameIsNull() {
+        assertNull(user.getUsername());
     }
 
     @Test
-    void testDefaultFirstNameIsNull() {
-        assertNull(user.getFirstName());
+    void testDefaultEmailIsNull() {
+        assertNull(user.getEmail());
     }
 
     @Test
-    void testDefaultLastNameIsNull() {
-        assertNull(user.getLastName());
+    void testDefaultRoleIsNull() {
+        assertNull(user.getRole());
     }
 
     @Test
-    void testSetAndGetUserId() {
-        user.setUserId(1L);
-        assertEquals(1L, user.getUserId());
+    void testSetAndGetUsername() {
+        user.setUsername("testuser");
+        assertEquals("testuser", user.getUsername());
     }
 
     @Test
-    void testSetAndGetFirstName() {
-        user.setFirstName("John");
-        assertEquals("John", user.getFirstName());
+    void testSetAndGetEmail() {
+        user.setEmail("test@example.com");
+        assertEquals("test@example.com", user.getEmail());
     }
 
     @Test
-    void testSetAndGetLastName() {
-        user.setLastName("Doe");
-        assertEquals("Doe", user.getLastName());
+    void testSetAndGetPassword() {
+        user.setPassword("password123");
+        assertEquals("password123", user.getPassword());
     }
 
     @Test
-    void testSetUserIdOverwrite() {
-        user.setUserId(1L);
-        user.setUserId(2L);
-        assertEquals(2L, user.getUserId());
+    void testSetAndGetRole() {
+        user.setRole(UserRole.TITIPER);
+        assertEquals(UserRole.TITIPER, user.getRole());
     }
 
     @Test
-    void testSetFirstNameOverwrite() {
-        user.setFirstName("John");
-        user.setFirstName("Jane");
-        assertEquals("Jane", user.getFirstName());
+    void testSetAndGetStatus() {
+        user.setStatus(UserStatus.ACTIVE);
+        assertEquals(UserStatus.ACTIVE, user.getStatus());
     }
 
     @Test
-    void testSetLastNameOverwrite() {
-        user.setLastName("Doe");
-        user.setLastName("Smith");
-        assertEquals("Smith", user.getLastName());
+    void testSetAndGetJastiperProfile() {
+        user.setJastiper_profile("Test Bio");
+        assertEquals("Test Bio", user.getJastiper_profile());
     }
 
     @Test
-    void testConstructorWithParameters() throws Exception {
-        var constructor = User.class.getDeclaredConstructor(String.class, String.class);
-        constructor.setAccessible(true);
-        User userWithParams = constructor.newInstance("Jane", "Smith");
+    void testConstructorWithParameters() {
+        User userWithParams = new User("jane", "jane@example.com", "pass123", UserRole.JASTIPER, UserStatus.PENDING_JASTIPER);
 
-        assertEquals("Jane", userWithParams.getFirstName());
-        assertEquals("Smith", userWithParams.getLastName());
+        assertEquals("jane", userWithParams.getUsername());
+        assertEquals("jane@example.com", userWithParams.getEmail());
+        assertEquals("pass123", userWithParams.getPassword());
+        assertEquals(UserRole.JASTIPER, userWithParams.getRole());
+        assertEquals(UserStatus.PENDING_JASTIPER, userWithParams.getStatus());
     }
 
     @Test
-    void testToStringWithAllValues() {
-        user.setUserId(1L);
-        user.setFirstName("John");
-        user.setLastName("Doe");
-        assertEquals("User [userId=1, firstName=John, lastName=Doe]", user.toString());
-    }
-
-    @Test
-    void testToStringWithNullValues() {
-        assertEquals("User [userId=null, firstName=null, lastName=null]", user.toString());
-    }
-
-    @Test
-    void testToStringWithPartialValues() {
-        user.setUserId(5L);
-        user.setFirstName("Alice");
-        assertEquals("User [userId=5, firstName=Alice, lastName=null]", user.toString());
+    void testToString() {
+        user.setUsername("john");
+        user.setEmail("john@example.com");
+        user.setRole(UserRole.ADMIN);
+        user.setStatus(UserStatus.ACTIVE);
+        assertEquals("User [username=john, email=john@example.com, role=ADMIN, status=ACTIVE]", user.toString());
     }
 
 }

@@ -1,6 +1,8 @@
 package id.ac.ui.cs.advprog.jsonbackend.controller;
 
 import id.ac.ui.cs.advprog.jsonbackend.model.User;
+import id.ac.ui.cs.advprog.jsonbackend.model.UserRole;
+import id.ac.ui.cs.advprog.jsonbackend.model.UserStatus;
 import id.ac.ui.cs.advprog.jsonbackend.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -43,6 +46,21 @@ class UserControllerTest {
         public List<User> getAllUsers() {
             return users;
         }
+
+        @Override
+        public Optional<User> getUserByUsername(String username) {
+            return users.stream().filter(u -> u.getUsername().equals(username)).findFirst();
+        }
+
+        @Override
+        public Optional<User> getUserByEmail(String email) {
+            return users.stream().filter(u -> u.getEmail().equals(email)).findFirst();
+        }
+
+        @Override
+        public User saveUser(User user) {
+            return user;
+        }
     }
 
     @Autowired
@@ -58,19 +76,9 @@ class UserControllerTest {
     private User user2;
 
     @BeforeEach
-    void setUp() throws Exception {
-        var constructor = User.class.getDeclaredConstructor();
-        constructor.setAccessible(true);
-
-        user1 = constructor.newInstance();
-        user1.setUserId(1L);
-        user1.setFirstName("John");
-        user1.setLastName("Doe");
-
-        user2 = constructor.newInstance();
-        user2.setUserId(2L);
-        user2.setFirstName("Jane");
-        user2.setLastName("Smith");
+    void setUp() {
+        user1 = new User("john", "john@example.com", "pass1", UserRole.TITIPER, UserStatus.ACTIVE);
+        user2 = new User("jane", "jane@example.com", "pass2", UserRole.JASTIPER, UserStatus.ACTIVE);
 
         ((StubUserService) userService).setUsers(new ArrayList<>());
     }
@@ -99,12 +107,10 @@ class UserControllerTest {
 
         mockMvc.perform(get("/api/user/getUsers"))
                 .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].userId").value(1))
-                .andExpect(jsonPath("$[0].firstName").value("John"))
-                .andExpect(jsonPath("$[0].lastName").value("Doe"))
-                .andExpect(jsonPath("$[1].userId").value(2))
-                .andExpect(jsonPath("$[1].firstName").value("Jane"))
-                .andExpect(jsonPath("$[1].lastName").value("Smith"));
+                .andExpect(jsonPath("$[0].username").value("john"))
+                .andExpect(jsonPath("$[0].email").value("john@example.com"))
+                .andExpect(jsonPath("$[1].username").value("jane"))
+                .andExpect(jsonPath("$[1].email").value("jane@example.com"));
     }
 
     @Test
@@ -113,7 +119,7 @@ class UserControllerTest {
 
         mockMvc.perform(get("/api/user/getUsers"))
                 .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].firstName").value("John"));
+                .andExpect(jsonPath("$[0].username").value("john"));
     }
 
 }
