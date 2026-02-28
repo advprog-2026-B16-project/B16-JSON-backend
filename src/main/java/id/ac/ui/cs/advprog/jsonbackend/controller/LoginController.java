@@ -1,8 +1,10 @@
 package id.ac.ui.cs.advprog.jsonbackend.controller;
 
 import id.ac.ui.cs.advprog.jsonbackend.dto.UserLoginRequest;
+import id.ac.ui.cs.advprog.jsonbackend.dto.UserLoginResponse;
 import id.ac.ui.cs.advprog.jsonbackend.exception.UserNotFoundException;
 import id.ac.ui.cs.advprog.jsonbackend.exception.WrongPasswordException;
+import id.ac.ui.cs.advprog.jsonbackend.model.User;
 import id.ac.ui.cs.advprog.jsonbackend.service.LoginService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,10 +44,10 @@ public class LoginController {
         }
 
         try {
-            loginService.login(request);
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "User logged in successfully");
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
+            User user = loginService.login(request);
+//            Map<String, String> response = new HashMap<>();
+//            response.put("message", "User logged in successfully");
+            return new ResponseEntity<>(new UserLoginResponse(user), HttpStatus.CREATED);
         } catch (WrongPasswordException e) {
             Map<String, String> error = new HashMap<>();
             error.put("error", e.getMessage());
