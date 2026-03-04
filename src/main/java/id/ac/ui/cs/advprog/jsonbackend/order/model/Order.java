@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.jsonbackend.order.modal;
+package id.ac.ui.cs.advprog.jsonbackend.order.model;
 
 import id.ac.ui.cs.advprog.jsonbackend.order.enums.OrderStatus;
 import jakarta.persistence.PrePersist;
