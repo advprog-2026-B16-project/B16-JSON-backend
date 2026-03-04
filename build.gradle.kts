@@ -46,6 +46,7 @@ dependencies {
     testImplementation("io.github.bonigarcia:webdrivermanager:$webdrivermanagerVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
 }
 
 tasks.register<Test>("unitTest"){
