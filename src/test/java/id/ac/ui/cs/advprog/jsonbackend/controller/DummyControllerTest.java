@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.jsonbackend.controller;
 
+import id.ac.ui.cs.advprog.jsonbackend.wallet.controller.DummyController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

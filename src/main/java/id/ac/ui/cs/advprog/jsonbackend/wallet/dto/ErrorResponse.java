@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.jsonbackend.dto;
+package id.ac.ui.cs.advprog.jsonbackend.wallet.dto;
 
 import java.time.LocalDateTime;
 

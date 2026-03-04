@@ -1,7 +1,7 @@
-package id.ac.ui.cs.advprog.jsonbackend.model;
+package id.ac.ui.cs.advprog.jsonbackend.wallet.model;
 
-import id.ac.ui.cs.advprog.jsonbackend.model.enums.TransactionType;
-import id.ac.ui.cs.advprog.jsonbackend.model.enums.TransactionStatus;
+import id.ac.ui.cs.advprog.jsonbackend.wallet.model.enums.TransactionType;
+import id.ac.ui.cs.advprog.jsonbackend.wallet.model.enums.TransactionStatus;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;

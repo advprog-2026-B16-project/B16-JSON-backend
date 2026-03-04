@@ -1,7 +1,7 @@
 package id.ac.ui.cs.advprog.jsonbackend.service;
 
-import id.ac.ui.cs.advprog.jsonbackend.model.User;
-import id.ac.ui.cs.advprog.jsonbackend.repository.UserRepository;
+import id.ac.ui.cs.advprog.jsonbackend.wallet.model.User;
+import id.ac.ui.cs.advprog.jsonbackend.wallet.repository.UserRepository;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

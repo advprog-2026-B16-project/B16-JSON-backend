@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.jsonbackend.model;
+package id.ac.ui.cs.advprog.jsonbackend.wallet.model;
 
 import id.ac.ui.cs.advprog.jsonbackend.exception.InsufficientBalanceException;
 import id.ac.ui.cs.advprog.jsonbackend.exception.InvalidAmountException;

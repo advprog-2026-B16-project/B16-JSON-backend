@@ -1,7 +1,7 @@
-package id.ac.ui.cs.advprog.jsonbackend.service;
+package id.ac.ui.cs.advprog.jsonbackend.wallet.service;
 
-import id.ac.ui.cs.advprog.jsonbackend.model.Wallet;
-import id.ac.ui.cs.advprog.jsonbackend.model.WalletTransaction;
+import id.ac.ui.cs.advprog.jsonbackend.wallet.model.Wallet;
+import id.ac.ui.cs.advprog.jsonbackend.wallet.model.WalletTransaction;
 
 import java.math.BigDecimal;
 import java.util.List;

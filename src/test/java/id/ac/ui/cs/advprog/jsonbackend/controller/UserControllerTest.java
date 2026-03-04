@@ -1,7 +1,8 @@
 package id.ac.ui.cs.advprog.jsonbackend.controller;
 
-import id.ac.ui.cs.advprog.jsonbackend.model.User;
-import id.ac.ui.cs.advprog.jsonbackend.service.UserService;
+import id.ac.ui.cs.advprog.jsonbackend.wallet.controller.UserController;
+import id.ac.ui.cs.advprog.jsonbackend.wallet.model.User;
+import id.ac.ui.cs.advprog.jsonbackend.wallet.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

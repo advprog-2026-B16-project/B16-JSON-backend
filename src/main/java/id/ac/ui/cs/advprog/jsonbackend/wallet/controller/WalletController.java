@@ -1,9 +1,8 @@
-package id.ac.ui.cs.advprog.jsonbackend.controller;
+package id.ac.ui.cs.advprog.jsonbackend.wallet.controller;
 
-import id.ac.ui.cs.advprog.jsonbackend.dto.WalletRequest;
-import id.ac.ui.cs.advprog.jsonbackend.service.WalletService;
-import id.ac.ui.cs.advprog.jsonbackend.model.WalletTransaction;
-import id.ac.ui.cs.advprog.jsonbackend.model.Wallet;
+import id.ac.ui.cs.advprog.jsonbackend.wallet.dto.WalletRequest;
+import id.ac.ui.cs.advprog.jsonbackend.wallet.service.WalletService;
+import id.ac.ui.cs.advprog.jsonbackend.wallet.model.WalletTransaction;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -1,11 +1,10 @@
-package id.ac.ui.cs.advprog.jsonbackend.service;
+package id.ac.ui.cs.advprog.jsonbackend.wallet.service;
 
-import id.ac.ui.cs.advprog.jsonbackend.model.Wallet;
-import id.ac.ui.cs.advprog.jsonbackend.model.WalletTransaction;
-import id.ac.ui.cs.advprog.jsonbackend.model.enums.TransactionType;
-import id.ac.ui.cs.advprog.jsonbackend.repository.WalletRepository;
-import id.ac.ui.cs.advprog.jsonbackend.repository.WalletTransactionRepository;
-import id.ac.ui.cs.advprog.jsonbackend.service.WalletService;
+import id.ac.ui.cs.advprog.jsonbackend.wallet.model.Wallet;
+import id.ac.ui.cs.advprog.jsonbackend.wallet.model.WalletTransaction;
+import id.ac.ui.cs.advprog.jsonbackend.wallet.model.enums.TransactionType;
+import id.ac.ui.cs.advprog.jsonbackend.wallet.repository.WalletRepository;
+import id.ac.ui.cs.advprog.jsonbackend.wallet.repository.WalletTransactionRepository;
 import id.ac.ui.cs.advprog.jsonbackend.exception.WalletNotFoundException;
 
 import org.springframework.stereotype.Service;

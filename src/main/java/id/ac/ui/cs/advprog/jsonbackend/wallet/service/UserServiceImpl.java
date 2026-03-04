@@ -1,13 +1,12 @@
-package id.ac.ui.cs.advprog.jsonbackend.service;
+package id.ac.ui.cs.advprog.jsonbackend.wallet.service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import id.ac.ui.cs.advprog.jsonbackend.model.User;
-import id.ac.ui.cs.advprog.jsonbackend.repository.UserRepository;
+import id.ac.ui.cs.advprog.jsonbackend.wallet.model.User;
+import id.ac.ui.cs.advprog.jsonbackend.wallet.repository.UserRepository;
 
 
 @Service
