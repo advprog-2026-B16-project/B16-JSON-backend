@@ -1,48 +1,69 @@
 package id.ac.ui.cs.advprog.jsonbackend.authprofile.model;
 
 import org.junit.jupiter.api.Test;
+
 import java.time.OffsetDateTime;
 import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class UpgradeRequestTest {
 
     @Test
-    void testUpgradeRequestGettersSetters() {
-        UpgradeRequest ur = new UpgradeRequest();
+    void testUpgradeRequestAllArgsConstructor() {
         UUID id = UUID.randomUUID();
         OffsetDateTime now = OffsetDateTime.now();
         User user = new User();
-        user.setUsername("requester");
-
-        ur.setId(id);
-        ur.setCreatedAt(now);
-        ur.setRequesterUser(user);
-        ur.setFullName("Full Name");
-        ur.setCredential("Credential");
-        ur.setStatus("PENDING");
-
-        assertEquals(id, ur.getId());
-        assertEquals(now, ur.getCreatedAt());
-        assertEquals(user, ur.getRequesterUser());
-        assertEquals("Full Name", ur.getFullName());
-        assertEquals("Credential", ur.getCredential());
-        assertEquals("PENDING", ur.getStatus());
+        UpgradeRequest request = new UpgradeRequest(id, now, user, "Name", "Cred", "PENDING");
+        
+        assertEquals(id, request.getId());
+        assertEquals(now, request.getCreatedAt());
+        assertEquals(user, request.getRequesterUser());
+        assertEquals("Name", request.getFullName());
+        assertEquals("Cred", request.getCredential());
+        assertEquals("PENDING", request.getStatus());
     }
 
     @Test
-    void testUserRoleEnum() {
-        assertNotNull(UserRole.valueOf("TITIPER"));
-        assertNotNull(UserRole.valueOf("JASTIPER"));
-        assertNotNull(UserRole.valueOf("ADMIN"));
-        assertEquals(3, UserRole.values().length);
+    void testUpgradeRequestBuilder() {
+        UUID id = UUID.randomUUID();
+        User user = new User();
+        OffsetDateTime now = OffsetDateTime.now();
+        
+        UpgradeRequest.UpgradeRequestBuilder builder = UpgradeRequest.builder();
+        builder.id(id);
+        builder.createdAt(now);
+        builder.requesterUser(user);
+        builder.fullName("Name");
+        builder.credential("Cred");
+        builder.status("PENDING");
+        assertNotNull(builder.toString());
+        UpgradeRequest request = builder.build();
+        
+        assertEquals(id, request.getId());
+        assertEquals(user, request.getRequesterUser());
+        assertEquals(now, request.getCreatedAt());
     }
 
     @Test
-    void testUserStatusEnum() {
-        assertNotNull(UserStatus.valueOf("ACTIVE"));
-        assertNotNull(UserStatus.valueOf("PENDING_JASTIPER"));
-        assertNotNull(UserStatus.valueOf("BANNED"));
-        assertEquals(3, UserStatus.values().length);
+    void testGettersAndSetters() {
+        UpgradeRequest request = new UpgradeRequest();
+        UUID id = UUID.randomUUID();
+        OffsetDateTime now = OffsetDateTime.now();
+        User user = new User();
+        
+        request.setId(id);
+        request.setCreatedAt(now);
+        request.setRequesterUser(user);
+        request.setFullName("Name");
+        request.setCredential("Cred");
+        request.setStatus("ACCEPTED");
+
+        assertEquals(id, request.getId());
+        assertEquals(now, request.getCreatedAt());
+        assertEquals(user, request.getRequesterUser());
+        assertEquals("Name", request.getFullName());
+        assertEquals("Cred", request.getCredential());
+        assertEquals("ACCEPTED", request.getStatus());
     }
 }
