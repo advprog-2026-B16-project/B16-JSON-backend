@@ -1,36 +1,37 @@
 package id.ac.ui.cs.advprog.jsonbackend.authprofile.service;
 
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UpgradeRequest;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.User;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UserRole;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.repository.UpgradeRequestRepository;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.repository.UserRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
 @Service
-public class UpgradeRequestStatusChangeServiceImpl implements UpgradeRequestStatusChangeService{
+@RequiredArgsConstructor
+public class UpgradeRequestStatusChangeServiceImpl implements UpgradeRequestStatusChangeService {
 
     private final UpgradeRequestRepository upgradeRequestRepository;
-
-    @Autowired
-    public UpgradeRequestStatusChangeServiceImpl(UpgradeRequestRepository upgradeRequestRepository) {
-        this.upgradeRequestRepository = upgradeRequestRepository;
-    }
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
     public void updateRequestStatus(String requestId, String newStatus) {
-        UpgradeRequest request = upgradeRequestRepository.getReferenceById(UUID.fromString(requestId));
-        request.setStatus(newStatus);
-        upgradeRequestRepository.save(request);
-        // implement UserStatusChange too here
-    }
+        UpgradeRequest request = upgradeRequestRepository.findById(UUID.fromString(requestId))
+                .orElseThrow(() -> new RuntimeException("Upgrade request not found"));
 
-//    private void applyAcceptance(UpgradeRequest request) {
-//        request.setStatus("ACCEPTED");
-//        User user = request.getRequesterUser();
-//        user.setRole(UserRole.JASTIPER); // Execute the role promotion
-//        userRepository.save(user);
-//    }
+        request.setStatus(newStatus);
+
+        if ("ACCEPTED".equalsIgnoreCase(newStatus)) {
+            User user = request.getRequesterUser();
+            user.setRole(UserRole.JASTIPER);
+            userRepository.save(user);
+        }
+
+        upgradeRequestRepository.save(request);
+    }
 }
