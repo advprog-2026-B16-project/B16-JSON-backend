@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.jsonbackend.controller;
+package id.ac.ui.cs.advprog.jsonbackend.authprofile.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -7,8 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import id.ac.ui.cs.advprog.jsonbackend.model.User;
-import id.ac.ui.cs.advprog.jsonbackend.service.UserService;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.service.UserService;
 
 @RestController
 @RequestMapping("api/user")

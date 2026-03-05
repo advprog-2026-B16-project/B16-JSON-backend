@@ -1,8 +1,8 @@
-package id.ac.ui.cs.advprog.jsonbackend.service;
+package id.ac.ui.cs.advprog.jsonbackend.authprofile.service;
 
-import id.ac.ui.cs.advprog.jsonbackend.model.UpgradeRequest;
-import id.ac.ui.cs.advprog.jsonbackend.model.User;
-import id.ac.ui.cs.advprog.jsonbackend.repository.UpgradeRequestRepository;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UpgradeRequest;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.User;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.repository.UpgradeRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

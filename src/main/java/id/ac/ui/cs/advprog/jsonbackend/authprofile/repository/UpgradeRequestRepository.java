@@ -1,11 +1,11 @@
-package id.ac.ui.cs.advprog.jsonbackend.repository;
+package id.ac.ui.cs.advprog.jsonbackend.authprofile.repository;
 
 import java.util.Optional;
 
 import java.util.UUID;
 
-import id.ac.ui.cs.advprog.jsonbackend.model.UpgradeRequest;
-import id.ac.ui.cs.advprog.jsonbackend.model.User;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UpgradeRequest;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

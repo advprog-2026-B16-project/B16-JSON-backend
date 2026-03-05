@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.jsonbackend.config;
+package id.ac.ui.cs.advprog.jsonbackend.authprofile.config;
 
 
 import org.springframework.context.annotation.Bean;

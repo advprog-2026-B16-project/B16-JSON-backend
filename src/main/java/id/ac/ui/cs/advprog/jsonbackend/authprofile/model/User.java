@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.jsonbackend.model;
+package id.ac.ui.cs.advprog.jsonbackend.authprofile.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

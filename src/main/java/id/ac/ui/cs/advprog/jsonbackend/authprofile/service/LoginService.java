@@ -1,8 +1,7 @@
-package id.ac.ui.cs.advprog.jsonbackend.service;
+package id.ac.ui.cs.advprog.jsonbackend.authprofile.service;
 
-import id.ac.ui.cs.advprog.jsonbackend.dto.UserLoginRequest;
-import id.ac.ui.cs.advprog.jsonbackend.dto.UserRegistrationRequest;
-import id.ac.ui.cs.advprog.jsonbackend.model.User;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.dto.UserLoginRequest;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.User;
 
 public interface LoginService {
     public User login(UserLoginRequest dto);

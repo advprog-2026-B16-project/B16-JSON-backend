@@ -1,21 +1,20 @@
 package id.ac.ui.cs.advprog.jsonbackend.authprofile.controller;
 
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.dto.UpgradeRequestStatusChangeRequest;
-import id.ac.ui.cs.advprog.jsonbackend.authprofile.service.UpgradeRequestStatusChangeService;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.service.UpdateUserRoleService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 @RestController
 @RequestMapping("api/upgrade-request")
-public class UpgradeRequestStatusChangeController {
+public class UpdateUserRoleController {
 
-    UpgradeRequestStatusChangeService upgradeRequestStatusChangeService;
+    private final UpdateUserRoleService updateUserRoleService;
 
     @Autowired
-    public UpgradeRequestStatusChangeController(UpgradeRequestStatusChangeService upgradeRequestStatusChangeService) {
-        this.upgradeRequestStatusChangeService = upgradeRequestStatusChangeService;
+    public UpdateUserRoleController(UpdateUserRoleService updateUserRoleService) {
+        this.updateUserRoleService = updateUserRoleService;
     }
 
     @PatchMapping("change-status/{requestId}")
@@ -23,7 +22,7 @@ public class UpgradeRequestStatusChangeController {
             @PathVariable String requestId,
             @RequestBody UpgradeRequestStatusChangeRequest dto) {
 
-        this.upgradeRequestStatusChangeService.updateRequestStatus(requestId, dto.getNewStatus());
+        this.updateUserRoleService.updateUserRoleStatus(requestId, dto.getUsername());
         return ResponseEntity.ok("Status updated successfully");
     }
 }

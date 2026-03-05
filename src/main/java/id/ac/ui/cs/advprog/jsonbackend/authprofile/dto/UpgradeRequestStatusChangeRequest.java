@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.jsonbackend.dto;
+package id.ac.ui.cs.advprog.jsonbackend.authprofile.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

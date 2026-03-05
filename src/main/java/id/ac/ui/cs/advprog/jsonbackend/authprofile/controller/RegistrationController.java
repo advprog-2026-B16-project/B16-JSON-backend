@@ -1,7 +1,7 @@
-package id.ac.ui.cs.advprog.jsonbackend.controller;
+package id.ac.ui.cs.advprog.jsonbackend.authprofile.controller;
 
-import id.ac.ui.cs.advprog.jsonbackend.dto.UserRegistrationRequest;
-import id.ac.ui.cs.advprog.jsonbackend.service.RegistrationService;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.dto.UserRegistrationRequest;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.service.RegistrationService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

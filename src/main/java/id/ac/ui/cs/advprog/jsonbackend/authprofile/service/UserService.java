@@ -1,9 +1,9 @@
-package id.ac.ui.cs.advprog.jsonbackend.service;
+package id.ac.ui.cs.advprog.jsonbackend.authprofile.service;
 
 import java.util.List;
 import java.util.Optional;
 
-import id.ac.ui.cs.advprog.jsonbackend.model.User;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.User;
 
 public interface UserService {
     List<User> getAllUsers();
