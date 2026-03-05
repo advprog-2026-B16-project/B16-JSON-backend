@@ -2,28 +2,42 @@ package id.ac.ui.cs.advprog.jsonbackend.authprofile.controller;
 
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.dto.UpgradeRequestStatusChangeRequest;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.service.UpgradeRequestStatusChangeService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/upgrade-request")
+@RequiredArgsConstructor
 public class UpgradeRequestStatusChangeController {
 
-    UpgradeRequestStatusChangeService upgradeRequestStatusChangeService;
-
-    @Autowired
-    public UpgradeRequestStatusChangeController(UpgradeRequestStatusChangeService upgradeRequestStatusChangeService) {
-        this.upgradeRequestStatusChangeService = upgradeRequestStatusChangeService;
-    }
+    private final UpgradeRequestStatusChangeService upgradeRequestStatusChangeService;
 
     @PatchMapping("change-status/{requestId}")
     public ResponseEntity<?> updateStatus(
             @PathVariable String requestId,
-            @RequestBody UpgradeRequestStatusChangeRequest dto) {
+            @Valid @RequestBody UpgradeRequestStatusChangeRequest dto,
+            BindingResult result) {
 
-        this.upgradeRequestStatusChangeService.updateRequestStatus(requestId, dto.getNewStatus());
-        return ResponseEntity.ok("Status updated successfully");
+        if (result.hasErrors()) {
+            Map<String, String> errors = new HashMap<>();
+            result.getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+            return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+            this.upgradeRequestStatusChangeService.updateRequestStatus(requestId, dto.getNewStatus());
+            return ResponseEntity.ok("Status updated successfully");
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        }
     }
 }
