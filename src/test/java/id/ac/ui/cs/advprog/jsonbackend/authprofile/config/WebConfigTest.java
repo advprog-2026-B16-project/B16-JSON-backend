@@ -1,5 +1,6 @@
-package id.ac.ui.cs.advprog.jsonbackend.config;
+package id.ac.ui.cs.advprog.jsonbackend.authprofile.config;
 
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.config.WebConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.servlet.config.annotation.CorsRegistration;
