@@ -1,25 +1,30 @@
-package id.ac.ui.cs.advprog.jsonbackend.service;
+package id.ac.ui.cs.advprog.jsonbackend.authprofile.service;
 
-import id.ac.ui.cs.advprog.jsonbackend.dto.UserRegistrationRequest;
-import id.ac.ui.cs.advprog.jsonbackend.model.User;
-import id.ac.ui.cs.advprog.jsonbackend.model.UserRole;
-import id.ac.ui.cs.advprog.jsonbackend.model.UserStatus;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.dto.UserRegistrationRequest;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.User;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UserRole;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UserStatus;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class RegistrationServiceImplTest {
 
-    private StubUserRepository stubUserRepository;
+    @Mock
+    private UserRepository userRepository;
+
     private RegistrationServiceImpl registrationService;
 
     @BeforeEach
     void setUp() {
-        stubUserRepository = new StubUserRepository();
-        registrationService = new RegistrationServiceImpl(stubUserRepository);
+        MockitoAnnotations.openMocks(this);
+        registrationService = new RegistrationServiceImpl(userRepository);
     }
 
     @Test
@@ -31,10 +36,10 @@ class RegistrationServiceImplTest {
 
         registrationService.register(request);
 
-        List<User> users = stubUserRepository.findAll();
-        assertEquals(1, users.size());
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(userCaptor.capture());
         
-        User savedUser = users.get(0);
+        User savedUser = userCaptor.getValue();
         assertEquals("newuser", savedUser.getUsername());
         assertEquals("new@example.com", savedUser.getEmail());
         assertEquals("password123", savedUser.getPassword());
