@@ -5,7 +5,7 @@ import id.ac.ui.cs.advprog.jsonbackend.wallet.model.WalletTransaction;
 import id.ac.ui.cs.advprog.jsonbackend.wallet.model.enums.TransactionType;
 import id.ac.ui.cs.advprog.jsonbackend.wallet.repository.WalletRepository;
 import id.ac.ui.cs.advprog.jsonbackend.wallet.repository.WalletTransactionRepository;
-import id.ac.ui.cs.advprog.jsonbackend.exception.WalletNotFoundException;
+import id.ac.ui.cs.advprog.jsonbackend.wallet.exception.WalletNotFoundException;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,8 +20,7 @@ public class WalletServiceImpl implements WalletService {
     private final WalletRepository walletRepository;
     private final WalletTransactionRepository transactionRepository;
 
-    public WalletServiceImpl(WalletRepository walletRepository,
-                             WalletTransactionRepository transactionRepository) {
+    public WalletServiceImpl(WalletRepository walletRepository, WalletTransactionRepository transactionRepository) {
         this.walletRepository = walletRepository;
         this.transactionRepository = transactionRepository;
     }
@@ -36,7 +35,7 @@ public class WalletServiceImpl implements WalletService {
     public void topUp(String userId, BigDecimal amount) {
         Wallet wallet = findWallet(userId);
 
-        WalletTransaction trx = createTransaction(
+        WalletTransaction transaction = createTransaction(
                 wallet,
                 TransactionType.TOP_UP,
                 amount,
@@ -44,14 +43,14 @@ public class WalletServiceImpl implements WalletService {
         );
 
         wallet.credit(amount);
-        trx.markSuccess();
+        transaction.markSuccess();
     }
 
     @Override
     public void withdraw(String userId, BigDecimal amount) {
         Wallet wallet = findWallet(userId);
 
-        WalletTransaction trx = createTransaction(
+        WalletTransaction transaction = createTransaction(
                 wallet,
                 TransactionType.WITHDRAW,
                 amount,
@@ -59,7 +58,7 @@ public class WalletServiceImpl implements WalletService {
         );
 
         wallet.debit(amount);
-        trx.markSuccess();
+        transaction.markSuccess();
     }
 
     @Override
@@ -84,13 +83,13 @@ public class WalletServiceImpl implements WalletService {
                                                 BigDecimal amount,
                                                 String description) {
 
-        WalletTransaction trx = new WalletTransaction(
+        WalletTransaction transaction = new WalletTransaction(
                 wallet.getId(),
                 type,
                 amount,
                 description
         );
 
-        return transactionRepository.save(trx);
+        return transactionRepository.save(transaction);
     }
 }

@@ -1,7 +1,7 @@
 package id.ac.ui.cs.advprog.jsonbackend.wallet.model;
 
-import id.ac.ui.cs.advprog.jsonbackend.exception.InsufficientBalanceException;
-import id.ac.ui.cs.advprog.jsonbackend.exception.InvalidAmountException;
+import id.ac.ui.cs.advprog.jsonbackend.wallet.exception.InsufficientBalanceException;
+import id.ac.ui.cs.advprog.jsonbackend.wallet.exception.InvalidAmountException;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 

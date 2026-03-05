@@ -1,11 +1,9 @@
 package id.ac.ui.cs.advprog.jsonbackend.handler;
 
-import id.ac.ui.cs.advprog.jsonbackend.exception.WalletException;
+import id.ac.ui.cs.advprog.jsonbackend.wallet.exception.WalletException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -14,67 +12,41 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(WalletException.class)
-    public ResponseEntity<ErrorResponse> handleWalletException(WalletException ex) {
-        ErrorResponse response = new ErrorResponse(
-                ex.getErrorCode(),
-                ex.getMessage()
-        ) {
-            @Override
-            public HttpStatusCode getStatusCode() {
-                return null; // TODO
-            }
+    public ResponseEntity<ProblemDetail> handleWalletException(WalletException ex) {
 
-            @Override
-            public ProblemDetail getBody() {
-                return null; // TODO
-            }
-        };
-        return ResponseEntity.badRequest().body(response);
+        ProblemDetail problemDetail =
+                ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+
+        problemDetail.setTitle(ex.getErrorCode());
+
+        return ResponseEntity.badRequest().body(problemDetail);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {
-        ErrorResponse response = new ErrorResponse(
-                "INTERNAL_SERVER_ERROR",
-                "Something went wrong"
-        ) {
-            @Override
-            public HttpStatusCode getStatusCode() {
-                return HttpStatus.INTERNAL_SERVER_ERROR;
-            }
+    public ResponseEntity<ProblemDetail> handleGeneralException(Exception ex) {
 
-            @Override
-            public ProblemDetail getBody() {
-                return null; // TODO
-            }
-        };
+        ProblemDetail problemDetail =
+                ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Something went wrong");
+
+        problemDetail.setTitle("INTERNAL_SERVER_ERROR");
+
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(response);
+                .body(problemDetail);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationException(
+    public ResponseEntity<ProblemDetail> handleValidationException(
             MethodArgumentNotValidException ex) {
 
         String message = ex.getBindingResult()
                 .getFieldError()
                 .getDefaultMessage();
 
-        ErrorResponse response = new ErrorResponse(
-                "VALIDATION_ERROR",
-                message
-        ) {
-            @Override
-            public HttpStatusCode getStatusCode() {
-                return null; // TODO
-            }
+        ProblemDetail problemDetail =
+                ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, message);
 
-            @Override
-            public ProblemDetail getBody() {
-                return null; // TODO
-            }
-        };
+        problemDetail.setTitle("VALIDATION_ERROR");
 
-        return ResponseEntity.badRequest().body(response);
+        return ResponseEntity.badRequest().body(problemDetail);
     }
 }

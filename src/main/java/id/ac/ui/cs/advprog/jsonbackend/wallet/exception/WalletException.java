@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.jsonbackend.exception;
+package id.ac.ui.cs.advprog.jsonbackend.wallet.exception;
 
 public abstract class WalletException extends RuntimeException {
 
