@@ -1,24 +1,18 @@
 package id.ac.ui.cs.advprog.jsonbackend.authprofile.service;
 
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.User;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.User;
-import id.ac.ui.cs.advprog.jsonbackend.authprofile.repository.UserRepository;
-
-
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepo;
-
-    @Autowired
-    public UserServiceImpl(UserRepository userRepo) {
-        this.userRepo = userRepo;
-    }
 
     @Override
     public List<User> getAllUsers() {
@@ -39,5 +33,4 @@ public class UserServiceImpl implements UserService {
     public User saveUser(User user) {
         return userRepo.save(user);
     }
-
 }
