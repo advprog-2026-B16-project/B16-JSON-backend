@@ -35,7 +35,7 @@ public class LoginServiceImpl implements LoginService {
         }
 
         if (!dto.getPassword().matches(user.getPassword())) {
-            throw new WrongPasswordException(String.format("Wrong password true: %s input: %s", dto.getPassword(), user.getPassword()));
+            throw new WrongPasswordException("Wrong password");
         }
 
         return user;
