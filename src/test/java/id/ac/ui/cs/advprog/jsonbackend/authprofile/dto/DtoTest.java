@@ -6,6 +6,9 @@ import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UserRole;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UserStatus;
 import org.junit.jupiter.api.Test;
 
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class DtoTest {
@@ -23,52 +26,109 @@ class DtoTest {
         assertEquals("password123", request.getPassword());
         assertEquals("password123", request.getConfirmPassword());
         assertTrue(request.passwordConfirmationMathces());
-
-        request.setConfirmPassword("different");
-        assertFalse(request.passwordConfirmationMathces());
-
+        
         request.setPassword(null);
+        assertFalse(request.passwordConfirmationMathces());
+        
+        request.setPassword("pass");
+        request.setConfirmPassword(null);
+        assertFalse(request.passwordConfirmationMathces());
+        
+        request.setConfirmPassword("diff");
         assertFalse(request.passwordConfirmationMathces());
     }
 
     @Test
     void testUserLoginRequest() {
         UserLoginRequest request = new UserLoginRequest();
-        request.setEmail("login@example.com");
-        request.setPassword("secret123");
+        request.setEmail("test@example.com");
+        request.setPassword("password123");
 
-        assertEquals("login@example.com", request.getEmail());
-        assertEquals("secret123", request.getPassword());
-        
-        request.setEmail("new@example.com");
-        request.setPassword("newpass");
-        assertEquals("new@example.com", request.getEmail());
-        assertEquals("newpass", request.getPassword());
+        assertEquals("test@example.com", request.getEmail());
+        assertEquals("password123", request.getPassword());
     }
 
     @Test
     void testUpgradeRequestStatusChangeRequest() {
         UpgradeRequestStatusChangeRequest request = new UpgradeRequestStatusChangeRequest();
-        request.setUsername("user1");
+        request.setUsername("testuser");
         request.setNewStatus("APPROVED");
 
-        assertEquals("user1", request.getUsername());
+        assertEquals("testuser", request.getUsername());
         assertEquals("APPROVED", request.getNewStatus());
     }
 
     @Test
     void testUpgradeRequestResponse() {
-        UpgradeRequest ur = new UpgradeRequest();
-        UpgradeRequestResponse response = new UpgradeRequestResponse(ur);
-        assertEquals(ur, response.upgradeRequest());
+        UUID id = UUID.randomUUID();
+        OffsetDateTime now = OffsetDateTime.now();
+        UUID userId = UUID.randomUUID();
+        
+        // Test Canonical Constructor
+        UpgradeRequestResponse response = new UpgradeRequestResponse(id, now, userId, "user", "Full Name", "Cred", "PENDING");
+        assertEquals(id, response.id());
+        
+        // Test Builder
+        UpgradeRequestResponse.UpgradeRequestResponseBuilder builder = UpgradeRequestResponse.builder();
+        builder.id(id);
+        builder.createdAt(now);
+        builder.requesterUserId(userId);
+        builder.requesterUsername("user");
+        builder.fullName("Full Name");
+        builder.credential("Cred");
+        builder.status("PENDING");
+        assertNotNull(builder.toString());
+        UpgradeRequestResponse responseFromBuilder = builder.build();
+        
+        assertEquals(response, responseFromBuilder);
+        assertEquals(response.hashCode(), responseFromBuilder.hashCode());
+        assertNotNull(response.toString());
+
+        User user = User.builder().id(userId).username("user").build();
+        UpgradeRequest ur = UpgradeRequest.builder()
+                .id(id)
+                .createdAt(now)
+                .requesterUser(user)
+                .fullName("Full Name")
+                .credential("Cred")
+                .status("PENDING")
+                .build();
+
+        UpgradeRequestResponse fromRequest = UpgradeRequestResponse.fromRequest(ur);
+        assertEquals(response, fromRequest);
     }
 
     @Test
     void testUserLoginResponse() {
-        User user = new User("john", "john@example.com", "mypassword", UserRole.TITIPER, UserStatus.ACTIVE);
-        UserLoginResponse response = new UserLoginResponse(user);
+        UUID id = UUID.randomUUID();
         
-        assertEquals(user, response.user());
-        assertEquals("", user.getPassword()); // Test that password is cleared
+        // Test Canonical Constructor
+        UserLoginResponse response = new UserLoginResponse(id, "user", "email", "ROLE", "STATUS");
+        assertEquals(id, response.id());
+        
+        // Test Builder
+        UserLoginResponse.UserLoginResponseBuilder builder = UserLoginResponse.builder();
+        builder.id(id);
+        builder.username("user");
+        builder.email("email");
+        builder.role("ROLE");
+        builder.status("STATUS");
+        assertNotNull(builder.toString());
+        UserLoginResponse responseFromBuilder = builder.build();
+        
+        assertEquals(response, responseFromBuilder);
+        assertEquals(response.hashCode(), responseFromBuilder.hashCode());
+        assertNotNull(response.toString());
+
+        User user = User.builder()
+                .id(id)
+                .username("user")
+                .email("email")
+                .role(UserRole.TITIPER)
+                .status(UserStatus.ACTIVE)
+                .build();
+        
+        UserLoginResponse fromUser = UserLoginResponse.fromUser(user);
+        assertEquals(id, fromUser.id());
     }
 }
