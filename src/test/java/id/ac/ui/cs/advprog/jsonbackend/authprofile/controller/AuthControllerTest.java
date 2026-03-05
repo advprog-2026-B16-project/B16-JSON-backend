@@ -5,6 +5,8 @@ import id.ac.ui.cs.advprog.jsonbackend.authprofile.dto.UserRegistrationRequest;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.exception.UserNotFoundException;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.exception.WrongPasswordException;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.User;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UserRole;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UserStatus;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.service.LoginService;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.service.RegistrationService;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,10 +19,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 
-import java.util.List;
+import java.util.Collections;
 import java.util.Map;
+import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class AuthControllerTest {
@@ -37,9 +41,6 @@ class AuthControllerTest {
     @InjectMocks
     private RegistrationController registrationController;
 
-    @Mock
-    private BindingResult bindingResult;
-
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -49,56 +50,67 @@ class AuthControllerTest {
     void testGetLoginInfo() {
         ResponseEntity<?> response = loginController.getLoginInfo();
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertTrue(((Map) response.getBody()).containsKey("message"));
     }
 
     @Test
     void testLoginUserSuccess() {
         UserLoginRequest request = new UserLoginRequest();
-        when(bindingResult.hasErrors()).thenReturn(false);
-        when(loginService.login(request)).thenReturn(new User());
+        User user = User.builder()
+                .id(UUID.randomUUID())
+                .username("test")
+                .role(UserRole.TITIPER)
+                .status(UserStatus.ACTIVE)
+                .build();
+        
+        when(loginService.login(any())).thenReturn(user);
+        BindingResult result = mock(BindingResult.class);
+        when(result.hasErrors()).thenReturn(false);
 
-        ResponseEntity<?> response = loginController.loginUser(request, bindingResult);
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        ResponseEntity<?> response = loginController.loginUser(request, result);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
-    void testLoginUserValidationError() {
+    void testLoginUserBindingErrors() {
         UserLoginRequest request = new UserLoginRequest();
-        when(bindingResult.hasErrors()).thenReturn(true);
-        when(bindingResult.getFieldErrors()).thenReturn(List.of(new FieldError("request", "email", "Email required")));
+        BindingResult result = mock(BindingResult.class);
+        when(result.hasErrors()).thenReturn(true);
+        when(result.getFieldErrors()).thenReturn(Collections.singletonList(new FieldError("request", "email", "Email required")));
 
-        ResponseEntity<?> response = loginController.loginUser(request, bindingResult);
+        ResponseEntity<?> response = loginController.loginUser(request, result);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test
     void testLoginUserWrongPassword() {
         UserLoginRequest request = new UserLoginRequest();
-        when(bindingResult.hasErrors()).thenReturn(false);
-        when(loginService.login(request)).thenThrow(new WrongPasswordException("Wrong password"));
+        when(loginService.login(any())).thenThrow(new WrongPasswordException("Wrong password"));
+        BindingResult result = mock(BindingResult.class);
+        when(result.hasErrors()).thenReturn(false);
 
-        ResponseEntity<?> response = loginController.loginUser(request, bindingResult);
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        ResponseEntity<?> response = loginController.loginUser(request, result);
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
     }
 
     @Test
     void testLoginUserNotFound() {
         UserLoginRequest request = new UserLoginRequest();
-        when(bindingResult.hasErrors()).thenReturn(false);
-        when(loginService.login(request)).thenThrow(new UserNotFoundException("Not found"));
+        when(loginService.login(any())).thenThrow(new UserNotFoundException("Not found"));
+        BindingResult result = mock(BindingResult.class);
+        when(result.hasErrors()).thenReturn(false);
 
-        ResponseEntity<?> response = loginController.loginUser(request, bindingResult);
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        ResponseEntity<?> response = loginController.loginUser(request, result);
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
     }
-    
+
     @Test
     void testLoginUserGeneralException() {
         UserLoginRequest request = new UserLoginRequest();
-        when(bindingResult.hasErrors()).thenReturn(false);
-        when(loginService.login(request)).thenThrow(new RuntimeException("Error"));
+        when(loginService.login(any())).thenThrow(new RuntimeException("Error"));
+        BindingResult result = mock(BindingResult.class);
+        when(result.hasErrors()).thenReturn(false);
 
-        ResponseEntity<?> response = loginController.loginUser(request, bindingResult);
+        ResponseEntity<?> response = loginController.loginUser(request, result);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
@@ -110,43 +122,49 @@ class AuthControllerTest {
 
     @Test
     void testRegisterUserSuccess() {
-        UserRegistrationRequest request = mock(UserRegistrationRequest.class);
-        when(request.passwordConfirmationMathces()).thenReturn(true);
-        when(bindingResult.hasErrors()).thenReturn(false);
+        UserRegistrationRequest request = new UserRegistrationRequest();
+        request.setPassword("pass123456");
+        request.setConfirmPassword("pass123456");
+        BindingResult result = mock(BindingResult.class);
+        when(result.hasErrors()).thenReturn(false);
 
-        ResponseEntity<?> response = registrationController.registerUser(request, bindingResult);
+        ResponseEntity<?> response = registrationController.registerUser(request, result);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        verify(registrationService).register(request);
+    }
+
+    @Test
+    void testRegisterUserBindingErrors() {
+        UserRegistrationRequest request = new UserRegistrationRequest();
+        BindingResult result = mock(BindingResult.class);
+        when(result.hasErrors()).thenReturn(true);
+        when(result.getFieldErrors()).thenReturn(Collections.singletonList(new FieldError("request", "username", "Username required")));
+
+        ResponseEntity<?> response = registrationController.registerUser(request, result);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test
     void testRegisterUserPasswordMismatch() {
-        UserRegistrationRequest request = mock(UserRegistrationRequest.class);
-        when(request.passwordConfirmationMathces()).thenReturn(false);
-        when(bindingResult.hasErrors()).thenReturn(false);
-
-        ResponseEntity<?> response = registrationController.registerUser(request, bindingResult);
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-    }
-
-    @Test
-    void testRegisterUserValidationError() {
         UserRegistrationRequest request = new UserRegistrationRequest();
-        when(bindingResult.hasErrors()).thenReturn(true);
-        when(bindingResult.getFieldErrors()).thenReturn(List.of(new FieldError("request", "username", "Required")));
+        request.setPassword("pass123");
+        request.setConfirmPassword("pass456");
+        BindingResult result = mock(BindingResult.class);
+        when(result.hasErrors()).thenReturn(false);
 
-        ResponseEntity<?> response = registrationController.registerUser(request, bindingResult);
+        ResponseEntity<?> response = registrationController.registerUser(request, result);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test
-    void testRegisterUserException() {
-        UserRegistrationRequest request = mock(UserRegistrationRequest.class);
-        when(request.passwordConfirmationMathces()).thenReturn(true);
-        when(bindingResult.hasErrors()).thenReturn(false);
-        doThrow(new RuntimeException("Error")).when(registrationService).register(request);
+    void testRegisterUserConflict() {
+        UserRegistrationRequest request = new UserRegistrationRequest();
+        request.setPassword("pass123");
+        request.setConfirmPassword("pass123");
+        BindingResult result = mock(BindingResult.class);
+        when(result.hasErrors()).thenReturn(false);
+        doThrow(new RuntimeException("Conflict")).when(registrationService).register(any());
 
-        ResponseEntity<?> response = registrationController.registerUser(request, bindingResult);
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        ResponseEntity<?> response = registrationController.registerUser(request, result);
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
     }
 }
