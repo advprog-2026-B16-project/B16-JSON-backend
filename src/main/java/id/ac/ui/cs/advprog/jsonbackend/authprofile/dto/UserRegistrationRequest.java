@@ -22,24 +22,8 @@ public class UserRegistrationRequest {
 
     private String confirmPassword;
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public void setConfirmPassword(String confirmPassword) {
-        this.confirmPassword = confirmPassword;
-    }
-
     public boolean passwordConfirmationMathces() {
-        if (password == null) return false;
+        if (password == null || confirmPassword == null) return false;
         return password.equals(confirmPassword);
     }
 }
