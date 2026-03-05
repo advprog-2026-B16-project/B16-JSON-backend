@@ -1,101 +1,44 @@
 package id.ac.ui.cs.advprog.jsonbackend.authprofile.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
+import jakarta.persistence.*;
+import lombok.*;
+import java.util.UUID;
 
 @Entity
-@Table(name="user")
+@Table(name = "users")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class User {
 
     @Id
-    @Column(name="username")
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Column(unique = true, nullable = false)
     private String username;
 
-    @Column(name="email")
+    @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(name="password")
+    @Column(nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(name="role")
+    @Column(nullable = false)
     private UserRole role;
 
     @Enumerated(EnumType.STRING)
-    @Column(name="status")
+    @Column(nullable = false)
     private UserStatus status;
 
-    @Column(name="jastiper_profile")
-    private String jastiper_profile;
-
-
-    public User() {
-
-    }
-
-    public User(String username, String email, String password, UserRole role, UserStatus status) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.role = role;
-        this.status = status;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public UserRole getRole() {
-        return role;
-    }
-
-    public void setRole(UserRole role) {
-        this.role = role;
-    }
-
-    public UserStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(UserStatus status) {
-        this.status = status;
-    }
-
-    public String getJastiper_profile() {
-        return jastiper_profile;
-    }
-
-    public void setJastiper_profile(String jastiper_profile) {
-        this.jastiper_profile = jastiper_profile;
-    }
+    @Column(name = "jastiper_profile")
+    private String jastiperProfile;
 
     @Override
     public String toString() {
-        return "User [username=" + username + ", email=" + email + ", role=" + role + ", status=" + status + "]";
+        return "User [id=" + id + ", username=" + username + ", email=" + email + ", role=" + role + ", status=" + status + "]";
     }
 }
