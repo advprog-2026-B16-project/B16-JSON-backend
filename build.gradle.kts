@@ -1,8 +1,20 @@
+import org.gradle.api.plugins.quality.Pmd
+
 plugins {
     java
+    jacoco
     id("pmd")
+    id("org.sonarqube") version "6.0.1.5171"
     id("org.springframework.boot") version "3.2.2"
     id("io.spring.dependency-management") version "1.1.7"
+}
+
+sonar {
+    properties {
+        property("sonar.projectKey", "B-Naufal-Zafran-Fadil-2406402542_Modul-2-CI-CD-DevOps")
+        property("sonar.organization", "b-naufal-zafran-fadil-2406402542")
+        property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
+    }
 }
 
 group = "id.ac.ui.cs.advprog"
@@ -39,6 +51,7 @@ dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     annotationProcessor("org.projectlombok:lombok")
+    testImplementation("com.h2database:h2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("org.seleniumhq.selenium:selenium-java:$seleniumJavaVersion")
@@ -71,6 +84,21 @@ tasks.register<Test>("functionalTest"){
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+}
+
+tasks.test {
+    filter {
+        excludeTestsMatching("*FunctionalTest")
+    }
+
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+    }
 }
 
 pmd {
