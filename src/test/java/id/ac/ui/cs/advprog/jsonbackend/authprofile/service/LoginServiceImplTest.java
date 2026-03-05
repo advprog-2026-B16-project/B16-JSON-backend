@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
@@ -20,12 +21,15 @@ class LoginServiceImplTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     private LoginServiceImpl loginService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        loginService = new LoginServiceImpl(userRepository);
+        loginService = new LoginServiceImpl(userRepository, passwordEncoder);
     }
 
     @Test
@@ -34,11 +38,13 @@ class LoginServiceImplTest {
         request.setEmail("test@example.com");
         request.setPassword("password123");
 
-        User user = new User();
-        user.setEmail("test@example.com");
-        user.setPassword("password123");
+        User user = User.builder()
+                .email("test@example.com")
+                .password("encoded_password")
+                .build();
 
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("password123", "encoded_password")).thenReturn(true);
 
         User result = loginService.login(request);
         assertEquals(user, result);
@@ -61,11 +67,13 @@ class LoginServiceImplTest {
         request.setEmail("test@example.com");
         request.setPassword("wrongpass");
 
-        User user = new User();
-        user.setEmail("test@example.com");
-        user.setPassword("password123");
+        User user = User.builder()
+                .email("test@example.com")
+                .password("encoded_password")
+                .build();
 
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("wrongpass", "encoded_password")).thenReturn(false);
 
         assertThrows(WrongPasswordException.class, () -> loginService.login(request));
     }
