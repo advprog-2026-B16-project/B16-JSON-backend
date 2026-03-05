@@ -7,7 +7,7 @@ import id.ac.ui.cs.advprog.jsonbackend.authprofile.exception.WrongPasswordExcept
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.User;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.service.LoginService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -18,19 +18,15 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/login")
+@RequiredArgsConstructor
 public class LoginController {
 
     private final LoginService loginService;
 
-    @Autowired
-    public LoginController(LoginService loginService) {
-        this.loginService = loginService;
-    }
-
     @GetMapping
     public ResponseEntity<?> getLoginInfo() {
         Map<String, String> info = new HashMap<>();
-        info.put("message", "Login endpoint is active. Use POST to register.");
+        info.put("message", "Login endpoint is active. Use POST to login.");
         return ResponseEntity.ok(info);
     }
 
@@ -45,22 +41,15 @@ public class LoginController {
 
         try {
             User user = loginService.login(request);
-//            Map<String, String> response = new HashMap<>();
-//            response.put("message", "User logged in successfully");
-            return new ResponseEntity<>(new UserLoginResponse(user), HttpStatus.CREATED);
-        } catch (WrongPasswordException e) {
+            return new ResponseEntity<>(UserLoginResponse.fromUser(user), HttpStatus.OK);
+        } catch (WrongPasswordException | UserNotFoundException e) {
             Map<String, String> error = new HashMap<>();
             error.put("error", e.getMessage());
-            return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
-        } catch (UserNotFoundException e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage());
-            return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
             error.put("error", e.getMessage());
             return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
     }
 }
