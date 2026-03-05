@@ -3,17 +3,26 @@ package id.ac.ui.cs.advprog.jsonbackend.authprofile.service;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.User;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UserRole;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UserStatus;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
 
 class UserServiceImplTest {
 
-    private StubUserRepository stubUserRepository;
+    @Mock
+    private UserRepository userRepository;
+
+    @InjectMocks
     private UserServiceImpl userService;
 
     private User user1;
@@ -21,72 +30,48 @@ class UserServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        stubUserRepository = new StubUserRepository();
-        userService = new UserServiceImpl(stubUserRepository);
-
-        user1 = new User("john", "john@example.com", "pass1", UserRole.TITIPER, UserStatus.ACTIVE);
-        user2 = new User("jane", "jane@example.com", "pass2", UserRole.JASTIPER, UserStatus.ACTIVE);
+        MockitoAnnotations.openMocks(this);
+        user1 = User.builder()
+                .username("john")
+                .email("john@example.com")
+                .password("pass1")
+                .role(UserRole.TITIPER)
+                .status(UserStatus.ACTIVE)
+                .build();
+        user2 = User.builder()
+                .username("jane")
+                .email("jane@example.com")
+                .password("pass2")
+                .role(UserRole.JASTIPER)
+                .status(UserStatus.ACTIVE)
+                .build();
     }
 
     @Test
-    void testUserServiceNotNull() {
-        assertNotNull(userService);
-    }
-
-    @Test
-    void testGetAllUsersReturnsEmptyList() {
+    void testGetAllUsers() {
+        when(userRepository.findAll()).thenReturn(Arrays.asList(user1, user2));
         List<User> result = userService.getAllUsers();
-
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void testGetAllUsersReturnsSingleUser() {
-        stubUserRepository.setUsers(List.of(user1));
-
-        List<User> result = userService.getAllUsers();
-
-        assertEquals(1, result.size());
-        assertEquals("john", result.get(0).getUsername());
-        assertEquals("john@example.com", result.get(0).getEmail());
-    }
-
-    @Test
-    void testGetAllUsersReturnsAllUsers() {
-        stubUserRepository.setUsers(List.of(user1, user2));
-
-        List<User> result = userService.getAllUsers();
-
         assertEquals(2, result.size());
-        assertEquals("john", result.get(0).getUsername());
-        assertEquals("jane", result.get(1).getUsername());
     }
 
     @Test
     void testGetUserByUsername() {
-        stubUserRepository.setUsers(List.of(user1));
-
+        when(userRepository.findByUsername("john")).thenReturn(Optional.of(user1));
         Optional<User> result = userService.getUserByUsername("john");
-
-        assertTrue(result.isPresent());
-        assertEquals("john", result.get().getUsername());
+        assertEquals(user1, result.get());
     }
 
     @Test
     void testGetUserByEmail() {
-        stubUserRepository.setUsers(List.of(user1));
-
+        when(userRepository.findByEmail("john@example.com")).thenReturn(Optional.of(user1));
         Optional<User> result = userService.getUserByEmail("john@example.com");
-
-        assertTrue(result.isPresent());
-        assertEquals("john@example.com", result.get().getEmail());
+        assertEquals(user1, result.get());
     }
 
     @Test
     void testSaveUser() {
-        User savedUser = userService.saveUser(user1);
-        assertNotNull(savedUser);
-        assertEquals("john", savedUser.getUsername());
+        when(userRepository.save(user1)).thenReturn(user1);
+        User result = userService.saveUser(user1);
+        assertEquals(user1, result);
     }
 }
