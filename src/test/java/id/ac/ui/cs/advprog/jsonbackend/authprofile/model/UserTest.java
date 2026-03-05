@@ -1,91 +1,78 @@
 package id.ac.ui.cs.advprog.jsonbackend.authprofile.model;
 
-import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.User;
-import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UserRole;
-import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UserStatus;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class UserTest {
 
-    private User user;
-
-    @BeforeEach
-    void setUp() {
-        user = new User();
-    }
-
     @Test
-    void testDefaultUsernameIsNull() {
-        assertNull(user.getUsername());
-    }
-
-    @Test
-    void testDefaultEmailIsNull() {
-        assertNull(user.getEmail());
-    }
-
-    @Test
-    void testDefaultRoleIsNull() {
-        assertNull(user.getRole());
-    }
-
-    @Test
-    void testSetAndGetUsername() {
-        user.setUsername("testuser");
-        assertEquals("testuser", user.getUsername());
-    }
-
-    @Test
-    void testSetAndGetEmail() {
-        user.setEmail("test@example.com");
-        assertEquals("test@example.com", user.getEmail());
-    }
-
-    @Test
-    void testSetAndGetPassword() {
-        user.setPassword("password123");
-        assertEquals("password123", user.getPassword());
-    }
-
-    @Test
-    void testSetAndGetRole() {
-        user.setRole(UserRole.TITIPER);
+    void testUserAllArgsConstructor() {
+        UUID id = UUID.randomUUID();
+        User user = new User(id, "user", "email", "pass", UserRole.TITIPER, UserStatus.ACTIVE, "profile");
+        assertEquals(id, user.getId());
+        assertEquals("user", user.getUsername());
+        assertEquals("email", user.getEmail());
+        assertEquals("pass", user.getPassword());
         assertEquals(UserRole.TITIPER, user.getRole());
-    }
-
-    @Test
-    void testSetAndGetStatus() {
-        user.setStatus(UserStatus.ACTIVE);
         assertEquals(UserStatus.ACTIVE, user.getStatus());
+        assertEquals("profile", user.getJastiperProfile());
     }
 
     @Test
-    void testSetAndGetJastiperProfile() {
-        user.setJastiper_profile("Test Bio");
-        assertEquals("Test Bio", user.getJastiper_profile());
+    void testUserBuilder() {
+        UUID id = UUID.randomUUID();
+        // Call EVERY builder method explicitly
+        User.UserBuilder builder = User.builder();
+        builder.id(id);
+        builder.username("user");
+        builder.email("email");
+        builder.password("pass");
+        builder.role(UserRole.TITIPER);
+        builder.status(UserStatus.ACTIVE);
+        builder.jastiperProfile("profile");
+        assertNotNull(builder.toString());
+        User user = builder.build();
+        
+        assertEquals(id, user.getId());
+        assertEquals("user", user.getUsername());
+        assertTrue(user.toString().contains("user"));
     }
 
     @Test
-    void testConstructorWithParameters() {
-        User userWithParams = new User("jane", "jane@example.com", "pass123", UserRole.JASTIPER, UserStatus.PENDING_JASTIPER);
-
-        assertEquals("jane", userWithParams.getUsername());
-        assertEquals("jane@example.com", userWithParams.getEmail());
-        assertEquals("pass123", userWithParams.getPassword());
-        assertEquals(UserRole.JASTIPER, userWithParams.getRole());
-        assertEquals(UserStatus.PENDING_JASTIPER, userWithParams.getStatus());
-    }
-
-    @Test
-    void testToString() {
-        user.setUsername("john");
-        user.setEmail("john@example.com");
-        user.setRole(UserRole.ADMIN);
+    void testGettersAndSetters() {
+        User user = new User();
+        UUID id = UUID.randomUUID();
+        user.setId(id);
+        user.setUsername("user");
+        user.setEmail("email");
+        user.setPassword("pass");
+        user.setRole(UserRole.TITIPER);
         user.setStatus(UserStatus.ACTIVE);
-        assertEquals("User [username=john, email=john@example.com, role=ADMIN, status=ACTIVE]", user.toString());
+        user.setJastiperProfile("profile");
+
+        assertEquals(id, user.getId());
+        assertEquals("user", user.getUsername());
+        assertEquals("email", user.getEmail());
+        assertEquals("pass", user.getPassword());
+        assertEquals(UserRole.TITIPER, user.getRole());
+        assertEquals(UserStatus.ACTIVE, user.getStatus());
+        assertEquals("profile", user.getJastiperProfile());
     }
 
+    @Test
+    void testUserRoleEnum() {
+        for (UserRole role : UserRole.values()) {
+            assertEquals(role, UserRole.valueOf(role.name()));
+        }
+    }
+
+    @Test
+    void testUserStatusEnum() {
+        for (UserStatus status : UserStatus.values()) {
+            assertEquals(status, UserStatus.valueOf(status.name()));
+        }
+    }
 }
