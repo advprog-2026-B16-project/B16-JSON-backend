@@ -1,16 +1,15 @@
 package id.ac.ui.cs.advprog.jsonbackend.authprofile.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class UpgradeRequestStatusChangeRequest {
-    @NotBlank(message = "Password is required")
+    @NotBlank(message = "Username is required")
     private String username;
 
-    @NotBlank(message = "Password is required")
+    @NotBlank(message = "New status is required")
     private String newStatus;
 }
