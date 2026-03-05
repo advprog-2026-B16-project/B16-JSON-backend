@@ -1,5 +1,8 @@
-package id.ac.ui.cs.advprog.jsonbackend.model;
+package id.ac.ui.cs.advprog.jsonbackend.authprofile.model;
 
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.User;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UserRole;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UserStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
