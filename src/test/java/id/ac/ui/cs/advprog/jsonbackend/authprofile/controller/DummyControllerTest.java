@@ -15,7 +15,7 @@ class DummyControllerTest {
 
     @Test
     void testSayHelloReturnsCorrectBody() {
-        assertEquals("Hello from Backend!", dummyController.sayHello());
+        assertEquals("Hello from Backend!v2", dummyController.sayHello());
     }
 
     @Test
