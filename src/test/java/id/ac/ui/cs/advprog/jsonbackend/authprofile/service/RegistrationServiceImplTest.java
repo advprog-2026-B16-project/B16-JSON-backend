@@ -25,6 +25,8 @@ class RegistrationServiceImplTest {
     private PasswordEncoder passwordEncoder;
 
     private RegistrationServiceImpl registrationService;
+
+    @Mock
     private ApplicationEventPublisher applicationEventPublisher;
 
     @BeforeEach

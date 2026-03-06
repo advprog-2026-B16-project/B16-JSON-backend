@@ -39,6 +39,7 @@ public class RegistrationServiceImpl implements RegistrationService {
                 .build();
 
         userRepository.save(user);
-        eventPublisher.publishEvent(new UserCreatedEvent(user.getId().toString()));
+        String userId = user.getId() != null ? user.getId().toString() : "";
+        eventPublisher.publishEvent(new UserCreatedEvent(userId));
     }
 }
