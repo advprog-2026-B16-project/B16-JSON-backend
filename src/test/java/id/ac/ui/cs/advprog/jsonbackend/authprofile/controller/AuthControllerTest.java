@@ -1,13 +1,16 @@
 package id.ac.ui.cs.advprog.jsonbackend.authprofile.controller;
 
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.config.JwtService;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.dto.UserLoginRequest;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.dto.UserRegistrationRequest;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.exception.BadCredentialsException;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.User;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UserRole;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UserStatus;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.service.LoginAttemptService;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.service.LoginService;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.service.RegistrationService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -32,6 +35,12 @@ class AuthControllerTest {
 
     @Mock
     private RegistrationService registrationService;
+
+    @Mock
+    private LoginAttemptService loginAttemptService;
+
+    @Mock
+    private JwtService jwtService;
 
     @InjectMocks
     private LoginController loginController;
@@ -60,44 +69,74 @@ class AuthControllerTest {
                 .status(UserStatus.ACTIVE)
                 .build();
         
+        HttpServletRequest httpServletRequest = mock(HttpServletRequest.class);
+        when(httpServletRequest.getRemoteAddr()).thenReturn("127.0.0.1");
+        
         when(loginService.login(any())).thenReturn(user);
+        when(jwtService.generateToken(user)).thenReturn("mockToken");
+        when(loginAttemptService.isBlocked(anyString())).thenReturn(false);
+        
         BindingResult result = mock(BindingResult.class);
         when(result.hasErrors()).thenReturn(false);
 
-        ResponseEntity<?> response = loginController.loginUser(request, result);
+        ResponseEntity<?> response = loginController.loginUser(request, result, httpServletRequest);
         assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    void testLoginUserBlocked() {
+        UserLoginRequest request = new UserLoginRequest();
+        HttpServletRequest httpServletRequest = mock(HttpServletRequest.class);
+        when(httpServletRequest.getRemoteAddr()).thenReturn("127.0.0.1");
+        when(loginAttemptService.isBlocked(anyString())).thenReturn(true);
+        
+        BindingResult result = mock(BindingResult.class);
+
+        ResponseEntity<?> response = loginController.loginUser(request, result, httpServletRequest);
+        assertEquals(HttpStatus.TOO_MANY_REQUESTS, response.getStatusCode());
     }
 
     @Test
     void testLoginUserBindingErrors() {
         UserLoginRequest request = new UserLoginRequest();
+        HttpServletRequest httpServletRequest = mock(HttpServletRequest.class);
+        when(httpServletRequest.getRemoteAddr()).thenReturn("127.0.0.1");
+        when(loginAttemptService.isBlocked(anyString())).thenReturn(false);
+        
         BindingResult result = mock(BindingResult.class);
         when(result.hasErrors()).thenReturn(true);
         when(result.getFieldErrors()).thenReturn(Collections.singletonList(new FieldError("request", "email", "Email required")));
 
-        ResponseEntity<?> response = loginController.loginUser(request, result);
+        ResponseEntity<?> response = loginController.loginUser(request, result, httpServletRequest);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
     @Test
     void testLoginUserBadCredentials() {
         UserLoginRequest request = new UserLoginRequest();
+        HttpServletRequest httpServletRequest = mock(HttpServletRequest.class);
+        when(httpServletRequest.getRemoteAddr()).thenReturn("127.0.0.1");
+        
         when(loginService.login(any())).thenThrow(new BadCredentialsException("Invalid email or password"));
         BindingResult result = mock(BindingResult.class);
         when(result.hasErrors()).thenReturn(false);
 
-        ResponseEntity<?> response = loginController.loginUser(request, result);
+        ResponseEntity<?> response = loginController.loginUser(request, result, httpServletRequest);
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        verify(loginAttemptService).loginFailed(anyString());
     }
 
     @Test
     void testLoginUserGeneralException() {
         UserLoginRequest request = new UserLoginRequest();
+        HttpServletRequest httpServletRequest = mock(HttpServletRequest.class);
+        when(httpServletRequest.getRemoteAddr()).thenReturn("127.0.0.1");
+        
         when(loginService.login(any())).thenThrow(new RuntimeException("Error"));
         BindingResult result = mock(BindingResult.class);
         when(result.hasErrors()).thenReturn(false);
 
-        ResponseEntity<?> response = loginController.loginUser(request, result);
+        ResponseEntity<?> response = loginController.loginUser(request, result, httpServletRequest);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
