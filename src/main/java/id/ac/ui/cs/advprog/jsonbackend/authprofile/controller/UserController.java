@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @RestController
 @RequestMapping("api/user")
 @RequiredArgsConstructor
@@ -20,9 +22,10 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/getUsers")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserLoginResponse>> getUsers() {
         List<UserLoginResponse> users = userService.getAllUsers().stream()
-                .map(UserLoginResponse::fromUser)
+                .map(user -> UserLoginResponse.fromUser(user, null))
                 .collect(Collectors.toList());
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
