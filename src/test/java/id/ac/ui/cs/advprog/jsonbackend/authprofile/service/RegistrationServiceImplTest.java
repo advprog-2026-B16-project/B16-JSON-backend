@@ -1,6 +1,8 @@
 package id.ac.ui.cs.advprog.jsonbackend.authprofile.service;
 
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.dto.UserRegistrationRequest;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.exception.EmailAlreadyExistsException;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.exception.UsernameAlreadyExistsException;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.User;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,11 +38,11 @@ class RegistrationServiceImplTest {
         UserRegistrationRequest request = new UserRegistrationRequest();
         request.setUsername("newuser");
         request.setEmail("new@example.com");
-        request.setPassword("password123");
+        request.setPassword("Password123!");
 
         when(userRepository.findByUsername("newuser")).thenReturn(Optional.empty());
         when(userRepository.findByEmail("new@example.com")).thenReturn(Optional.empty());
-        when(passwordEncoder.encode("password123")).thenReturn("encoded_password");
+        when(passwordEncoder.encode("Password123!")).thenReturn("encoded_password");
 
         registrationService.register(request);
 
@@ -55,7 +57,7 @@ class RegistrationServiceImplTest {
         User existingUser = User.builder().build();
         when(userRepository.findByUsername("existinguser")).thenReturn(Optional.of(existingUser));
 
-        assertThrows(RuntimeException.class, () -> registrationService.register(request));
+        assertThrows(UsernameAlreadyExistsException.class, () -> registrationService.register(request));
     }
 
     @Test
@@ -67,6 +69,6 @@ class RegistrationServiceImplTest {
         when(userRepository.findByUsername("newuser")).thenReturn(Optional.empty());
         when(userRepository.findByEmail("existing@example.com")).thenReturn(Optional.of(User.builder().build()));
 
-        assertThrows(RuntimeException.class, () -> registrationService.register(request));
+        assertThrows(EmailAlreadyExistsException.class, () -> registrationService.register(request));
     }
 }
