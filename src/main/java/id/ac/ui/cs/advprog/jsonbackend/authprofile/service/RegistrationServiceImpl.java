@@ -1,11 +1,13 @@
 package id.ac.ui.cs.advprog.jsonbackend.authprofile.service;
 
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.dto.UserRegistrationRequest;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.event.UserCreatedEvent;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.User;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UserRole;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UserStatus;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +18,7 @@ public class RegistrationServiceImpl implements RegistrationService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -36,5 +39,6 @@ public class RegistrationServiceImpl implements RegistrationService {
                 .build();
 
         userRepository.save(user);
+        eventPublisher.publishEvent(new UserCreatedEvent(user.getId().toString()));
     }
 }
