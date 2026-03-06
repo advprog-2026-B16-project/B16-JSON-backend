@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @RestController
 @RequestMapping("api/upgrade-request")
 @RequiredArgsConstructor
@@ -20,6 +22,7 @@ public class UpgradeRequestStatusChangeController {
     private final UpgradeRequestStatusChangeService upgradeRequestStatusChangeService;
 
     @PatchMapping("change-status/{requestId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateStatus(
             @PathVariable String requestId,
             @Valid @RequestBody UpgradeRequestStatusChangeRequest dto,
