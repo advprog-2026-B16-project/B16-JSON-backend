@@ -1,6 +1,8 @@
 package id.ac.ui.cs.advprog.jsonbackend.authprofile.service;
 
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.dto.UserRegistrationRequest;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.exception.EmailAlreadyExistsException;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.exception.UsernameAlreadyExistsException;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.User;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UserRole;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UserStatus;
@@ -21,10 +23,10 @@ public class RegistrationServiceImpl implements RegistrationService {
     @Transactional
     public void register(UserRegistrationRequest dto) {
         if (userRepository.findByUsername(dto.getUsername()).isPresent()) {
-            throw new RuntimeException("Username already exists");
+            throw new UsernameAlreadyExistsException("Username already exists: " + dto.getUsername());
         }
         if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists");
+            throw new EmailAlreadyExistsException("Email already exists: " + dto.getEmail());
         }
 
         User user = User.builder()
