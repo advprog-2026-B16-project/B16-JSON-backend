@@ -15,7 +15,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -63,6 +65,7 @@ class UpgradeRequestRegistrationControllerTest {
         UpgradeRequestRegistrationRequest request = new UpgradeRequestRegistrationRequest();
         BindingResult bindingResult = mock(BindingResult.class);
         when(bindingResult.hasErrors()).thenReturn(true);
+        when(bindingResult.getFieldErrors()).thenReturn(Collections.singletonList(new FieldError("request", "fullName", "Required")));
 
         ResponseEntity<?> response = controller.applyForUpgrade(request, bindingResult);
 
@@ -82,6 +85,28 @@ class UpgradeRequestRegistrationControllerTest {
         SecurityContextHolder.setContext(securityContext);
 
         when(userService.getUserByUsername("unknown")).thenReturn(Optional.empty());
+
+        ResponseEntity<?> response = controller.applyForUpgrade(request, bindingResult);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    void testApplyForUpgradeServiceException() {
+        UpgradeRequestRegistrationRequest request = new UpgradeRequestRegistrationRequest();
+        BindingResult bindingResult = mock(BindingResult.class);
+        when(bindingResult.hasErrors()).thenReturn(false);
+
+        Authentication auth = mock(Authentication.class);
+        when(auth.getPrincipal()).thenReturn("testuser");
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(auth);
+        SecurityContextHolder.setContext(securityContext);
+
+        User user = User.builder().username("testuser").build();
+        when(userService.getUserByUsername("testuser")).thenReturn(Optional.of(user));
+        
+        doThrow(new RuntimeException("Service Error")).when(upgradeRequestService).createRequest(any(), any());
 
         ResponseEntity<?> response = controller.applyForUpgrade(request, bindingResult);
 
