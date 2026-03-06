@@ -1,8 +1,7 @@
 package id.ac.ui.cs.advprog.jsonbackend.authprofile.service;
 
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.dto.UserLoginRequest;
-import id.ac.ui.cs.advprog.jsonbackend.authprofile.exception.UserNotFoundException;
-import id.ac.ui.cs.advprog.jsonbackend.authprofile.exception.WrongPasswordException;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.exception.BadCredentialsException;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.User;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,13 +23,14 @@ public class LoginServiceImpl implements LoginService {
         Optional<User> optionalUser = userRepository.findByEmail(dtoEmail);
 
         if (optionalUser.isEmpty()) {
-            throw new UserNotFoundException("User not found with email: " + dtoEmail);
+            // Generic message to prevent user enumeration
+            throw new BadCredentialsException("Invalid email or password");
         }
 
         User user = optionalUser.get();
 
         if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
-            throw new WrongPasswordException("Wrong password");
+            throw new BadCredentialsException("Invalid email or password");
         }
 
         return user;

@@ -2,8 +2,7 @@ package id.ac.ui.cs.advprog.jsonbackend.authprofile.controller;
 
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.dto.UserLoginRequest;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.dto.UserRegistrationRequest;
-import id.ac.ui.cs.advprog.jsonbackend.authprofile.exception.UserNotFoundException;
-import id.ac.ui.cs.advprog.jsonbackend.authprofile.exception.WrongPasswordException;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.exception.BadCredentialsException;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.User;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UserRole;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UserStatus;
@@ -20,7 +19,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 
 import java.util.Collections;
-import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -82,20 +80,9 @@ class AuthControllerTest {
     }
 
     @Test
-    void testLoginUserWrongPassword() {
+    void testLoginUserBadCredentials() {
         UserLoginRequest request = new UserLoginRequest();
-        when(loginService.login(any())).thenThrow(new WrongPasswordException("Wrong password"));
-        BindingResult result = mock(BindingResult.class);
-        when(result.hasErrors()).thenReturn(false);
-
-        ResponseEntity<?> response = loginController.loginUser(request, result);
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-    }
-
-    @Test
-    void testLoginUserNotFound() {
-        UserLoginRequest request = new UserLoginRequest();
-        when(loginService.login(any())).thenThrow(new UserNotFoundException("Not found"));
+        when(loginService.login(any())).thenThrow(new BadCredentialsException("Invalid email or password"));
         BindingResult result = mock(BindingResult.class);
         when(result.hasErrors()).thenReturn(false);
 
@@ -123,8 +110,8 @@ class AuthControllerTest {
     @Test
     void testRegisterUserSuccess() {
         UserRegistrationRequest request = new UserRegistrationRequest();
-        request.setPassword("pass123456");
-        request.setConfirmPassword("pass123456");
+        request.setPassword("Password123!");
+        request.setConfirmPassword("Password123!");
         BindingResult result = mock(BindingResult.class);
         when(result.hasErrors()).thenReturn(false);
 
@@ -146,8 +133,8 @@ class AuthControllerTest {
     @Test
     void testRegisterUserPasswordMismatch() {
         UserRegistrationRequest request = new UserRegistrationRequest();
-        request.setPassword("pass123");
-        request.setConfirmPassword("pass456");
+        request.setPassword("Password123!");
+        request.setConfirmPassword("Different123!");
         BindingResult result = mock(BindingResult.class);
         when(result.hasErrors()).thenReturn(false);
 
@@ -158,8 +145,8 @@ class AuthControllerTest {
     @Test
     void testRegisterUserConflict() {
         UserRegistrationRequest request = new UserRegistrationRequest();
-        request.setPassword("pass123");
-        request.setConfirmPassword("pass123");
+        request.setPassword("Password123!");
+        request.setConfirmPassword("Password123!");
         BindingResult result = mock(BindingResult.class);
         when(result.hasErrors()).thenReturn(false);
         doThrow(new RuntimeException("Conflict")).when(registrationService).register(any());

@@ -1,10 +1,7 @@
 package id.ac.ui.cs.advprog.jsonbackend.authprofile.service;
 
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UpgradeRequest;
-import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.User;
-import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UserRole;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.repository.UpgradeRequestRepository;
-import id.ac.ui.cs.advprog.jsonbackend.authprofile.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,7 +13,7 @@ import java.util.UUID;
 public class UpgradeRequestStatusChangeServiceImpl implements UpgradeRequestStatusChangeService {
 
     private final UpgradeRequestRepository upgradeRequestRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @Override
     @Transactional
@@ -27,9 +24,7 @@ public class UpgradeRequestStatusChangeServiceImpl implements UpgradeRequestStat
         request.setStatus(newStatus);
 
         if ("ACCEPTED".equalsIgnoreCase(newStatus)) {
-            User user = request.getRequesterUser();
-            user.setRole(UserRole.JASTIPER);
-            userRepository.save(user);
+            userService.promoteToJastiper(request.getRequesterUser());
         }
 
         upgradeRequestRepository.save(request);

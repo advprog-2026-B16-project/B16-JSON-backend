@@ -4,7 +4,6 @@ import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UpgradeRequest;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.User;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UserRole;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.repository.UpgradeRequestRepository;
-import id.ac.ui.cs.advprog.jsonbackend.authprofile.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -23,14 +22,14 @@ class UpgradeRequestServiceTest {
     private UpgradeRequestRepository upgradeRequestRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private UserService userService;
 
     private UpgradeRequestStatusChangeServiceImpl statusChangeService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        statusChangeService = new UpgradeRequestStatusChangeServiceImpl(upgradeRequestRepository, userRepository);
+        statusChangeService = new UpgradeRequestStatusChangeServiceImpl(upgradeRequestRepository, userService);
     }
 
     @Test
@@ -46,10 +45,9 @@ class UpgradeRequestServiceTest {
 
         statusChangeService.updateRequestStatus(requestId.toString(), "ACCEPTED");
 
-        assertEquals(UserRole.JASTIPER, user.getRole());
         assertEquals("ACCEPTED", request.getStatus());
         verify(upgradeRequestRepository).save(request);
-        verify(userRepository).save(user);
+        verify(userService).promoteToJastiper(user);
     }
 
     @Test
@@ -65,10 +63,9 @@ class UpgradeRequestServiceTest {
 
         statusChangeService.updateRequestStatus(requestId.toString(), "REJECTED");
 
-        assertEquals(UserRole.TITIPER, user.getRole());
         assertEquals("REJECTED", request.getStatus());
         verify(upgradeRequestRepository).save(request);
-        verify(userRepository, never()).save(user);
+        verify(userService, never()).promoteToJastiper(any());
     }
 
     @Test

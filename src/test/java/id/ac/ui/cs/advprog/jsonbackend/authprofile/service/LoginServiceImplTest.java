@@ -1,8 +1,7 @@
 package id.ac.ui.cs.advprog.jsonbackend.authprofile.service;
 
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.dto.UserLoginRequest;
-import id.ac.ui.cs.advprog.jsonbackend.authprofile.exception.UserNotFoundException;
-import id.ac.ui.cs.advprog.jsonbackend.authprofile.exception.WrongPasswordException;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.exception.BadCredentialsException;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.User;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,7 +57,7 @@ class LoginServiceImplTest {
 
         when(userRepository.findByEmail("notfound@example.com")).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> loginService.login(request));
+        assertThrows(BadCredentialsException.class, () -> loginService.login(request));
     }
 
     @Test
@@ -75,6 +74,6 @@ class LoginServiceImplTest {
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("wrongpass", "encoded_password")).thenReturn(false);
 
-        assertThrows(WrongPasswordException.class, () -> loginService.login(request));
+        assertThrows(BadCredentialsException.class, () -> loginService.login(request));
     }
 }

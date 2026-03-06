@@ -74,4 +74,11 @@ class UserServiceImplTest {
         User result = userService.saveUser(user1);
         assertEquals(user1, result);
     }
+
+    @Test
+    void testPromoteToJastiper() {
+        userService.promoteToJastiper(user1);
+        assertEquals(UserRole.JASTIPER, user1.getRole());
+        verify(userRepository).save(user1);
+    }
 }
