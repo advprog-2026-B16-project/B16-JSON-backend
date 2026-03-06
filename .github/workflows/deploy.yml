@@ -24,30 +24,30 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_HUB_REPO_NAME }}:latest
 
-      - name: Set environment variables
-        id: set-env
-        run: |
-          BRANCH=${GITHUB_REF##*/}
-          echo "Branch: $BRANCH"
-          if [ "$BRANCH" = "main" ]; then
-            echo "Using PRODUCTION secrets"
-            echo "DB_URL=${{ secrets.PROD_DB_URL }}" >> $GITHUB_ENV
-            echo "DB_USER=${{ secrets.PROD_DB_USER }}" >> $GITHUB_ENV
-            echo "DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}" >> $GITHUB_ENV
-            echo "SERVER_PORT=${{ secrets.PROD_SERVER_PORT }}" >> $GITHUB_ENV
-            echo "FRONTEND_URL=${{ secrets.PROD_FRONTEND_URL }}" >> $GITHUB_ENV
-            echo "JPA_HIBERNATE=${{ secrets.PROD_JPA_HIBERNATE }}" >> $GITHUB_ENV
-            echo "SHOW_SQL=${{ secrets.PROD_SHOW_SQL }}" >> $GITHUB_ENV
-#          elif [ "$BRANCH" = "staging" ]; then
-#            echo "Using STAGING secrets"
-#            echo "DB_URL=${{ secrets.STAGING_DB_URL }}" >> $GITHUB_ENV
-#            echo "DB_USER=${{ secrets.STAGING_DB_USER }}" >> $GITHUB_ENV
-#            echo "DB_PASSWORD=${{ secrets.STAGING_DB_PASSWORD }}" >> $GITHUB_ENV
-#            echo "SERVER_PORT=${{ secrets.STAGING_SERVER_PORT }}" >> $GITHUB_ENV
-#            echo "FRONTEND_URL=${{ secrets.STAGING_FRONTEND_URL }}" >> $GITHUB_ENV
-#            echo "JPA_HIBERNATE=${{ secrets.STAGING_JPA_HIBERNATE }}" >> $GITHUB_ENV
-#            echo "SHOW_SQL=${{ secrets.STAGING_SHOW_SQL }}" >> $GITHUB_ENV
-          fi
+#      - name: Set environment variables
+#        id: set-env
+#        run: |
+#          BRANCH=${GITHUB_REF##*/}
+#          echo "Branch: $BRANCH"
+#          if [ "$BRANCH" = "main" ]; then
+#            echo "Using PRODUCTION secrets"
+#            echo "DB_URL=${{ secrets.PROD_DB_URL }}" >> $GITHUB_ENV
+#            echo "DB_USER=${{ secrets.PROD_DB_USER }}" >> $GITHUB_ENV
+#            echo "DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}" >> $GITHUB_ENV
+#            echo "SERVER_PORT=${{ secrets.PROD_SERVER_PORT }}" >> $GITHUB_ENV
+#            echo "FRONTEND_URL=${{ secrets.PROD_FRONTEND_URL }}" >> $GITHUB_ENV
+#            echo "JPA_HIBERNATE=${{ secrets.PROD_JPA_HIBERNATE }}" >> $GITHUB_ENV
+#            echo "SHOW_SQL=${{ secrets.PROD_SHOW_SQL }}" >> $GITHUB_ENV
+##          elif [ "$BRANCH" = "staging" ]; then
+##            echo "Using STAGING secrets"
+##            echo "DB_URL=${{ secrets.STAGING_DB_URL }}" >> $GITHUB_ENV
+##            echo "DB_USER=${{ secrets.STAGING_DB_USER }}" >> $GITHUB_ENV
+##            echo "DB_PASSWORD=${{ secrets.STAGING_DB_PASSWORD }}" >> $GITHUB_ENV
+##            echo "SERVER_PORT=${{ secrets.STAGING_SERVER_PORT }}" >> $GITHUB_ENV
+##            echo "FRONTEND_URL=${{ secrets.STAGING_FRONTEND_URL }}" >> $GITHUB_ENV
+##            echo "JPA_HIBERNATE=${{ secrets.STAGING_JPA_HIBERNATE }}" >> $GITHUB_ENV
+##            echo "SHOW_SQL=${{ secrets.STAGING_SHOW_SQL }}" >> $GITHUB_ENV
+#          fi
 
       - name: Releasing New Version
         uses: appleboy/ssh-action@v1.2.0
@@ -65,12 +65,12 @@ jobs:
             echo "Running new container..."
             docker run -d \
               --name web_server \
-              -p $SERVER_PORT:$SERVER_PORT \
-              -e DB_URL="$DB_URL" \
-              -e DB_USER="$DB_USER" \
-              -e DB_PASSWORD="$DB_PASSWORD" \
-              -e SERVER_PORT="$SERVER_PORT" \
-              -e FRONTEND_URL="$FRONTEND_URL" \
-              -e JBA_HIBERNATE="$JBA_HIBERNATE" \
-              -e SHOW_SQL="$SHOW_SQL" \
+              -p 8080:8080 \
+#              -e DB_URL="$DB_URL" \
+#              -e DB_USER="$DB_USER" \
+#              -e DB_PASSWORD="$DB_PASSWORD" \
+#              -e SERVER_PORT="$SERVER_PORT" \
+#              -e FRONTEND_URL="$FRONTEND_URL" \
+#              -e JBA_HIBERNATE="$JBA_HIBERNATE" \
+#              -e SHOW_SQL="$SHOW_SQL" \
               ${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_HUB_REPO_NAME }}:latest
