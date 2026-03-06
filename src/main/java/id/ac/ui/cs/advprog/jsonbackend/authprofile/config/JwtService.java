@@ -17,11 +17,10 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    // Using a 256-bit key (at least 32 characters)
     @Value("${application.security.jwt.secret-key:very-long-secret-key-that-is-at-least-32-chars}")
     private String secretKey;
 
-    @Value("${application.security.jwt.expiration:1800000}") // 30 minutes in milliseconds
+    @Value("${application.security.jwt.expiration:1800000}") 
     private long jwtExpiration;
 
     public String extractUsername(String token) {
@@ -36,10 +35,6 @@ public class JwtService {
     public String generateToken(User user) {
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("role", user.getRole().name());
-        return generateToken(extraClaims, user);
-    }
-
-    public String generateToken(Map<String, Object> extraClaims, User user) {
         return buildToken(extraClaims, user, jwtExpiration);
     }
 
@@ -54,28 +49,28 @@ public class JwtService {
                 .subject(user.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiration))
-                .audience().add("json-backend-client").and() // Hardened audience
-                .signWith(getSignInKey(), Jwts.SIG.HS256) // HS256 as required
+                .audience().add("json-backend-client").and()
+                .signWith(getSignInKey(), Jwts.SIG.HS256)
                 .compact();
     }
 
     public boolean isTokenValid(String token, String username) {
-        final String extractedUsername = extractUsername(token);
-        return (extractedUsername.equals(username)) && !isTokenExpired(token) && isAudienceValid(token);
+        try {
+            final Claims claims = extractAllClaims(token);
+            final String extractedUsername = claims.getSubject();
+            final String audience = claims.getAudience().iterator().next();
+            return (extractedUsername.equals(username)) && "json-backend-client".equals(audience);
+        } catch (Exception e) {
+            return false;
+        }
     }
 
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    private boolean isAudienceValid(String token) {
-        Claims claims = extractAllClaims(token);
-        // Simplified check for now
-        return claims.getAudience() != null && claims.getAudience().contains("json-backend-client");
-    }
-
-    private Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
+    public boolean isTokenExpired(String token) {
+        try {
+            return extractClaim(token, Claims::getExpiration).before(new Date());
+        } catch (Exception e) {
+            return true;
+        }
     }
 
     private Claims extractAllClaims(String token) {
