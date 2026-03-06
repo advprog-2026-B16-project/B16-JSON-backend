@@ -1,13 +1,12 @@
 package id.ac.ui.cs.advprog.jsonbackend.authprofile.config;
 
-import id.ac.ui.cs.advprog.jsonbackend.authprofile.config.WebConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.servlet.config.annotation.CorsRegistration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 class WebConfigTest {
 
@@ -19,36 +18,18 @@ class WebConfigTest {
     }
 
     @Test
-    void testWebConfigIsNotNull() {
-        assertNotNull(webConfig);
-    }
-
-    @Test
-    void testWebConfigImplementsWebMvcConfigurer() {
-        assertTrue(webConfig instanceof WebMvcConfigurer);
-    }
-
-    @Test
-    void testAddCorsMappingsDoesNotThrow() {
-        CorsRegistry registry = new CorsRegistry();
-        assertDoesNotThrow(() -> webConfig.addCorsMappings(registry));
-    }
-
-    @Test
-    void testCorsRegistrationApplied() {
-        CorsRegistry registry = new CorsRegistry() {
-            boolean mappingAdded = false;
-
-            @Override
-            public CorsRegistration addMapping(String pathPattern) {
-                mappingAdded = true;
-                assertEquals("/api/**", pathPattern);
-                return super.addMapping(pathPattern);
-            }
-        };
+    void testAddCorsMappings() {
+        CorsRegistry registry = mock(CorsRegistry.class);
+        CorsRegistration registration = mock(CorsRegistration.class);
+        
+        when(registry.addMapping(any())).thenReturn(registration);
+        when(registration.allowedOrigins(any(String[].class))).thenReturn(registration);
+        when(registration.allowedMethods(any(String[].class))).thenReturn(registration);
+        when(registration.allowedHeaders(any(String[].class))).thenReturn(registration);
+        when(registration.allowCredentials(anyBoolean())).thenReturn(registration);
 
         webConfig.addCorsMappings(registry);
+
+        verify(registry).addMapping("/api/**");
     }
-
 }
-
