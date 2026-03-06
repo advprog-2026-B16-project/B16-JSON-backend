@@ -2,8 +2,7 @@ package id.ac.ui.cs.advprog.jsonbackend.authprofile.controller;
 
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.dto.UserLoginRequest;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.dto.UserLoginResponse;
-import id.ac.ui.cs.advprog.jsonbackend.authprofile.exception.UserNotFoundException;
-import id.ac.ui.cs.advprog.jsonbackend.authprofile.exception.WrongPasswordException;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.exception.BadCredentialsException;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.User;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.service.LoginService;
 import jakarta.validation.Valid;
@@ -42,13 +41,13 @@ public class LoginController {
         try {
             User user = loginService.login(request);
             return new ResponseEntity<>(UserLoginResponse.fromUser(user), HttpStatus.OK);
-        } catch (WrongPasswordException | UserNotFoundException e) {
+        } catch (BadCredentialsException e) {
             Map<String, String> error = new HashMap<>();
             error.put("error", e.getMessage());
             return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage());
+            error.put("error", "An internal server error occurred");
             return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
