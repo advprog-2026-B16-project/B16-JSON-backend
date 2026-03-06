@@ -1,5 +1,7 @@
 package id.ac.ui.cs.advprog.jsonbackend.authprofile.service;
 
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.config.SanitizationService;
+import id.ac.ui.cs.advprog.jsonbackend.authprofile.dto.UpgradeRequestRegistrationRequest;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UpgradeRequest;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.User;
 import id.ac.ui.cs.advprog.jsonbackend.authprofile.model.UserRole;
@@ -24,12 +26,17 @@ class UpgradeRequestServiceTest {
     @Mock
     private UserService userService;
 
+    @Mock
+    private SanitizationService sanitizationService;
+
     private UpgradeRequestStatusChangeServiceImpl statusChangeService;
+    private UpgradeRequestServiceImpl registrationService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         statusChangeService = new UpgradeRequestStatusChangeServiceImpl(upgradeRequestRepository, userService);
+        registrationService = new UpgradeRequestServiceImpl(upgradeRequestRepository, sanitizationService);
     }
 
     @Test
@@ -74,6 +81,32 @@ class UpgradeRequestServiceTest {
         when(upgradeRequestRepository.findById(requestId)).thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class, () -> statusChangeService.updateRequestStatus(requestId.toString(), "ACCEPTED"));
+    }
+
+    @Test
+    void testCreateRequestSuccess() {
+        User user = User.builder().username("testuser").build();
+        UpgradeRequestRegistrationRequest dto = new UpgradeRequestRegistrationRequest();
+        dto.setFullName("John Doe");
+        dto.setCredential("Passport");
+
+        when(upgradeRequestRepository.findByRequesterUser(user)).thenReturn(Optional.empty());
+        when(sanitizationService.sanitize("John Doe")).thenReturn("John Doe");
+        when(sanitizationService.sanitize("Passport")).thenReturn("Passport");
+
+        registrationService.createRequest(user, dto);
+
+        verify(upgradeRequestRepository).save(any(UpgradeRequest.class));
+    }
+
+    @Test
+    void testCreateRequestDuplicate() {
+        User user = User.builder().username("testuser").build();
+        UpgradeRequestRegistrationRequest dto = new UpgradeRequestRegistrationRequest();
+
+        when(upgradeRequestRepository.findByRequesterUser(user)).thenReturn(Optional.of(new UpgradeRequest()));
+
+        assertThrows(RuntimeException.class, () -> registrationService.createRequest(user, dto));
     }
 
     @Test
