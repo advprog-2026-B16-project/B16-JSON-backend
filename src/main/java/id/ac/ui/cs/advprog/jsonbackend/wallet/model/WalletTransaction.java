@@ -3,13 +3,16 @@ package id.ac.ui.cs.advprog.jsonbackend.wallet.model;
 import id.ac.ui.cs.advprog.jsonbackend.wallet.model.enums.TransactionType;
 import id.ac.ui.cs.advprog.jsonbackend.wallet.model.enums.TransactionStatus;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-
 @Entity
 @Table(name = "wallet_transactions")
+@Getter
+@Setter
 public class WalletTransaction {
 
     @Id

@@ -3,10 +3,14 @@ package id.ac.ui.cs.advprog.jsonbackend.wallet.model;
 import id.ac.ui.cs.advprog.jsonbackend.wallet.exception.InsufficientBalanceException;
 import id.ac.ui.cs.advprog.jsonbackend.wallet.exception.InvalidAmountException;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "wallet")
+@Getter
+@Setter
 public class Wallet {
 
     @Id
@@ -48,13 +52,5 @@ public class Wallet {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new InvalidAmountException();
         }
-    }
-
-    public BigDecimal getBalance() {
-        return balance;
-    }
-
-    public String getId() {
-        return id;
     }
 }
