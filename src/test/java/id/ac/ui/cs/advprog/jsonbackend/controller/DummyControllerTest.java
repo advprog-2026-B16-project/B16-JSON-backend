@@ -28,7 +28,7 @@ class DummyControllerTest {
     @Test
     void testSayHelloReturnsCorrectBody() throws Exception {
         mockMvc.perform(get("/api/hello"))
-                .andExpect(content().string("Hello from Backend!"));
+                .andExpect(content().string("Hello from Backend!v2"));
     }
 
     @Test
@@ -39,7 +39,7 @@ class DummyControllerTest {
 
     @Test
     void testSayHelloDirectCall() {
-        assertEquals("Hello from Backend!", dummyController.sayHello());
+        assertEquals("Hello from Backend!v2", dummyController.sayHello());
     }
 
     @Test
