@@ -43,3 +43,4 @@ prompt
 ### environment secret ###
 .env
 .env.prod
+.env.dev
