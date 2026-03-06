@@ -24,13 +24,22 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Permit EVERYTHING for now to unblock testing
                         .anyRequest().permitAll()
-                );
+                )
+                // Disable TRACE method
+                .addFilterBefore((request, response, chain) -> {
+                    if ("TRACE".equalsIgnoreCase(((jakarta.servlet.http.HttpServletRequest) request).getMethod())) {
+                        ((jakarta.servlet.http.HttpServletResponse) response).setStatus(jakarta.servlet.http.HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+                        return;
+                    }
+                    chain.doFilter(request, response);
+                }, org.springframework.security.web.access.channel.ChannelProcessingFilter.class);
 
         return http.build();
     }
+
 }
