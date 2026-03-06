@@ -103,8 +103,9 @@ class DtoTest {
         UUID id = UUID.randomUUID();
         
         // Test Canonical Constructor
-        UserLoginResponse response = new UserLoginResponse(id, "user", "email", "ROLE", "STATUS");
+        UserLoginResponse response = new UserLoginResponse(id, "user", "email", "ROLE", "STATUS", "token123");
         assertEquals(id, response.id());
+        assertEquals("token123", response.token());
         
         // Test Builder
         UserLoginResponse.UserLoginResponseBuilder builder = UserLoginResponse.builder();
@@ -113,6 +114,7 @@ class DtoTest {
         builder.email("email");
         builder.role("ROLE");
         builder.status("STATUS");
+        builder.token("token123");
         assertNotNull(builder.toString());
         UserLoginResponse responseFromBuilder = builder.build();
         
@@ -128,7 +130,8 @@ class DtoTest {
                 .status(UserStatus.ACTIVE)
                 .build();
         
-        UserLoginResponse fromUser = UserLoginResponse.fromUser(user);
+        UserLoginResponse fromUser = UserLoginResponse.fromUser(user, "token123");
         assertEquals(id, fromUser.id());
+        assertEquals("token123", fromUser.token());
     }
 }
