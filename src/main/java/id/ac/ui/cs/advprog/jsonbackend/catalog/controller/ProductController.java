@@ -1,6 +1,6 @@
 package id.ac.ui.cs.advprog.jsonbackend.catalog.controller;
 
-import id.ac.ui.cs.advprog.jsonbackend.catalog.model.Product;
+import id.ac.ui.cs.advprog.jsonbackend.catalog.dto.ProductDTO;
 import id.ac.ui.cs.advprog.jsonbackend.catalog.service.ProductService;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,17 +17,17 @@ public class ProductController {
     }
 
     @GetMapping
-    public List<Product> getAllProducts() {
+    public List<ProductDTO> getAllProducts() {
         return productService.findAllProducts();
     }
 
     @GetMapping("/search")
-    public List<Product> searchProducts(@RequestParam String keyword) {
+    public List<ProductDTO> searchProducts(@RequestParam String keyword) {
         return productService.searchByName(keyword);
     }
 
     @GetMapping("/jastiper/{jastiperId}")
-    public List<Product> getByJastiper(@PathVariable String jastiperId) {
+    public List<ProductDTO> getByJastiper(@PathVariable String jastiperId) {
         return productService.findByJastiper(jastiperId);
     }
 }
