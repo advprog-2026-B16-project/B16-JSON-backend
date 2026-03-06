@@ -84,6 +84,31 @@ class AuthControllerTest {
     }
 
     @Test
+    void testLoginUserWithForwardedFor() {
+        UserLoginRequest request = new UserLoginRequest();
+        User user = User.builder()
+                .id(UUID.randomUUID())
+                .username("test")
+                .role(UserRole.TITIPER)
+                .status(UserStatus.ACTIVE)
+                .build();
+        
+        HttpServletRequest httpServletRequest = mock(HttpServletRequest.class);
+        when(httpServletRequest.getHeader("X-Forwarded-For")).thenReturn("192.168.1.1, 10.0.0.1");
+        
+        when(loginService.login(any())).thenReturn(user);
+        when(jwtService.generateToken(user)).thenReturn("mockToken");
+        when(loginAttemptService.isBlocked("192.168.1.1")).thenReturn(false);
+        
+        BindingResult result = mock(BindingResult.class);
+        when(result.hasErrors()).thenReturn(false);
+
+        ResponseEntity<?> response = loginController.loginUser(request, result, httpServletRequest);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(loginAttemptService).isBlocked("192.168.1.1");
+    }
+
+    @Test
     void testLoginUserBlocked() {
         UserLoginRequest request = new UserLoginRequest();
         HttpServletRequest httpServletRequest = mock(HttpServletRequest.class);
