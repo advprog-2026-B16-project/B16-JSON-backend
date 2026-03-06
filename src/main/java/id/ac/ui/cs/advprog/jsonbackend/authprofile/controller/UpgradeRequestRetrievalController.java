@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @RestController
 @RequestMapping("/api/upgrade-request")
 @RequiredArgsConstructor
@@ -19,6 +21,7 @@ public class UpgradeRequestRetrievalController {
     private final UpgradeRequestRetrievalService upgradeRequestRetrievalService;
 
     @GetMapping("/get-all")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UpgradeRequestResponse>> getAllRequests() {
         List<UpgradeRequestResponse> responses = upgradeRequestRetrievalService.getAllRequests().stream()
                 .map(UpgradeRequestResponse::fromRequest)
