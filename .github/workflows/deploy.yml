@@ -31,11 +31,13 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            docker rmi $(docker images -a -q)
+            docker stop web_server || true
+            docker rm -f web_server || true
             docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
             docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_HUB_REPO_NAME }}:latest
             source .env
             docker run -d \
+            --restart unless-stopped \
             --name=web_server \
             -p 8080:8080 \
             -e ENV1="insert env var anda disini jika perlu" \

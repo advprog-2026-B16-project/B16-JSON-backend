@@ -9,6 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class DummyController {
     @GetMapping("/hello")
     public String sayHello() {
-        return "Hello from Backend!";
+        return "Hello from Backend!v2";
     }
 }
