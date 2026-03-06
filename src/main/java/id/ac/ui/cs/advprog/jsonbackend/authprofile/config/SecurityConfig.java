@@ -1,20 +1,24 @@
 package id.ac.ui.cs.advprog.jsonbackend.authprofile.config;
 
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.web.SecurityFilterChain;
-
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.channel.ChannelProcessingFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -26,9 +30,12 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .requiresChannel(channel -> channel.anyRequest().requiresSecure())
                 .authorizeHttpRequests(auth -> auth
-                        // Permit EVERYTHING for now to unblock testing
-                        .anyRequest().permitAll()
+                        // Permit public endpoints
+                        .requestMatchers("/api/login/**", "/api/register/**", "/api/hello").permitAll()
+                        // Rest require authentication
+                        .anyRequest().authenticated()
                 )
                 // Disable TRACE method
                 .addFilterBefore((request, response, chain) -> {
@@ -37,7 +44,8 @@ public class SecurityConfig {
                         return;
                     }
                     chain.doFilter(request, response);
-                }, org.springframework.security.web.access.channel.ChannelProcessingFilter.class);
+                }, ChannelProcessingFilter.class)
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
