@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
@@ -25,10 +26,13 @@ class RegistrationServiceImplTest {
 
     private RegistrationServiceImpl registrationService;
 
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        registrationService = new RegistrationServiceImpl(userRepository, passwordEncoder);
+        registrationService = new RegistrationServiceImpl(userRepository, passwordEncoder, applicationEventPublisher);
     }
 
     @Test
