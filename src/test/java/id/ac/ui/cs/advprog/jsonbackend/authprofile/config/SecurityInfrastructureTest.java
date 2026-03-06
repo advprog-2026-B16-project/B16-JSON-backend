@@ -40,6 +40,7 @@ class SecurityInfrastructureTest {
         assertEquals("testuser", jwtService.extractUsername(token));
         assertTrue(jwtService.isTokenValid(token, "testuser"));
         assertFalse(jwtService.isTokenValid(token, "wronguser"));
+        assertFalse(jwtService.isTokenExpired(token));
     }
 
     @Test
@@ -48,7 +49,8 @@ class SecurityInfrastructureTest {
         User user = User.builder().username("testuser").role(UserRole.TITIPER).build();
         String token = jwtService.generateToken(user);
         
-        assertThrows(Exception.class, () -> jwtService.isTokenValid(token, "testuser"));
+        assertFalse(jwtService.isTokenValid(token, "testuser"));
+        assertTrue(jwtService.isTokenExpired(token));
     }
 
     @Test
@@ -66,7 +68,7 @@ class SecurityInfrastructureTest {
                 .compact();
         assertFalse(jwtService.isTokenValid(token, "testuser"));
 
-        // Null audience
+        // No audience (will throw NoSuchElementException in next())
         String tokenNoAud = Jwts.builder()
                 .subject("testuser")
                 .expiration(new Date(System.currentTimeMillis() + 10000))
@@ -80,10 +82,18 @@ class SecurityInfrastructureTest {
         String ip = "1.2.3.4";
         assertFalse(loginAttemptService.isBlocked(ip));
         
+        // One failed attempt
+        loginAttemptService.loginFailed(ip);
+        assertFalse(loginAttemptService.isBlocked(ip));
+        
+        // Succeed
+        loginAttemptService.loginSucceeded(ip);
+        assertFalse(loginAttemptService.isBlocked(ip));
+
+        // Block it
         for (int i = 0; i < 5; i++) {
             loginAttemptService.loginFailed(ip);
         }
-        
         assertTrue(loginAttemptService.isBlocked(ip));
         
         // Test block expiration by manually setting time in cache
