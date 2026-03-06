@@ -23,7 +23,7 @@ public class UpgradeRequest {
     private OffsetDateTime createdAt = OffsetDateTime.now();
 
     @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "username", referencedColumnName = "username", nullable = false)
     private User requesterUser;
 
     @Column(name = "full_name", nullable = false)

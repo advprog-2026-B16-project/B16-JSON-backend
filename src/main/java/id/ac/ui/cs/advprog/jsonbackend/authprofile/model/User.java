@@ -2,7 +2,6 @@ package id.ac.ui.cs.advprog.jsonbackend.authprofile.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.util.UUID;
 
 @Entity
 @Table(name = "\"user\"")
@@ -14,10 +13,7 @@ import java.util.UUID;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
-
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String username;
 
     @Column(unique = true, nullable = false)
@@ -39,6 +35,6 @@ public class User {
 
     @Override
     public String toString() {
-        return "User [id=" + id + ", username=" + username + ", email=" + email + ", role=" + role + ", status=" + status + "]";
+        return "User [username=" + username + ", email=" + email + ", role=" + role + ", status=" + status + "]";
     }
 }
