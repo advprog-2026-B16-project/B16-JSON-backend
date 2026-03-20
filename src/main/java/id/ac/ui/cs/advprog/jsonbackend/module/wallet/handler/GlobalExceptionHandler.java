@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.jsonbackend.common.handler;
+package id.ac.ui.cs.advprog.jsonbackend.module.wallet.handler;
 
 import id.ac.ui.cs.advprog.jsonbackend.module.wallet.exception.WalletException;
 import org.springframework.http.HttpStatus;

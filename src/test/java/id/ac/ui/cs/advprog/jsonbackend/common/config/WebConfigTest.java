@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.jsonbackend.module.authprofile.config;
+package id.ac.ui.cs.advprog.jsonbackend.common.config;
 
 import id.ac.ui.cs.advprog.jsonbackend.common.config.WebConfig;
 import org.junit.jupiter.api.BeforeEach;
