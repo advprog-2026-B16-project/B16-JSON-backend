@@ -6,6 +6,7 @@ import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.exception.UserNotFou
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.exception.WrongPasswordException;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.User;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.service.LoginService;
+import id.ac.ui.cs.advprog.jsonbackend.common.config.JwtService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,7 @@ import java.util.Map;
 public class LoginController {
 
     private final LoginService loginService;
+    private final JwtService jwtService;
 
     @GetMapping
     public ResponseEntity<?> getLoginInfo() {
@@ -41,7 +43,8 @@ public class LoginController {
 
         try {
             User user = loginService.login(request);
-            return new ResponseEntity<>(UserLoginResponse.fromUser(user), HttpStatus.OK);
+            String token = jwtService.generateToken(user);
+            return new ResponseEntity<>(UserLoginResponse.fromUser(user, token), HttpStatus.OK);
         } catch (WrongPasswordException | UserNotFoundException e) {
             Map<String, String> error = new HashMap<>();
             error.put("error", e.getMessage());
