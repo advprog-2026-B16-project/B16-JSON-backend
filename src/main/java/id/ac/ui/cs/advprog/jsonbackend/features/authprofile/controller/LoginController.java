@@ -2,8 +2,7 @@ package id.ac.ui.cs.advprog.jsonbackend.features.authprofile.controller;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UserLoginRequest;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UserLoginResponse;
-import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.exception.UserNotFoundException;
-import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.exception.WrongPasswordException;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.exception.BadCredentialsException;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.User;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.service.LoginService;
 import id.ac.ui.cs.advprog.jsonbackend.common.config.JwtService;
@@ -45,7 +44,7 @@ public class LoginController {
             User user = loginService.login(request);
             String token = jwtService.generateToken(user);
             return new ResponseEntity<>(UserLoginResponse.fromUser(user, token), HttpStatus.OK);
-        } catch (WrongPasswordException | UserNotFoundException e) {
+        } catch (BadCredentialsException e) {
             Map<String, String> error = new HashMap<>();
             error.put("error", e.getMessage());
             return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
