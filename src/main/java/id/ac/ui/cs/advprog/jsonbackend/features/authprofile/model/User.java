@@ -3,6 +3,8 @@ package id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "\"user\"")
 @Getter
@@ -13,7 +15,11 @@ import lombok.*;
 public class User {
 
     @Id
-    @Column(nullable = false)
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(nullable = false, updatable = false)
+    private UUID id;
+
+    @Column(unique = true, nullable = false)
     private String username;
 
     @Column(unique = true, nullable = false)
