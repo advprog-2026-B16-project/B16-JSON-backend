@@ -19,7 +19,7 @@ public record UpgradeRequestResponse (
         return UpgradeRequestResponse.builder()
                 .id(request.getId())
                 .createdAt(request.getCreatedAt())
-                .requesterUserId(request.getRequesterUser().getUsername())
+                .requesterUserId(request.getRequesterUser().getId().toString())
                 .requesterUsername(request.getRequesterUser().getUsername())
                 .fullName(request.getFullName())
                 .credential(request.getCredential())

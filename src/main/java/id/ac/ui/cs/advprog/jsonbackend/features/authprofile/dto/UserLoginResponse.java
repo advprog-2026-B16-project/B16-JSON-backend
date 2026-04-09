@@ -2,10 +2,11 @@ package id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.User;
 import lombok.Builder;
+import java.util.UUID;
 
 @Builder
 public record UserLoginResponse (
-    String id,
+    UUID id,
     String username,
     String email,
     String role,
@@ -14,7 +15,7 @@ public record UserLoginResponse (
 ) {
     public static UserLoginResponse fromUser(User user, String token) {
         return UserLoginResponse.builder()
-                .id(user.getUsername())
+                .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .role(user.getRole().name())
