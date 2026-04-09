@@ -63,23 +63,23 @@ class DtoTest {
         UUID id = UUID.randomUUID();
         OffsetDateTime now = OffsetDateTime.now();
         UUID userId = UUID.randomUUID();
-        
+
         // Test Canonical Constructor
-        UpgradeRequestResponse response = new UpgradeRequestResponse(id, now, userId, "user", "Full Name", "Cred", "PENDING");
+        UpgradeRequestResponse response = new UpgradeRequestResponse(id, now, userId.toString(), "user", "Full Name", "Cred", "PENDING");
         assertEquals(id, response.id());
-        
+
         // Test Builder
         UpgradeRequestResponse.UpgradeRequestResponseBuilder builder = UpgradeRequestResponse.builder();
         builder.id(id);
         builder.createdAt(now);
-        builder.requesterUserId(userId);
+        builder.requesterUserId(userId.toString());
         builder.requesterUsername("user");
         builder.fullName("Full Name");
         builder.credential("Cred");
         builder.status("PENDING");
         assertNotNull(builder.toString());
         UpgradeRequestResponse responseFromBuilder = builder.build();
-        
+
         assertEquals(response, responseFromBuilder);
         assertEquals(response.hashCode(), responseFromBuilder.hashCode());
         assertNotNull(response.toString());
@@ -97,7 +97,6 @@ class DtoTest {
         UpgradeRequestResponse fromRequest = UpgradeRequestResponse.fromRequest(ur);
         assertEquals(response, fromRequest);
     }
-
     @Test
     void testUserLoginResponse() {
         UUID id = UUID.randomUUID();

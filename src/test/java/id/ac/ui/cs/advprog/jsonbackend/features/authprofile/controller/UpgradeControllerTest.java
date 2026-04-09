@@ -16,11 +16,14 @@ import org.springframework.validation.FieldError;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 class UpgradeControllerTest {
+
+    private final UUID requestId = UUID.randomUUID();
 
     @Mock
     private UpgradeRequestRetrievalService retrievalService;
@@ -59,11 +62,11 @@ class UpgradeControllerTest {
         UpgradeRequestStatusChangeRequest request = new UpgradeRequestStatusChangeRequest();
         request.setNewStatus("ACCEPTED");
         request.setUsername("testuser");
-        
+
         BindingResult bindingResult = mock(BindingResult.class);
         when(bindingResult.hasErrors()).thenReturn(false);
 
-        ResponseEntity<?> response = statusChangeController.updateStatus("req123", request, bindingResult);
+        ResponseEntity<?> response = statusChangeController.updateStatus(requestId, request, bindingResult);
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
@@ -74,7 +77,7 @@ class UpgradeControllerTest {
         when(bindingResult.hasErrors()).thenReturn(true);
         when(bindingResult.getFieldErrors()).thenReturn(Collections.singletonList(new FieldError("request", "newStatus", "Required")));
 
-        ResponseEntity<?> response = statusChangeController.updateStatus("req123", request, bindingResult);
+        ResponseEntity<?> response = statusChangeController.updateStatus(requestId, request, bindingResult);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
@@ -84,9 +87,8 @@ class UpgradeControllerTest {
         request.setNewStatus("ACCEPTED");
         BindingResult bindingResult = mock(BindingResult.class);
         when(bindingResult.hasErrors()).thenReturn(false);
-        doThrow(new RuntimeException("Error")).when(statusChangeService).updateRequestStatus(anyString(), anyString());
+        doThrow(new RuntimeException("Error")).when(statusChangeService).updateRequestStatus(any(UUID.class), anyString());
 
-        ResponseEntity<?> response = statusChangeController.updateStatus("req123", request, bindingResult);
+        ResponseEntity<?> response = statusChangeController.updateStatus(requestId, request, bindingResult);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-    }
-}
+    }}

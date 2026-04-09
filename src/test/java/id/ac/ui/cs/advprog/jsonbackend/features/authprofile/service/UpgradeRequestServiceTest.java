@@ -7,6 +7,7 @@ import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UpgradeRe
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -25,12 +26,15 @@ class UpgradeRequestServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private UserService userService;
+
+    @InjectMocks
     private UpgradeRequestStatusChangeServiceImpl statusChangeService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        statusChangeService = new UpgradeRequestStatusChangeServiceImpl(upgradeRequestRepository, userRepository);
     }
 
     @Test
@@ -44,7 +48,7 @@ class UpgradeRequestServiceTest {
 
         when(upgradeRequestRepository.findById(requestId)).thenReturn(Optional.of(request));
 
-        statusChangeService.updateRequestStatus(requestId.toString(), "ACCEPTED");
+        statusChangeService.updateRequestStatus(requestId, "ACCEPTED");
 
         assertEquals(UserRole.JASTIPER, user.getRole());
         assertEquals("ACCEPTED", request.getStatus());
@@ -63,7 +67,7 @@ class UpgradeRequestServiceTest {
 
         when(upgradeRequestRepository.findById(requestId)).thenReturn(Optional.of(request));
 
-        statusChangeService.updateRequestStatus(requestId.toString(), "REJECTED");
+        statusChangeService.updateRequestStatus(requestId, "REJECTED");
 
         assertEquals(UserRole.TITIPER, user.getRole());
         assertEquals("REJECTED", request.getStatus());
@@ -76,7 +80,7 @@ class UpgradeRequestServiceTest {
         UUID requestId = UUID.randomUUID();
         when(upgradeRequestRepository.findById(requestId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> statusChangeService.updateRequestStatus(requestId.toString(), "ACCEPTED"));
+        assertThrows(RuntimeException.class, () -> statusChangeService.updateRequestStatus(requestId, "ACCEPTED"));
     }
 
     @Test
