@@ -9,6 +9,7 @@ import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UserRole;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UserStatus;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.service.LoginService;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.service.RegistrationService;
+import id.ac.ui.cs.advprog.jsonbackend.common.config.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -20,7 +21,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 
 import java.util.Collections;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -33,6 +33,9 @@ class AuthControllerTest {
 
     @Mock
     private RegistrationService registrationService;
+
+    @Mock
+    private JwtService jwtService;
 
     @InjectMocks
     private LoginController loginController;
@@ -55,13 +58,13 @@ class AuthControllerTest {
     void testLoginUserSuccess() {
         UserLoginRequest request = new UserLoginRequest();
         User user = User.builder()
-                .id(UUID.randomUUID())
                 .username("test")
                 .role(UserRole.TITIPER)
                 .status(UserStatus.ACTIVE)
                 .build();
         
         when(loginService.login(any())).thenReturn(user);
+        when(jwtService.generateToken(any())).thenReturn("token123");
         BindingResult result = mock(BindingResult.class);
         when(result.hasErrors()).thenReturn(false);
 
