@@ -7,9 +7,18 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.exception.BadCredentialsException;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.WalletException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(WalletException.class)
+    public ResponseEntity<ProblemDetail> handleWalletException(WalletException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problemDetail.setTitle(ex.getErrorCode());
+        problemDetail.setProperty("errorCode", ex.getErrorCode());
+        return ResponseEntity.badRequest().body(problemDetail);
+    }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ProblemDetail> handleBadCredentials(BadCredentialsException ex) {

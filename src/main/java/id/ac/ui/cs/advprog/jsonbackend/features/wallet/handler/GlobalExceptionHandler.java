@@ -1,5 +1,11 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.wallet.handler;
 
+/*
+ * REDUNDANT: This file is marked as redundant and is kept for reference only.
+ * Functional logic has been integrated into the centralized GlobalExceptionHandler
+ * located in id.ac.ui.cs.advprog.jsonbackend.common.config.
+ * 
+
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.WalletException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -50,3 +56,4 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(problemDetail);
     }
 }
+*/
