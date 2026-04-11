@@ -42,7 +42,7 @@ class UpgradeRequestServiceTest {
         UUID requestId = UUID.randomUUID();
         User user = User.builder().role(UserRole.TITIPER).build();
         UpgradeRequest request = UpgradeRequest.builder()
-                .id(requestId)
+                .upgrReqId(requestId)
                 .requesterUser(user)
                 .build();
 
@@ -61,7 +61,7 @@ class UpgradeRequestServiceTest {
         UUID requestId = UUID.randomUUID();
         User user = User.builder().role(UserRole.TITIPER).build();
         UpgradeRequest request = UpgradeRequest.builder()
-                .id(requestId)
+                .upgrReqId(requestId)
                 .requesterUser(user)
                 .build();
 

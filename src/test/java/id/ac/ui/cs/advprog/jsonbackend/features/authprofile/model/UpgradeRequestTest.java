@@ -16,7 +16,7 @@ class UpgradeRequestTest {
         User user = new User();
         UpgradeRequest request = new UpgradeRequest(id, now, user, "Name", "Cred", "PENDING");
         
-        assertEquals(id, request.getId());
+        assertEquals(id, request.getUpgrReqId());
         assertEquals(now, request.getCreatedAt());
         assertEquals(user, request.getRequesterUser());
         assertEquals("Name", request.getFullName());
@@ -31,7 +31,7 @@ class UpgradeRequestTest {
         OffsetDateTime now = OffsetDateTime.now();
         
         UpgradeRequest.UpgradeRequestBuilder builder = UpgradeRequest.builder();
-        builder.id(id);
+        builder.upgrReqId(id);
         builder.createdAt(now);
         builder.requesterUser(user);
         builder.fullName("Name");
@@ -40,7 +40,7 @@ class UpgradeRequestTest {
         assertNotNull(builder.toString());
         UpgradeRequest request = builder.build();
         
-        assertEquals(id, request.getId());
+        assertEquals(id, request.getUpgrReqId());
         assertEquals(user, request.getRequesterUser());
         assertEquals(now, request.getCreatedAt());
     }
@@ -52,14 +52,14 @@ class UpgradeRequestTest {
         OffsetDateTime now = OffsetDateTime.now();
         User user = new User();
         
-        request.setId(id);
+        request.setUpgrReqId(id);
         request.setCreatedAt(now);
         request.setRequesterUser(user);
         request.setFullName("Name");
         request.setCredential("Cred");
         request.setStatus("ACCEPTED");
 
-        assertEquals(id, request.getId());
+        assertEquals(id, request.getUpgrReqId());
         assertEquals(now, request.getCreatedAt());
         assertEquals(user, request.getRequesterUser());
         assertEquals("Name", request.getFullName());

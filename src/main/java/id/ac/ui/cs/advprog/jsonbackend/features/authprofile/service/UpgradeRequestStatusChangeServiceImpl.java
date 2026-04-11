@@ -50,7 +50,7 @@ public class UpgradeRequestStatusChangeServiceImpl implements UpgradeRequestStat
         UpgradeRequest savedRequest = upgradeRequestRepository.save(request);
 
         if (verboseLogging) {
-            log.debug("[DEBUG] UpgradeRequest created: {}", savedRequest.getId());
+            log.debug("[DEBUG] UpgradeRequest created: {}", savedRequest.getUpgrReqId());
         }
 
         return UpgradeRequestResponse.fromRequest(savedRequest);

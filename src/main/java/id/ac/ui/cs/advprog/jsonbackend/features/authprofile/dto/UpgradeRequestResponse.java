@@ -17,7 +17,7 @@ public record UpgradeRequestResponse (
 ) {
     public static UpgradeRequestResponse fromRequest(UpgradeRequest request) {
         return UpgradeRequestResponse.builder()
-                .id(request.getId())
+                .id(request.getUpgrReqId())
                 .createdAt(request.getCreatedAt())
                 .requesterUserId(request.getRequesterUser().getId().toString())
                 .requesterUsername(request.getRequesterUser().getUsername())

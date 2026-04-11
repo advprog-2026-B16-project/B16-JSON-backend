@@ -16,14 +16,15 @@ public class UpgradeRequest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @Column(name = "upgr_req_id")
+    private UUID upgrReqId;
 
     @Column(name = "created_at", updatable = false, nullable = false)
     @Builder.Default
-    private OffsetDateTime createdAt = OffsetDateTime.now();
+    private java.time.OffsetDateTime createdAt = java.time.OffsetDateTime.now();
 
     @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "requester_user", referencedColumnName = "username", nullable = false)
     private User requesterUser;
 
     @Column(name = "full_name", nullable = false)

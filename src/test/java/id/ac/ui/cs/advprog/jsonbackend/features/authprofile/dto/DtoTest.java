@@ -86,7 +86,7 @@ class DtoTest {
 
         User user = User.builder().id(userId).username("user").build();
         UpgradeRequest ur = UpgradeRequest.builder()
-                .id(id)
+                .upgrReqId(id)
                 .createdAt(now)
                 .requesterUser(user)
                 .fullName("Full Name")
