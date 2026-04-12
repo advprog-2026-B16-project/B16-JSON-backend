@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.jsonbackend.features.authprofile.controller;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UserLoginRequest;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UserRegistrationRequest;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.exception.BadCredentialsException;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.exception.UserNotFoundException;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.exception.WrongPasswordException;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.User;
@@ -84,20 +85,9 @@ class AuthControllerTest {
     }
 
     @Test
-    void testLoginUserWrongPassword() {
+    void testLoginUserBadCredentials() {
         UserLoginRequest request = new UserLoginRequest();
-        when(loginService.login(any())).thenThrow(new WrongPasswordException("Wrong password"));
-        BindingResult result = mock(BindingResult.class);
-        when(result.hasErrors()).thenReturn(false);
-
-        ResponseEntity<?> response = loginController.loginUser(request, result);
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-    }
-
-    @Test
-    void testLoginUserNotFound() {
-        UserLoginRequest request = new UserLoginRequest();
-        when(loginService.login(any())).thenThrow(new UserNotFoundException("Not found"));
+        when(loginService.login(any())).thenThrow(new BadCredentialsException("Invalid credentials"));
         BindingResult result = mock(BindingResult.class);
         when(result.hasErrors()).thenReturn(false);
 

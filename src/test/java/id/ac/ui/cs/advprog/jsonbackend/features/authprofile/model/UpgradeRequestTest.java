@@ -46,6 +46,13 @@ class UpgradeRequestTest {
     }
 
     @Test
+    void testDefaultValues() {
+        UpgradeRequest request = UpgradeRequest.builder().build();
+        assertNotNull(request.getCreatedAt());
+        assertEquals("PENDING", request.getStatus());
+    }
+
+    @Test
     void testGettersAndSetters() {
         UpgradeRequest request = new UpgradeRequest();
         UUID id = UUID.randomUUID();

@@ -22,4 +22,16 @@ class ExceptionTest {
         EmailAlreadyExistsException exception = new EmailAlreadyExistsException("Email exists");
         assertEquals("Email exists", exception.getMessage());
     }
+
+    @Test
+    void testUserNotFoundException() {
+        UserNotFoundException exception = new UserNotFoundException("Not found");
+        assertEquals("Not found", exception.getMessage());
+    }
+
+    @Test
+    void testWrongPasswordException() {
+        WrongPasswordException exception = new WrongPasswordException("Wrong password");
+        assertEquals("Wrong password", exception.getMessage());
+    }
 }

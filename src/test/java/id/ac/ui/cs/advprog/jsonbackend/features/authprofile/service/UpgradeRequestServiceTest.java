@@ -40,7 +40,7 @@ class UpgradeRequestServiceTest {
     @Test
     void testUpdateStatusAccepted() {
         UUID requestId = UUID.randomUUID();
-        User user = User.builder().role(UserRole.TITIPER).build();
+        User user = User.builder().username("testuser").role(UserRole.TITIPER).build();
         UpgradeRequest request = UpgradeRequest.builder()
                 .upgrReqId(requestId)
                 .requesterUser(user)
@@ -50,10 +50,49 @@ class UpgradeRequestServiceTest {
 
         statusChangeService.updateRequestStatus(requestId, "ACCEPTED");
 
-        assertEquals(UserRole.JASTIPER, user.getRole());
         assertEquals("ACCEPTED", request.getStatus());
         verify(upgradeRequestRepository).save(request);
-        verify(userRepository).save(user);
+        verify(userService).promoteToJastiper(user);
+    }
+
+    @Test
+    void testSubmitUpgradeRequestSuccess() {
+        User user = new User();
+        user.setId(UUID.randomUUID());
+        user.setUsername("testuser");
+        id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UpgradeRequestSubmissionRequest dto = 
+            new id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UpgradeRequestSubmissionRequest();
+        dto.setFullName("Test User");
+        dto.setCredential("Credential");
+
+        UpgradeRequest savedRequest = UpgradeRequest.builder()
+                .upgrReqId(UUID.randomUUID())
+                .requesterUser(user)
+                .fullName(dto.getFullName())
+                .credential(dto.getCredential())
+                .status("PENDING")
+                .createdAt(java.time.OffsetDateTime.now())
+                .build();
+
+        when(upgradeRequestRepository.findByRequesterUser(user)).thenReturn(Optional.empty());
+        when(upgradeRequestRepository.save(any())).thenReturn(savedRequest);
+
+        statusChangeService.submitUpgradeRequest(user, dto);
+
+        verify(upgradeRequestRepository).save(any());
+    }
+
+    @Test
+    void testSubmitUpgradeRequestAlreadyPending() {
+        User user = new User();
+        user.setUsername("testuser");
+        id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UpgradeRequestSubmissionRequest dto = 
+            new id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UpgradeRequestSubmissionRequest();
+
+        UpgradeRequest existing = UpgradeRequest.builder().status("PENDING").build();
+        when(upgradeRequestRepository.findByRequesterUser(user)).thenReturn(Optional.of(existing));
+
+        assertThrows(RuntimeException.class, () -> statusChangeService.submitUpgradeRequest(user, dto));
     }
 
     @Test
@@ -81,6 +120,68 @@ class UpgradeRequestServiceTest {
         when(upgradeRequestRepository.findById(requestId)).thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class, () -> statusChangeService.updateRequestStatus(requestId, "ACCEPTED"));
+    }
+
+    @Test
+    void testVerboseLogging() throws Exception {
+        // Use reflection to set private field
+        java.lang.reflect.Field field = UpgradeRequestStatusChangeServiceImpl.class.getDeclaredField("verboseLogging");
+        field.setAccessible(true);
+        field.set(statusChangeService, true);
+
+        UUID requestId = UUID.randomUUID();
+        User user = User.builder().id(UUID.randomUUID()).username("testuser").role(UserRole.TITIPER).build();
+        UpgradeRequest request = UpgradeRequest.builder()
+                .upgrReqId(requestId)
+                .requesterUser(user)
+                .fullName("Full Name")
+                .credential("Cred")
+                .status("PENDING")
+                .createdAt(java.time.OffsetDateTime.now())
+                .build();
+
+        when(upgradeRequestRepository.findById(requestId)).thenReturn(Optional.of(request));
+
+        statusChangeService.updateRequestStatus(requestId, "ACCEPTED");
+
+        assertEquals("ACCEPTED", request.getStatus());
+        
+        // Test submit with verbose logging
+        id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UpgradeRequestSubmissionRequest dto = 
+            new id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UpgradeRequestSubmissionRequest();
+        dto.setFullName("Test User");
+        dto.setCredential("Credential");
+        
+        when(upgradeRequestRepository.findByRequesterUser(user)).thenReturn(Optional.empty());
+        when(upgradeRequestRepository.save(any())).thenReturn(request);
+        
+        statusChangeService.submitUpgradeRequest(user, dto);
+        
+        verify(upgradeRequestRepository, atLeastOnce()).save(any());
+    }
+
+    @Test
+    void testSubmitUpgradeRequestAcceptedExists() {
+        User user = User.builder().id(UUID.randomUUID()).username("testuser").build();
+        id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UpgradeRequestSubmissionRequest dto = 
+            new id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UpgradeRequestSubmissionRequest();
+        dto.setFullName("Full Name");
+        dto.setCredential("Cred");
+
+        // If an ACCEPTED request exists, it should ALLOW a new one (e.g. if they were demoted later)
+        UpgradeRequest existing = UpgradeRequest.builder()
+                .upgrReqId(UUID.randomUUID())
+                .requesterUser(user)
+                .status("ACCEPTED")
+                .fullName("Old")
+                .credential("Old")
+                .createdAt(java.time.OffsetDateTime.now())
+                .build();
+        when(upgradeRequestRepository.findByRequesterUser(user)).thenReturn(Optional.of(existing));
+        when(upgradeRequestRepository.save(any())).thenReturn(existing);
+
+        statusChangeService.submitUpgradeRequest(user, dto);
+        verify(upgradeRequestRepository).save(any());
     }
 
     @Test

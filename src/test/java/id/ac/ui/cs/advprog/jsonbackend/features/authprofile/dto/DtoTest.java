@@ -97,6 +97,68 @@ class DtoTest {
         UpgradeRequestResponse fromRequest = UpgradeRequestResponse.fromRequest(ur);
         assertEquals(response, fromRequest);
     }
+
+    @Test
+    void testUpgradeRequestSubmissionRequestExhaustive() {
+        // Test Builder explicitly (inner class coverage)
+        UpgradeRequestSubmissionRequest.UpgradeRequestSubmissionRequestBuilder builder = UpgradeRequestSubmissionRequest.builder();
+        builder.fullName("Name");
+        builder.credential("Cred");
+        assertNotNull(builder.toString());
+        UpgradeRequestSubmissionRequest a = builder.build();
+        
+        UpgradeRequestSubmissionRequest b = new UpgradeRequestSubmissionRequest("Name", "Cred");
+        UpgradeRequestSubmissionRequest c = new UpgradeRequestSubmissionRequest("Diff", "Cred");
+        UpgradeRequestSubmissionRequest d = new UpgradeRequestSubmissionRequest("Name", "Diff");
+        UpgradeRequestSubmissionRequest e = new UpgradeRequestSubmissionRequest(null, "Cred");
+        UpgradeRequestSubmissionRequest f = new UpgradeRequestSubmissionRequest("Name", null);
+        UpgradeRequestSubmissionRequest g = new UpgradeRequestSubmissionRequest(null, null);
+
+        // equals
+        assertTrue(a.equals(a)); // o == this
+        assertFalse(a.equals(null)); // o == null
+        assertFalse(a.equals("string")); // instanceof
+        assertTrue(a.equals(b)); // same values
+        assertFalse(a.equals(c)); // first field diff
+        assertFalse(a.equals(d)); // second field diff
+        assertFalse(a.equals(e)); // first field this null
+        assertFalse(e.equals(a)); // first field other null
+        assertFalse(a.equals(f)); // second field this null
+        assertFalse(f.equals(a)); // second field other null
+        assertTrue(e.equals(new UpgradeRequestSubmissionRequest(null, "Cred"))); // both nulls same
+        assertTrue(g.equals(new UpgradeRequestSubmissionRequest(null, null))); // all nulls same
+        
+        // Exhaustive field comparisons for 100% Lombok branch coverage
+        assertNotEquals(new UpgradeRequestSubmissionRequest(null, "B"), new UpgradeRequestSubmissionRequest("A", "B"));
+        assertNotEquals(new UpgradeRequestSubmissionRequest("A", "B"), new UpgradeRequestSubmissionRequest(null, "B"));
+        assertNotEquals(new UpgradeRequestSubmissionRequest("A", null), new UpgradeRequestSubmissionRequest("A", "B"));
+        assertNotEquals(new UpgradeRequestSubmissionRequest("A", "B"), new UpgradeRequestSubmissionRequest("A", null));
+        
+        // Final permutation: Field 1 same null, Field 2 diff
+        assertNotEquals(new UpgradeRequestSubmissionRequest(null, "B"), new UpgradeRequestSubmissionRequest(null, "C"));
+        // Final permutation: Field 1 diff, Field 2 same null
+        assertNotEquals(new UpgradeRequestSubmissionRequest("A", null), new UpgradeRequestSubmissionRequest("B", null));
+        
+        // canEqual check with anonymous subclass
+        UpgradeRequestSubmissionRequest subclass = new UpgradeRequestSubmissionRequest("Name", "Cred") {
+            @Override
+            public boolean canEqual(Object o) { return false; }
+        };
+        assertFalse(a.equals(subclass));
+        assertTrue(a.canEqual(b));
+        assertFalse(a.canEqual("string"));
+        
+        // hashCode
+        assertEquals(a.hashCode(), b.hashCode());
+        assertNotEquals(a.hashCode(), c.hashCode());
+        assertNotEquals(a.hashCode(), e.hashCode());
+        assertNotEquals(a.hashCode(), f.hashCode());
+        assertEquals(g.hashCode(), new UpgradeRequestSubmissionRequest(null, null).hashCode());
+        
+        // toString
+        assertNotNull(a.toString());
+    }
+
     @Test
     void testUserLoginResponse() {
         UUID id = UUID.randomUUID();

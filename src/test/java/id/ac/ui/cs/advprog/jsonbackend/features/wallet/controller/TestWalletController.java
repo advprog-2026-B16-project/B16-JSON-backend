@@ -32,6 +32,15 @@ class TestWalletController {
     @MockBean
     private WalletService walletService;
 
+    @MockBean
+    private id.ac.ui.cs.advprog.jsonbackend.common.config.JwtService jwtService;
+
+    @MockBean
+    private id.ac.ui.cs.advprog.jsonbackend.common.config.JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @MockBean
+    private id.ac.ui.cs.advprog.jsonbackend.common.config.LoginAttemptService loginAttemptService;
+
     @Autowired
     private ObjectMapper objectMapper;
 
