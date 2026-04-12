@@ -14,8 +14,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class JwtService {
+
+    @Value("${app.debug.verbose:false}")
+    private boolean verboseLogging;
 
     @Value("${application.security.jwt.secret-key:very-long-secret-key-that-is-at-least-32-chars}")
     private String secretKey;
@@ -58,9 +64,24 @@ public class JwtService {
         try {
             final Claims claims = extractAllClaims(token);
             final String extractedUsername = claims.getSubject();
-            final String audience = claims.getAudience().iterator().next();
-            return (extractedUsername.equals(username)) && "json-backend-client".equals(audience);
+            
+            boolean usernameMatches = extractedUsername.equals(username);
+            
+            String audience = null;
+            if (claims.getAudience() != null && !claims.getAudience().isEmpty()) {
+                audience = claims.getAudience().iterator().next();
+            }
+            
+            boolean audienceMatches = "json-backend-client".equals(audience);
+            
+            if (verboseLogging) {
+                if (!usernameMatches) log.warn("[DEBUG] Token username mismatch: expected {}, got {}", username, extractedUsername);
+                if (!audienceMatches) log.warn("[DEBUG] Token audience mismatch: expected json-backend-client, got {}", audience);
+            }
+            
+            return usernameMatches && audienceMatches;
         } catch (Exception e) {
+            if (verboseLogging) log.error("[DEBUG] Error validating token: ", e);
             return false;
         }
     }
