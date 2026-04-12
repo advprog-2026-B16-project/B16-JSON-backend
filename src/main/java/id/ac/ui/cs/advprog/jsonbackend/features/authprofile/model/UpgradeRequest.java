@@ -6,7 +6,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "upgrade_requests")
+@Table(name = "upgrade_request")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -30,10 +30,10 @@ public class UpgradeRequest {
     @Column(name = "full_name", nullable = false)
     private String fullName;
 
-    @Column(nullable = false)
+    @Column(name = "credential", nullable = false)
     private String credential;
 
-    @Column(nullable = false)
+    @Column(name = "status", nullable = false)
     @Builder.Default
     private String status = "PENDING";
 }
