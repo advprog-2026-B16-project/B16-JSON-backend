@@ -4,6 +4,8 @@ package id.ac.ui.cs.advprog.jsonbackend.order.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.UUID;
+
 /**
  * CreateOrderRequest adalah DTO (Data Transfer Object) untuk menerima data dari client saat checkout.
  *
@@ -33,8 +35,8 @@ import lombok.Setter;
 @Setter
 public class CreateOrderRequest {
     private String productId;
-    private String titipersId;
-    private String jastiperId;
+    private UUID titipersId;
+    private UUID jastiperId;
     private int quantity;
     private String shippingAddress;
 }

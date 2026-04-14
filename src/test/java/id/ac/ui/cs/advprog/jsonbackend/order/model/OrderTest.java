@@ -4,19 +4,23 @@ import id.ac.ui.cs.advprog.jsonbackend.order.enums.OrderStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class OrderTest {
 
     private Order order;
 
+
     @BeforeEach
     void setUp() {
+        UUID orderId = UUID.randomUUID();
         order = new Order(
-                "order-001",
+                orderId,
                 "product-001",
-                "titipers-001",
-                "jastiper-001",
+                UUID.randomUUID(),
+                UUID.randomUUID(),
                 2,
                 "Jl. Margonda No.1"
         );
@@ -84,6 +88,9 @@ class OrderTest {
 
     @Test
     void testSubmitRatingSucceedsWhenCompleted() {
+        order.updateStatus(OrderStatus.PAID);
+        order.updateStatus(OrderStatus.PURCHASED);
+        order.updateStatus(OrderStatus.SHIPPED);
         order.updateStatus(OrderStatus.COMPLETED);
         order.submitRating(5, 4);
 
@@ -107,7 +114,8 @@ class OrderTest {
 
     @Test
     void testSetterChangesOrderId() {
-        order.setOrderId("order-999");
+        UUID newOrderId = UUID.randomUUID();
+        order.setOrderId(newOrderId);
         assertEquals("order-999", order.getOrderId());
     }
 

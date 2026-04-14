@@ -4,7 +4,9 @@ import id.ac.ui.cs.advprog.jsonbackend.order.enums.OrderStatus;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  * OrderResponse adalah DTO untuk mengirim data pesanan dari server ke client.
@@ -40,17 +42,19 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 public class OrderResponse {
-    private String orderId;
+    private UUID orderId;
     private String productId;
-    private String titipersId;
-    private String jastiperId;
     private int quantity;
+    private BigDecimal totalAmount;
     private String shippingAddress;
     private OrderStatus orderStatus;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private UUID titipersId;
+    private UUID jastiperId;
     private Integer jastiperRating;
     private Integer productRating;
     private String cancellationReason;
 }
+
 

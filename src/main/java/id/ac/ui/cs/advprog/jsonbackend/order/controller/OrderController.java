@@ -1,97 +1,80 @@
 package id.ac.ui.cs.advprog.jsonbackend.order.controller;
 
+import id.ac.ui.cs.advprog.jsonbackend.order.dto.CreateOrderRequest;
 import id.ac.ui.cs.advprog.jsonbackend.order.dto.OrderResponse;
+import id.ac.ui.cs.advprog.jsonbackend.order.dto.RatingRequest;
 import id.ac.ui.cs.advprog.jsonbackend.order.enums.OrderStatus;
+import id.ac.ui.cs.advprog.jsonbackend.order.model.Order;
+import id.ac.ui.cs.advprog.jsonbackend.order.service.OrderService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/orders")
-@CrossOrigin(origins = "http://localhost:3000", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.PATCH, RequestMethod.DELETE, RequestMethod.OPTIONS})
 public class OrderController {
 
-    @GetMapping
-    public List<OrderResponse> getOrders() {
-        return List.of(
-                OrderResponse.builder()
-                        .orderId("order-001")
-                        .productId("prod-abc-123")
-                        .titipersId("user-titipers-01")
-                        .jastiperId("user-jastipers-01")
-                        .quantity(2)
-                        .shippingAddress("Jl. Margonda Raya No. 100, Depok")
-                        .orderStatus(OrderStatus.PENDING)
-                        .createdAt(LocalDateTime.of(2025, 6, 1, 10, 0))
-                        .updatedAt(null)
-                        .jastiperRating(null)
-                        .productRating(null)
-                        .cancellationReason(null)
-                        .build(),
+    private final OrderService orderService;
 
-                OrderResponse.builder()
-                        .orderId("order-002")
-                        .productId("prod-xyz-456")
-                        .titipersId("user-titipers-02")
-                        .jastiperId("user-jastipers-01")
-                        .quantity(1)
-                        .shippingAddress("Jl. Kenanga No. 5, Jakarta")
-                        .orderStatus(OrderStatus.SHIPPED)
-                        .createdAt(LocalDateTime.of(2025, 5, 28, 14, 30))
-                        .updatedAt(LocalDateTime.of(2025, 5, 29, 9, 0))
-                        .jastiperRating(null)
-                        .productRating(null)
-                        .cancellationReason(null)
-                        .build(),
-
-                OrderResponse.builder()
-                        .orderId("order-003")
-                        .productId("prod-mno-789")
-                        .titipersId("user-titipers-01")
-                        .jastiperId("user-jastipers-02")
-                        .quantity(3)
-                        .shippingAddress("Jl. Sudirman No. 88, Jakarta")
-                        .orderStatus(OrderStatus.COMPLETED)
-                        .createdAt(LocalDateTime.of(2025, 5, 20, 8, 0))
-                        .updatedAt(LocalDateTime.of(2025, 5, 25, 16, 0))
-                        .jastiperRating(4)
-                        .productRating(5)
-                        .cancellationReason(null)
-                        .build(),
-
-                OrderResponse.builder()
-                        .orderId("order-004")
-                        .productId("prod-pqr-321")
-                        .titipersId("user-titipers-03")
-                        .jastiperId("user-jastipers-02")
-                        .quantity(1)
-                        .shippingAddress("Jl. Veteran No. 12, Bogor")
-                        .orderStatus(OrderStatus.CANCELLED)
-                        .createdAt(LocalDateTime.of(2025, 6, 2, 11, 0))
-                        .updatedAt(LocalDateTime.of(2025, 6, 2, 12, 0))
-                        .jastiperRating(null)
-                        .productRating(null)
-                        .cancellationReason("Item out of stock")
-                        .build()
-        );
+    public OrderController(OrderService orderService) {
+        this.orderService = orderService;
     }
 
-    @GetMapping("/{id}")
-    public OrderResponse getOrderById(@PathVariable String id) {
-        return OrderResponse.builder()
-                .orderId(id)
-                .productId("prod-abc-123")
-                .titipersId("user-titipers-01")
-                .jastiperId("user-jastipers-01")
-                .quantity(2)
-                .shippingAddress("Jl. Margonda Raya No. 100, Depok")
-                .orderStatus(OrderStatus.PENDING)
-                .createdAt(LocalDateTime.of(2025, 6, 1, 10, 0))
-                .updatedAt(null)
-                .jastiperRating(null)
-                .productRating(null)
-                .cancellationReason(null)
-                .build();
+    @PostMapping("/checkout")
+    public ResponseEntity<OrderResponse> checkout(@RequestBody CreateOrderRequest request){
+        return ResponseEntity.ok(orderService.checkout(request));
+    }
+
+    @PatchMapping("/{orderId}/cancel")
+    public ResponseEntity<OrderResponse> cancelOrder(@PathVariable String orderId, @RequestParam Map<String, String> payload) throws Throwable {
+        String reason = payload.getOrDefault("cancellationReason", "No reason provided");
+        return ResponseEntity.ok(orderService.cancelOrder(orderId, reason));
+    }
+
+    @PostMapping("/{orderId}/rating")
+    public ResponseEntity<OrderResponse> submitRating(
+            @PathVariable UUID orderId,
+            @RequestBody RatingRequest request) {
+
+        return ResponseEntity.ok(orderService.submitRating(orderId, request));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Order>> getAllOrders() {
+        return ResponseEntity.ok(orderService.getAllOrder());
+    }
+
+    @GetMapping("/{orderId}")
+    public ResponseEntity<Order> getOrderById(@PathVariable UUID orderId) {
+        return ResponseEntity.ok(orderService.getOrderById(orderId));
+    }
+
+    @GetMapping("/titipers/{titipersId}")
+    public ResponseEntity<List<Order>> getOrdersByTitipersId(@PathVariable String titipersId) {
+        return ResponseEntity.ok(orderService.getOrderByTitipersId(titipersId));
+    }
+
+    @GetMapping("/jastiper/{jastiperId}")
+    public ResponseEntity<List<Order>> getOrdersByJastiperId(@PathVariable String jastiperId) {
+        return ResponseEntity.ok(orderService.getOrderByJastiperId(jastiperId));
+    }
+
+    @GetMapping("/status/{status}")
+    public ResponseEntity<List<Order>> getOrdersByStatus(@PathVariable OrderStatus status) {
+        return ResponseEntity.ok(orderService.getOrderByStatus(status));
+    }
+
+    @GetMapping("/{orderId}/status/{status}")
+    public ResponseEntity<Order> getOrderByOrderIdAndStatus(
+            @PathVariable UUID orderId,
+            @PathVariable OrderStatus status) {
+
+        return orderService.getOrderByOrderIdAndStatus(orderId, status)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }
