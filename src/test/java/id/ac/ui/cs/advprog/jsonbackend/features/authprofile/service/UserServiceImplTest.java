@@ -69,9 +69,24 @@ class UserServiceImplTest {
     }
 
     @Test
+    void testGetUserById() {
+        java.util.UUID id = java.util.UUID.randomUUID();
+        when(userRepository.findById(id)).thenReturn(Optional.of(user1));
+        Optional<User> result = userService.getUserById(id);
+        assertEquals(user1, result.get());
+    }
+
+    @Test
     void testSaveUser() {
         when(userRepository.save(user1)).thenReturn(user1);
         User result = userService.saveUser(user1);
         assertEquals(user1, result);
+    }
+
+    @Test
+    void testPromoteToJastiper() {
+        userService.promoteToJastiper(user1);
+        assertEquals(UserRole.JASTIPER, user1.getRole());
+        verify(userRepository).save(user1);
     }
 }

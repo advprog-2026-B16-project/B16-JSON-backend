@@ -9,5 +9,7 @@ public interface UserService {
     List<User> getAllUsers();
     Optional<User> getUserByUsername(String username);
     Optional<User> getUserByEmail(String email);
+    Optional<User> getUserById(java.util.UUID id);
     User saveUser(User user);
+    void promoteToJastiper(User user);
 }

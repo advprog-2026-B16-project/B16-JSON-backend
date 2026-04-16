@@ -8,7 +8,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class JsonBackendApplicationTests {
 
     @Autowired
@@ -21,6 +21,6 @@ class JsonBackendApplicationTests {
 
     @Test
     void testMain() {
-        JsonBackendApplication.main(new String[] {});
+        JsonBackendApplication.main(new String[] {"--server.port=0"});
     }
 }

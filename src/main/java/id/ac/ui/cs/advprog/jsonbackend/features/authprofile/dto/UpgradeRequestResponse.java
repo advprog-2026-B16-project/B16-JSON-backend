@@ -9,7 +9,7 @@ import java.util.UUID;
 public record UpgradeRequestResponse (
     UUID id,
     OffsetDateTime createdAt,
-    UUID requesterUserId,
+    String requesterUserId,
     String requesterUsername,
     String fullName,
     String credential,
@@ -17,9 +17,9 @@ public record UpgradeRequestResponse (
 ) {
     public static UpgradeRequestResponse fromRequest(UpgradeRequest request) {
         return UpgradeRequestResponse.builder()
-                .id(request.getId())
+                .id(request.getUpgrReqId())
                 .createdAt(request.getCreatedAt())
-                .requesterUserId(request.getRequesterUser().getId())
+                .requesterUserId(request.getRequesterUser().getId().toString())
                 .requesterUsername(request.getRequesterUser().getUsername())
                 .fullName(request.getFullName())
                 .credential(request.getCredential())

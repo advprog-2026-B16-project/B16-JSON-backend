@@ -36,19 +36,48 @@ class RegistrationServiceImplTest {
     }
 
     @Test
-    void testRegisterSuccess() {
+    void testRegisterSuccessWithId() {
         UserRegistrationRequest request = new UserRegistrationRequest();
         request.setUsername("newuser");
         request.setEmail("new@example.com");
         request.setPassword("password123");
 
+        java.util.UUID userId = java.util.UUID.randomUUID();
         when(userRepository.findByUsername("newuser")).thenReturn(Optional.empty());
         when(userRepository.findByEmail("new@example.com")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("password123")).thenReturn("encoded_password");
+        
+        // Mock save to return user with ID
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+            User u = invocation.getArgument(0);
+            u.setId(userId);
+            return u;
+        });
 
         registrationService.register(request);
 
         verify(userRepository, times(1)).save(any(User.class));
+        verify(applicationEventPublisher).publishEvent(any(id.ac.ui.cs.advprog.jsonbackend.features.authprofile.event.UserCreatedEvent.class));
+    }
+
+    @Test
+    void testRegisterSuccessNullId() {
+        UserRegistrationRequest request = new UserRegistrationRequest();
+        request.setUsername("newuser2");
+        request.setEmail("new2@example.com");
+        request.setPassword("password123");
+
+        when(userRepository.findByUsername("newuser2")).thenReturn(Optional.empty());
+        when(userRepository.findByEmail("new2@example.com")).thenReturn(Optional.empty());
+        when(passwordEncoder.encode("password123")).thenReturn("encoded_password");
+        
+        // save returns user without ID
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        registrationService.register(request);
+
+        verify(userRepository, times(1)).save(any(User.class));
+        verify(applicationEventPublisher).publishEvent(any(id.ac.ui.cs.advprog.jsonbackend.features.authprofile.event.UserCreatedEvent.class));
     }
 
     @Test
