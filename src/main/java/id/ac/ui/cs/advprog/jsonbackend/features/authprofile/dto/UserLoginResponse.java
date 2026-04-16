@@ -10,15 +10,17 @@ public record UserLoginResponse (
     String username,
     String email,
     String role,
-    String status
+    String status,
+    String token
 ) {
-    public static UserLoginResponse fromUser(User user) {
+    public static UserLoginResponse fromUser(User user, String token) {
         return UserLoginResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .role(user.getRole().name())
                 .status(user.getStatus().name())
+                .token(token)
                 .build();
     }
 }

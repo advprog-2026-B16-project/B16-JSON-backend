@@ -30,7 +30,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Optional<User> getUserById(java.util.UUID id) {
+        return userRepo.findById(id);
+    }
+
+    @Override
     public User saveUser(User user) {
         return userRepo.save(user);
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public void promoteToJastiper(User user) {
+        user.setRole(id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UserRole.JASTIPER);
+        userRepo.save(user);
     }
 }

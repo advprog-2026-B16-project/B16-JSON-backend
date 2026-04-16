@@ -63,30 +63,30 @@ class DtoTest {
         UUID id = UUID.randomUUID();
         OffsetDateTime now = OffsetDateTime.now();
         UUID userId = UUID.randomUUID();
-        
+
         // Test Canonical Constructor
-        UpgradeRequestResponse response = new UpgradeRequestResponse(id, now, userId, "user", "Full Name", "Cred", "PENDING");
+        UpgradeRequestResponse response = new UpgradeRequestResponse(id, now, userId.toString(), "user", "Full Name", "Cred", "PENDING");
         assertEquals(id, response.id());
-        
+
         // Test Builder
         UpgradeRequestResponse.UpgradeRequestResponseBuilder builder = UpgradeRequestResponse.builder();
         builder.id(id);
         builder.createdAt(now);
-        builder.requesterUserId(userId);
+        builder.requesterUserId(userId.toString());
         builder.requesterUsername("user");
         builder.fullName("Full Name");
         builder.credential("Cred");
         builder.status("PENDING");
         assertNotNull(builder.toString());
         UpgradeRequestResponse responseFromBuilder = builder.build();
-        
+
         assertEquals(response, responseFromBuilder);
         assertEquals(response.hashCode(), responseFromBuilder.hashCode());
         assertNotNull(response.toString());
 
         User user = User.builder().id(userId).username("user").build();
         UpgradeRequest ur = UpgradeRequest.builder()
-                .id(id)
+                .upgrReqId(id)
                 .createdAt(now)
                 .requesterUser(user)
                 .fullName("Full Name")
@@ -99,12 +99,74 @@ class DtoTest {
     }
 
     @Test
+    void testUpgradeRequestSubmissionRequestExhaustive() {
+        // Test Builder explicitly (inner class coverage)
+        UpgradeRequestSubmissionRequest.UpgradeRequestSubmissionRequestBuilder builder = UpgradeRequestSubmissionRequest.builder();
+        builder.fullName("Name");
+        builder.credential("Cred");
+        assertNotNull(builder.toString());
+        UpgradeRequestSubmissionRequest a = builder.build();
+        
+        UpgradeRequestSubmissionRequest b = new UpgradeRequestSubmissionRequest("Name", "Cred");
+        UpgradeRequestSubmissionRequest c = new UpgradeRequestSubmissionRequest("Diff", "Cred");
+        UpgradeRequestSubmissionRequest d = new UpgradeRequestSubmissionRequest("Name", "Diff");
+        UpgradeRequestSubmissionRequest e = new UpgradeRequestSubmissionRequest(null, "Cred");
+        UpgradeRequestSubmissionRequest f = new UpgradeRequestSubmissionRequest("Name", null);
+        UpgradeRequestSubmissionRequest g = new UpgradeRequestSubmissionRequest(null, null);
+
+        // equals
+        assertTrue(a.equals(a)); // o == this
+        assertFalse(a.equals(null)); // o == null
+        assertFalse(a.equals("string")); // instanceof
+        assertTrue(a.equals(b)); // same values
+        assertFalse(a.equals(c)); // first field diff
+        assertFalse(a.equals(d)); // second field diff
+        assertFalse(a.equals(e)); // first field this null
+        assertFalse(e.equals(a)); // first field other null
+        assertFalse(a.equals(f)); // second field this null
+        assertFalse(f.equals(a)); // second field other null
+        assertTrue(e.equals(new UpgradeRequestSubmissionRequest(null, "Cred"))); // both nulls same
+        assertTrue(g.equals(new UpgradeRequestSubmissionRequest(null, null))); // all nulls same
+        
+        // Exhaustive field comparisons for 100% Lombok branch coverage
+        assertNotEquals(new UpgradeRequestSubmissionRequest(null, "B"), new UpgradeRequestSubmissionRequest("A", "B"));
+        assertNotEquals(new UpgradeRequestSubmissionRequest("A", "B"), new UpgradeRequestSubmissionRequest(null, "B"));
+        assertNotEquals(new UpgradeRequestSubmissionRequest("A", null), new UpgradeRequestSubmissionRequest("A", "B"));
+        assertNotEquals(new UpgradeRequestSubmissionRequest("A", "B"), new UpgradeRequestSubmissionRequest("A", null));
+        
+        // Final permutation: Field 1 same null, Field 2 diff
+        assertNotEquals(new UpgradeRequestSubmissionRequest(null, "B"), new UpgradeRequestSubmissionRequest(null, "C"));
+        // Final permutation: Field 1 diff, Field 2 same null
+        assertNotEquals(new UpgradeRequestSubmissionRequest("A", null), new UpgradeRequestSubmissionRequest("B", null));
+        
+        // canEqual check with anonymous subclass
+        UpgradeRequestSubmissionRequest subclass = new UpgradeRequestSubmissionRequest("Name", "Cred") {
+            @Override
+            public boolean canEqual(Object o) { return false; }
+        };
+        assertFalse(a.equals(subclass));
+        assertTrue(a.canEqual(b));
+        assertFalse(a.canEqual("string"));
+        
+        // hashCode
+        assertEquals(a.hashCode(), b.hashCode());
+        assertNotEquals(a.hashCode(), c.hashCode());
+        assertNotEquals(a.hashCode(), e.hashCode());
+        assertNotEquals(a.hashCode(), f.hashCode());
+        assertEquals(g.hashCode(), new UpgradeRequestSubmissionRequest(null, null).hashCode());
+        
+        // toString
+        assertNotNull(a.toString());
+    }
+
+    @Test
     void testUserLoginResponse() {
         UUID id = UUID.randomUUID();
         
         // Test Canonical Constructor
-        UserLoginResponse response = new UserLoginResponse(id, "user", "email", "ROLE", "STATUS");
+        UserLoginResponse response = new UserLoginResponse(id, "user", "email", "ROLE", "STATUS", "token123");
         assertEquals(id, response.id());
+        assertEquals("token123", response.token());
         
         // Test Builder
         UserLoginResponse.UserLoginResponseBuilder builder = UserLoginResponse.builder();
@@ -113,6 +175,7 @@ class DtoTest {
         builder.email("email");
         builder.role("ROLE");
         builder.status("STATUS");
+        builder.token("token123");
         assertNotNull(builder.toString());
         UserLoginResponse responseFromBuilder = builder.build();
         
@@ -128,7 +191,8 @@ class DtoTest {
                 .status(UserStatus.ACTIVE)
                 .build();
         
-        UserLoginResponse fromUser = UserLoginResponse.fromUser(user);
+        UserLoginResponse fromUser = UserLoginResponse.fromUser(user, "token123");
         assertEquals(id, fromUser.id());
+        assertEquals("token123", fromUser.token());
     }
 }
