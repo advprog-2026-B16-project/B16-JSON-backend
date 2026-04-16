@@ -14,10 +14,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(WalletException.class)
     public ResponseEntity<ProblemDetail> handleWalletException(WalletException ex) {
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(ex.getHttpStatus(), ex.getMessage());
         problemDetail.setTitle(ex.getErrorCode());
         problemDetail.setProperty("errorCode", ex.getErrorCode());
-        return ResponseEntity.badRequest().body(problemDetail);
+        return ResponseEntity.status(ex.getHttpStatus()).body(problemDetail);
     }
 
     @ExceptionHandler(BadCredentialsException.class)
@@ -44,4 +44,6 @@ public class GlobalExceptionHandler {
         problemDetail.setProperty("errorCode", "GEN_001");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problemDetail);
     }
+
+
 }

@@ -20,8 +20,8 @@ public class WalletServiceImpl implements WalletService {
 
     @Override
     public Wallet createWallet(String userId) {
-        Wallet wallet = new Wallet(userId);
-        return walletRepository.save(wallet);
+        return walletRepository.findByUserId(userId)
+                .orElseGet(() -> walletRepository.save(new Wallet(userId)));
     }
 
     @Override

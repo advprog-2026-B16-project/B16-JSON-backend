@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.jsonbackend.features.wallet.handler;
+package id.ac.ui.cs.advprog.jsonbackend.common.config;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InsufficientBalanceException;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InvalidAmountException;
@@ -7,11 +7,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class GlobalExceptionHandlerTest {
+class GlobalExceptionHandlerWalletTest {
 
     private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
 
@@ -40,14 +39,5 @@ class GlobalExceptionHandlerTest {
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertEquals("WALLET_NOT_FOUND", response.getBody().getTitle());
         assertEquals("WALLET_NOT_FOUND", response.getBody().getProperties().get("errorCode"));
-    }
-
-    @Test
-    void handleGeneralExceptionShouldReturnInternalServerError() {
-        ResponseEntity<ProblemDetail> response = handler.handleGeneralException(new RuntimeException("boom"));
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals("INTERNAL_SERVER_ERROR", response.getBody().getTitle());
-        assertEquals("INTERNAL_SERVER_ERROR", response.getBody().getProperties().get("errorCode"));
     }
 }

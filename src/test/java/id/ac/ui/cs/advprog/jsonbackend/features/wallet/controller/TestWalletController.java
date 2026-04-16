@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.wallet.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import id.ac.ui.cs.advprog.jsonbackend.common.config.JwtService;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.dto.WalletRequest;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletService;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletTransactionService;
@@ -29,6 +30,12 @@ class TestWalletController {
 
     @MockBean
     private WalletService walletService;
+
+    @MockBean
+    private WalletTransactionService walletTransactionService;
+
+    @MockBean
+    private JwtService jwtService;
 
     @Autowired
     private ObjectMapper objectMapper;

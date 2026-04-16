@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.wallet.controller;
 
+import id.ac.ui.cs.advprog.jsonbackend.common.config.JwtService;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.enums.TransactionType;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Transaction;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletTransactionService;
@@ -28,6 +29,9 @@ class TestTransactionController {
 
     @MockBean
     private WalletTransactionService walletTransactionService;
+
+    @MockBean
+    private JwtService jwtService;
 
     @Test
     void testGetTransactionHistory() throws Exception {
