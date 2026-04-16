@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Table(name = "wallet_transactions")
 @Getter
 @Setter
-public class WalletTransaction {
+public class Transaction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -33,12 +33,12 @@ public class WalletTransaction {
 
     private LocalDateTime createdAt;
 
-    protected WalletTransaction() {}
+    protected Transaction() {}
 
-    public WalletTransaction(String walletId,
-                             TransactionType type,
-                             BigDecimal amount,
-                             String description) {
+    public Transaction(String walletId,
+                       TransactionType type,
+                       BigDecimal amount,
+                       String description) {
         this.walletId = walletId;
         this.type = type;
         this.amount = amount;

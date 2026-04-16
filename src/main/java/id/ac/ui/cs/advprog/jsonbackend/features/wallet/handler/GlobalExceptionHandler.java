@@ -13,22 +13,20 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(WalletException.class)
     public ResponseEntity<ProblemDetail> handleWalletException(WalletException ex) {
-
         ProblemDetail problemDetail =
-                ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
-
+                ProblemDetail.forStatusAndDetail(ex.getHttpStatus(), ex.getMessage());
         problemDetail.setTitle(ex.getErrorCode());
+        problemDetail.setProperty("errorCode", ex.getErrorCode());
 
-        return ResponseEntity.badRequest().body(problemDetail);
+        return ResponseEntity.status(ex.getHttpStatus()).body(problemDetail);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ProblemDetail> handleGeneralException(Exception ex) {
-
         ProblemDetail problemDetail =
                 ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "Something went wrong");
-
         problemDetail.setTitle("INTERNAL_SERVER_ERROR");
+        problemDetail.setProperty("errorCode", "INTERNAL_SERVER_ERROR");
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(problemDetail);
@@ -44,8 +42,8 @@ public class GlobalExceptionHandler {
 
         ProblemDetail problemDetail =
                 ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, message);
-
         problemDetail.setTitle("VALIDATION_ERROR");
+        problemDetail.setProperty("errorCode", "VALIDATION_ERROR");
 
         return ResponseEntity.badRequest().body(problemDetail);
     }
