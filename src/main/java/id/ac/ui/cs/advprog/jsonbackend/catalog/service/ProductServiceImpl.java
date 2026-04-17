@@ -1,7 +1,9 @@
 package id.ac.ui.cs.advprog.jsonbackend.catalog.service;
 
 import id.ac.ui.cs.advprog.jsonbackend.catalog.dto.ProductDTO;
+import id.ac.ui.cs.advprog.jsonbackend.catalog.dto.ProductRequest;
 import id.ac.ui.cs.advprog.jsonbackend.catalog.mapper.ProductMapper;
+import id.ac.ui.cs.advprog.jsonbackend.catalog.model.Product;
 import id.ac.ui.cs.advprog.jsonbackend.catalog.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 
@@ -39,5 +41,32 @@ public class ProductServiceImpl implements ProductService {
                 .stream()
                 .map(ProductMapper::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public ProductDTO create(ProductRequest request) {
+
+        Product product = ProductMapper.toEntity(request);
+        return ProductMapper.toDTO(productRepository.save(product));
+    }
+
+    @Override
+    public ProductDTO update(String id, ProductRequest request) {
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        ProductMapper.updateEntity(product, request);
+
+        return ProductMapper.toDTO(productRepository.save(product));
+    }
+
+    @Override
+    public void delete(String id) {
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        productRepository.delete(product);
     }
 }

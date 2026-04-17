@@ -19,18 +19,17 @@ public class ProductMapper {
         );
     }
 
-    public static Product toEntity(ProductDTO dto) {
-        Product product = new Product();
+    public static Product toEntity(ProductRequest request) {
 
-        product.setName(dto.getName());
-        product.setDescription(dto.getDescription());
-        product.setPrice(dto.getPrice());
-        product.setStock(dto.getStock());
-        product.setOriginCountry(dto.getOriginCountry());
-        product.setPurchaseDate(dto.getPurchaseDate());
-        product.setJastiperId(dto.getJastiperId());
-
-        return product;
+        return new Product(
+                request.name,
+                request.description,
+                request.price,
+                request.stock,
+                request.originCountry,
+                request.purchaseDate,
+                request.jastiperId
+        );
     }
 
     public static void updateEntity(Product product, ProductRequest request) {
