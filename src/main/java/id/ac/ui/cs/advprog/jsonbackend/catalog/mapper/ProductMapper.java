@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.jsonbackend.catalog.mapper;
 
 import id.ac.ui.cs.advprog.jsonbackend.catalog.dto.ProductDTO;
+import id.ac.ui.cs.advprog.jsonbackend.catalog.dto.ProductRequest;
 import id.ac.ui.cs.advprog.jsonbackend.catalog.model.Product;
 
 public class ProductMapper {
@@ -30,5 +31,15 @@ public class ProductMapper {
         product.setJastiperId(dto.getJastiperId());
 
         return product;
+    }
+
+    public static void updateEntity(Product product, ProductRequest request) {
+
+        product.setName(request.name);
+        product.setDescription(request.description);
+        product.setPrice(request.price);
+        product.setStock(request.stock);
+        product.setOriginCountry(request.originCountry);
+        product.setPurchaseDate(request.purchaseDate);
     }
 }
