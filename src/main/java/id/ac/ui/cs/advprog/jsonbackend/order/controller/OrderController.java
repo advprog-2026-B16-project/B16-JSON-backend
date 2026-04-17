@@ -77,4 +77,14 @@ public class OrderController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    // Tambahkan ini di dalam OrderController.java
+    @PatchMapping("/{orderId}/status")
+    public ResponseEntity<OrderResponse> updateOrderStatus(
+            @PathVariable String orderId,
+            @RequestParam OrderStatus status) {
+
+        OrderResponse updatedOrder = orderService.updateOrderStatus(UUID.fromString(orderId), status);
+        return ResponseEntity.ok(updatedOrder);
+    }
 }

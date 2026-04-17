@@ -30,4 +30,6 @@ public interface OrderService {
 
     Order getOrderById(UUID orderId);
 
+    OrderResponse updateOrderStatus(UUID orderId, OrderStatus status);
+
 }

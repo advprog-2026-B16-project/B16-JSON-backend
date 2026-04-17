@@ -117,12 +117,25 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<Order> getOrderByStatus(OrderStatus status) {
-        return orderRepository.findByStatus(status);
+        return orderRepository.findByOrderStatus(status);
     }
 
     @Override
     public Order getOrderById(UUID orderId) {
         return orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order tidak ditemukan!"));
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse updateOrderStatus(UUID orderId, OrderStatus status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order tidak ditemukan!"));
+
+        order.updateStatus(status);
+
+        orderRepository.save(order);
+
+        return mapToOrderResponse(order);
     }
 
     private BigDecimal calculateTotal(double price, int quantity) {
