@@ -19,4 +19,5 @@ public interface ProductService {
 
     void delete(String id);
 
+    ProductDTO reduceStock(String id, int quantity);
 }

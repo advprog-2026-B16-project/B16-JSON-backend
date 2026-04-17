@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.jsonbackend.catalog.controller;
 
 import id.ac.ui.cs.advprog.jsonbackend.catalog.dto.ProductDTO;
 import id.ac.ui.cs.advprog.jsonbackend.catalog.dto.ProductRequest;
+import id.ac.ui.cs.advprog.jsonbackend.catalog.dto.StockRequest;
 import id.ac.ui.cs.advprog.jsonbackend.catalog.service.ProductService;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,4 +39,8 @@ public class ProductController {
         service.delete(id);
     }
 
+    @PostMapping("/{id}/reduce")
+    public ProductDTO reduceStock(@PathVariable String id, @RequestBody StockRequest request) {
+        return service.reduceStock(id, request.quantity);
+    }
 }

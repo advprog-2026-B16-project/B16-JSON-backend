@@ -31,6 +31,9 @@ public class Product {
 
     private String jastiperId;
 
+    @Version
+    private Long version;
+
     public Product() {}
 
     public Product(String name, String description, double price, int stock,

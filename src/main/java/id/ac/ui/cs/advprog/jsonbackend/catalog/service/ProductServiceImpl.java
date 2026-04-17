@@ -5,6 +5,8 @@ import id.ac.ui.cs.advprog.jsonbackend.catalog.dto.ProductRequest;
 import id.ac.ui.cs.advprog.jsonbackend.catalog.mapper.ProductMapper;
 import id.ac.ui.cs.advprog.jsonbackend.catalog.model.Product;
 import id.ac.ui.cs.advprog.jsonbackend.catalog.repository.ProductRepository;
+import jakarta.transaction.Transactional;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -68,5 +70,20 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
         productRepository.delete(product);
+    }
+    @Override
+    @Transactional
+    public ProductDTO reduceStock(String id, int quantity) {
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        if (product.getStock() < quantity) {
+            throw new RuntimeException("Stock not enough");
+        }
+
+        product.setStock(product.getStock() - quantity);
+
+        return ProductMapper.toDTO(productRepository.save(product));
     }
 }
