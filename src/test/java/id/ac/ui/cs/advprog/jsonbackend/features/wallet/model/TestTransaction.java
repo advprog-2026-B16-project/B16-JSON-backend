@@ -10,9 +10,9 @@ import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class TestWalletTransaction {
+class TestTransaction {
 
-    private WalletTransaction transaction;
+    private Transaction transaction;
     private final String WALLET_ID = "wallet-abc";
     private final TransactionType TYPE = TransactionType.TOP_UP;
     private final BigDecimal AMOUNT = BigDecimal.valueOf(250);
@@ -20,11 +20,11 @@ class TestWalletTransaction {
 
     @BeforeEach
     void setUp() {
-        transaction = new WalletTransaction(WALLET_ID, TYPE, AMOUNT, DESCRIPTION);
+        transaction = new Transaction(WALLET_ID, TYPE, AMOUNT, DESCRIPTION);
     }
 
     @Test
-    void testWalletTransactionConstructor_shouldInitializeFieldsCorrectly() {
+    void testTransactionConstructor_shouldInitializeFieldsCorrectly() {
         assertEquals(WALLET_ID, transaction.getWalletId());
         assertEquals(TYPE, transaction.getType());
         assertEquals(AMOUNT, transaction.getAmount());

@@ -1,64 +1,39 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.wallet.service;
 
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Wallet;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.WalletTransaction;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.enums.TransactionType;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.repository.WalletRepository;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.repository.WalletTransactionRepository;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.WalletNotFoundException;
-
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Wallet;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.repository.WalletRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Service
 @Transactional
 public class WalletServiceImpl implements WalletService {
 
     private final WalletRepository walletRepository;
-    private final WalletTransactionRepository transactionRepository;
 
-    public WalletServiceImpl(WalletRepository walletRepository, WalletTransactionRepository transactionRepository) {
+    public WalletServiceImpl(WalletRepository walletRepository) {
         this.walletRepository = walletRepository;
-        this.transactionRepository = transactionRepository;
     }
 
     @Override
     public Wallet createWallet(String userId) {
-        Wallet wallet = new Wallet(userId);
-        return walletRepository.save(wallet);
+        return walletRepository.findByUserId(userId)
+                .orElseGet(() -> walletRepository.save(new Wallet(userId)));
     }
 
     @Override
-    public void topUp(String userId, BigDecimal amount) {
+    public void credit(String userId, BigDecimal amount) {
         Wallet wallet = findWallet(userId);
-
-        WalletTransaction transaction = createTransaction(
-                wallet,
-                TransactionType.TOP_UP,
-                amount,
-                "Top Up"
-        );
-
         wallet.credit(amount);
-        transaction.markSuccess();
     }
 
     @Override
-    public void withdraw(String userId, BigDecimal amount) {
+    public void debit(String userId, BigDecimal amount) {
         Wallet wallet = findWallet(userId);
-
-        WalletTransaction transaction = createTransaction(
-                wallet,
-                TransactionType.WITHDRAW,
-                amount,
-                "Withdraw"
-        );
-
         wallet.debit(amount);
-        transaction.markSuccess();
     }
 
     @Override
@@ -68,28 +43,8 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
-    public List<WalletTransaction> getTransactionHistory(String userId) {
-        Wallet wallet = findWallet(userId);
-        return transactionRepository.findByWalletId(wallet.getId());
-    }
-
-    private Wallet findWallet(String userId) {
+    public Wallet findWallet(String userId) {
         return walletRepository.findByUserId(userId)
                 .orElseThrow(() -> new WalletNotFoundException(userId));
-    }
-
-    private WalletTransaction createTransaction(Wallet wallet,
-                                                TransactionType type,
-                                                BigDecimal amount,
-                                                String description) {
-
-        WalletTransaction transaction = new WalletTransaction(
-                wallet.getId(),
-                type,
-                amount,
-                description
-        );
-
-        return transactionRepository.save(transaction);
     }
 }
