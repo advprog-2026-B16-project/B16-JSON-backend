@@ -1,7 +1,7 @@
-package id.ac.ui.cs.advprog.jsonbackend.catalog.service;
+package id.ac.ui.cs.advprog.jsonbackend.features.catalog.service;
 
-import id.ac.ui.cs.advprog.jsonbackend.catalog.dto.ProductDTO;
-import id.ac.ui.cs.advprog.jsonbackend.catalog.dto.ProductRequest;
+import id.ac.ui.cs.advprog.jsonbackend.features.catalog.dto.ProductDTO;
+import id.ac.ui.cs.advprog.jsonbackend.features.catalog.dto.ProductRequest;
 
 import java.util.List;
 

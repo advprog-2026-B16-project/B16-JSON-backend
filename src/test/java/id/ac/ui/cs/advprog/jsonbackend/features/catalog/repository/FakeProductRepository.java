@@ -109,8 +109,11 @@ public class FakeProductRepository implements ProductRepository {
 
     @Override
     public <S extends Product> List<S> saveAll(Iterable<S> entities) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'saveAll'");
+        List<S> savedEntities = new ArrayList<>();
+        for (S entity : entities) {
+            savedEntities.add(save(entity));
+        }
+        return savedEntities;
     }
 
     @Override
@@ -121,14 +124,22 @@ public class FakeProductRepository implements ProductRepository {
 
     @Override
     public <S extends Product> S save(S entity) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'save'");
+        if (entity.getId() == null) {
+            entity.setId(String.valueOf(products.size() + 1L));
+            products.add(entity);
+            return entity;
+        }
+
+        deleteById(entity.getId());
+        products.add(entity);
+        return entity;
     }
 
     @Override
     public Optional<Product> findById(String id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'findById'");
+        return products.stream()
+                .filter(product -> product.getId().equals(id))
+                .findFirst();
     }
 
     @Override
@@ -145,14 +156,12 @@ public class FakeProductRepository implements ProductRepository {
 
     @Override
     public void deleteById(String id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'deleteById'");
+        products.removeIf(product -> product.getId().equals(id));
     }
 
     @Override
     public void delete(Product entity) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'delete'");
+        products.removeIf(product -> product.getId().equals(entity.getId()));
     }
 
     @Override

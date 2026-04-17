@@ -1,9 +1,9 @@
-package id.ac.ui.cs.advprog.jsonbackend.catalog.controller;
+package id.ac.ui.cs.advprog.jsonbackend.features.catalog.controller;
 
-import id.ac.ui.cs.advprog.jsonbackend.catalog.dto.ProductDTO;
-import id.ac.ui.cs.advprog.jsonbackend.catalog.dto.ProductRequest;
-import id.ac.ui.cs.advprog.jsonbackend.catalog.dto.StockRequest;
-import id.ac.ui.cs.advprog.jsonbackend.catalog.service.ProductService;
+import id.ac.ui.cs.advprog.jsonbackend.features.catalog.dto.ProductDTO;
+import id.ac.ui.cs.advprog.jsonbackend.features.catalog.dto.ProductRequest;
+import id.ac.ui.cs.advprog.jsonbackend.features.catalog.dto.StockRequest;
+import id.ac.ui.cs.advprog.jsonbackend.features.catalog.service.ProductService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

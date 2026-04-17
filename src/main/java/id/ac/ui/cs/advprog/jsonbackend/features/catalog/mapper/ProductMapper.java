@@ -1,8 +1,8 @@
-package id.ac.ui.cs.advprog.jsonbackend.catalog.mapper;
+package id.ac.ui.cs.advprog.jsonbackend.features.catalog.mapper;
 
-import id.ac.ui.cs.advprog.jsonbackend.catalog.dto.ProductDTO;
-import id.ac.ui.cs.advprog.jsonbackend.catalog.dto.ProductRequest;
-import id.ac.ui.cs.advprog.jsonbackend.catalog.model.Product;
+import id.ac.ui.cs.advprog.jsonbackend.features.catalog.dto.ProductDTO;
+import id.ac.ui.cs.advprog.jsonbackend.features.catalog.dto.ProductRequest;
+import id.ac.ui.cs.advprog.jsonbackend.features.catalog.model.Product;
 
 public class ProductMapper {
 

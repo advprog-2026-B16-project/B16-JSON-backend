@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.jsonbackend.catalog.dto;
+package id.ac.ui.cs.advprog.jsonbackend.features.catalog.dto;
 
 import java.time.LocalDate;
 
