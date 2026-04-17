@@ -1,23 +1,27 @@
 package id.ac.ui.cs.advprog.jsonbackend.order.dto;
 
 import id.ac.ui.cs.advprog.jsonbackend.order.enums.OrderStatus;
+import java.time.LocalDateTime;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class OrderResponseTest {
 
     @Test
     void testBuilderCreatesOrderResponseWithAllFields() {
         LocalDateTime now = LocalDateTime.now();
+        UUID orderId = UUID.randomUUID();
+        UUID titipersId = UUID.randomUUID();
+        UUID jastiperId = UUID.randomUUID();
 
         OrderResponse response = OrderResponse.builder()
-                .orderId("order-001")
+                .orderId(orderId)
                 .productId("prod-001")
-                .titipersId("titipers-001")
-                .jastiperId("jastiper-001")
+                .titipersId(titipersId)
+                .jastiperId(jastiperId)
                 .quantity(2)
                 .shippingAddress("Jl. Margonda No.1")
                 .orderStatus(OrderStatus.PENDING)
@@ -28,10 +32,10 @@ class OrderResponseTest {
                 .cancellationReason(null)
                 .build();
 
-        assertEquals("order-001", response.getOrderId());
+        assertEquals(orderId, response.getOrderId());
         assertEquals("prod-001", response.getProductId());
-        assertEquals("titipers-001", response.getTitipersId());
-        assertEquals("jastiper-001", response.getJastiperId());
+        assertEquals(titipersId, response.getTitipersId());
+        assertEquals(jastiperId, response.getJastiperId());
         assertEquals(2, response.getQuantity());
         assertEquals("Jl. Margonda No.1", response.getShippingAddress());
         assertEquals(OrderStatus.PENDING, response.getOrderStatus());
@@ -45,7 +49,7 @@ class OrderResponseTest {
     @Test
     void testBuilderWithRatingFields() {
         OrderResponse response = OrderResponse.builder()
-                .orderId("order-001")
+                .orderId(UUID.randomUUID())
                 .orderStatus(OrderStatus.COMPLETED)
                 .jastiperRating(5)
                 .productRating(4)
@@ -59,7 +63,7 @@ class OrderResponseTest {
     @Test
     void testBuilderWithCancellationReason() {
         OrderResponse response = OrderResponse.builder()
-                .orderId("order-001")
+                .orderId(UUID.randomUUID())
                 .orderStatus(OrderStatus.CANCELLED)
                 .cancellationReason("Out of stock")
                 .build();
@@ -68,4 +72,3 @@ class OrderResponseTest {
         assertEquals("Out of stock", response.getCancellationReason());
     }
 }
-

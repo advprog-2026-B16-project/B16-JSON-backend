@@ -11,16 +11,21 @@ import static org.junit.jupiter.api.Assertions.*;
 class OrderTest {
 
     private Order order;
+    private UUID orderId;
+    private UUID titipersId;
+    private UUID jastiperId;
 
 
     @BeforeEach
     void setUp() {
-        UUID orderId = UUID.randomUUID();
+        orderId = UUID.randomUUID();
+        titipersId = UUID.randomUUID();
+        jastiperId = UUID.randomUUID();
         order = new Order(
                 orderId,
                 "product-001",
-                UUID.randomUUID(),
-                UUID.randomUUID(),
+                titipersId,
+                jastiperId,
                 2,
                 "Jl. Margonda No.1"
         );
@@ -33,10 +38,10 @@ class OrderTest {
 
     @Test
     void testOrderCreationSetsAllFields() {
-        assertEquals("order-001", order.getOrderId());
+        assertEquals(orderId, order.getOrderId());
         assertEquals("product-001", order.getProductId());
-        assertEquals("titipers-001", order.getTitipersId());
-        assertEquals("jastiper-001", order.getJastiperId());
+        assertEquals(titipersId, order.getTitipersId());
+        assertEquals(jastiperId, order.getJastiperId());
         assertEquals(2, order.getQuantity());
         assertEquals("Jl. Margonda No.1", order.getShippingAddress());
     }
@@ -116,7 +121,7 @@ class OrderTest {
     void testSetterChangesOrderId() {
         UUID newOrderId = UUID.randomUUID();
         order.setOrderId(newOrderId);
-        assertEquals("order-999", order.getOrderId());
+        assertEquals(newOrderId, order.getOrderId());
     }
 
     @Test
@@ -125,4 +130,3 @@ class OrderTest {
         assertEquals(10, order.getQuantity());
     }
 }
-

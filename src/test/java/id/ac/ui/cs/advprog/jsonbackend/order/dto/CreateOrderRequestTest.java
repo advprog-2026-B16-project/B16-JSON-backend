@@ -1,23 +1,28 @@
 package id.ac.ui.cs.advprog.jsonbackend.order.dto;
 
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class CreateOrderRequestTest {
 
     @Test
     void testSettersAndGetters() {
         CreateOrderRequest request = new CreateOrderRequest();
+        UUID titipersId = UUID.randomUUID();
+        UUID jastiperId = UUID.randomUUID();
+
         request.setProductId("prod-001");
-        request.setTitipersId("titipers-001");
-        request.setJastiperId("jastiper-001");
+        request.setTitipersId(titipersId);
+        request.setJastiperId(jastiperId);
         request.setQuantity(3);
         request.setShippingAddress("Jl. Kampus No.5");
 
         assertEquals("prod-001", request.getProductId());
-        assertEquals("titipers-001", request.getTitipersId());
-        assertEquals("jastiper-001", request.getJastiperId());
+        assertEquals(titipersId, request.getTitipersId());
+        assertEquals(jastiperId, request.getJastiperId());
         assertEquals(3, request.getQuantity());
         assertEquals("Jl. Kampus No.5", request.getShippingAddress());
     }
@@ -37,4 +42,3 @@ class CreateOrderRequestTest {
         assertNull(request.getShippingAddress());
     }
 }
-
