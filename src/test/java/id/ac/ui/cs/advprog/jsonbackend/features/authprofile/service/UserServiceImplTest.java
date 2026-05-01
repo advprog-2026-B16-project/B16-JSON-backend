@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.authprofile.service;
 
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UserProfileUpdateRequest;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.User;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UserRole;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UserStatus;
@@ -13,6 +14,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -70,7 +72,7 @@ class UserServiceImplTest {
 
     @Test
     void testGetUserById() {
-        java.util.UUID id = java.util.UUID.randomUUID();
+        UUID id = UUID.randomUUID();
         when(userRepository.findById(id)).thenReturn(Optional.of(user1));
         Optional<User> result = userService.getUserById(id);
         assertEquals(user1, result.get());
@@ -92,7 +94,7 @@ class UserServiceImplTest {
 
     @Test
     void testBanUser() {
-        java.util.UUID id = java.util.UUID.randomUUID();
+        UUID id = UUID.randomUUID();
         when(userRepository.findById(id)).thenReturn(Optional.of(user2));
         userService.banUser(id);
         assertEquals(UserStatus.BANNED, user2.getStatus());
@@ -101,7 +103,7 @@ class UserServiceImplTest {
 
     @Test
     void testDemoteUser() {
-        java.util.UUID id = java.util.UUID.randomUUID();
+        UUID id = UUID.randomUUID();
         when(userRepository.findById(id)).thenReturn(Optional.of(user2));
         userService.demoteUser(id);
         assertEquals(UserRole.TITIPER, user2.getRole());
@@ -111,7 +113,7 @@ class UserServiceImplTest {
     @Test
     void testBanAdminShouldNotChangeStatus() {
         user1.setRole(UserRole.ADMIN);
-        java.util.UUID id = java.util.UUID.randomUUID();
+        UUID id = UUID.randomUUID();
         when(userRepository.findById(id)).thenReturn(Optional.of(user1));
         userService.banUser(id);
         assertEquals(UserStatus.ACTIVE, user1.getStatus());
@@ -120,7 +122,7 @@ class UserServiceImplTest {
 
     @Test
     void testDemoteNonJastiperShouldNotChangeRole() {
-        java.util.UUID id = java.util.UUID.randomUUID();
+        UUID id = UUID.randomUUID();
         when(userRepository.findById(id)).thenReturn(Optional.of(user1));
         userService.demoteUser(id);
         assertEquals(UserRole.TITIPER, user1.getRole());
@@ -129,7 +131,7 @@ class UserServiceImplTest {
 
     @Test
     void testBanUserNotFound() {
-        java.util.UUID id = java.util.UUID.randomUUID();
+        UUID id = UUID.randomUUID();
         when(userRepository.findById(id)).thenReturn(Optional.empty());
         userService.banUser(id);
         verify(userRepository, never()).save(any());
@@ -137,9 +139,42 @@ class UserServiceImplTest {
 
     @Test
     void testDemoteUserNotFound() {
-        java.util.UUID id = java.util.UUID.randomUUID();
+        UUID id = UUID.randomUUID();
         when(userRepository.findById(id)).thenReturn(Optional.empty());
         userService.demoteUser(id);
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void testUpdateProfile() {
+        UUID id = UUID.randomUUID();
+        UserProfileUpdateRequest request = UserProfileUpdateRequest.builder()
+                .fullName("New Name")
+                .bio("New Bio")
+                .location("New Location")
+                .avatarUrl("New Avatar")
+                .build();
+        when(userRepository.findById(id)).thenReturn(Optional.of(user1));
+        
+        userService.updateProfile(id, request);
+        
+        assertEquals("New Name", user1.getFullName());
+        assertEquals("New Bio", user1.getBio());
+        assertEquals("New Location", user1.getLocation());
+        assertEquals("New Avatar", user1.getAvatarUrl());
+        verify(userRepository).save(user1);
+    }
+
+    @Test
+    void testUpdateProfileUserNotFound() {
+        UUID id = UUID.randomUUID();
+        UserProfileUpdateRequest request = UserProfileUpdateRequest.builder()
+                .fullName("New Name")
+                .build();
+        when(userRepository.findById(id)).thenReturn(Optional.empty());
+        
+        userService.updateProfile(id, request);
+        
         verify(userRepository, never()).save(any());
     }
 }
