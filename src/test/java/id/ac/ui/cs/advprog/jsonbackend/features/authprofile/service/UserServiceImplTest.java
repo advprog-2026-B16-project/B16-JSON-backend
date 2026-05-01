@@ -117,4 +117,29 @@ class UserServiceImplTest {
         assertEquals(UserStatus.ACTIVE, user1.getStatus());
         verify(userRepository, never()).save(user1);
     }
+
+    @Test
+    void testDemoteNonJastiperShouldNotChangeRole() {
+        java.util.UUID id = java.util.UUID.randomUUID();
+        when(userRepository.findById(id)).thenReturn(Optional.of(user1));
+        userService.demoteUser(id);
+        assertEquals(UserRole.TITIPER, user1.getRole());
+        verify(userRepository, never()).save(user1);
+    }
+
+    @Test
+    void testBanUserNotFound() {
+        java.util.UUID id = java.util.UUID.randomUUID();
+        when(userRepository.findById(id)).thenReturn(Optional.empty());
+        userService.banUser(id);
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void testDemoteUserNotFound() {
+        java.util.UUID id = java.util.UUID.randomUUID();
+        when(userRepository.findById(id)).thenReturn(Optional.empty());
+        userService.demoteUser(id);
+        verify(userRepository, never()).save(any());
+    }
 }
