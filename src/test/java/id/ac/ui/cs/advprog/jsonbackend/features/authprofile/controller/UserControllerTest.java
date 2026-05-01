@@ -1,11 +1,13 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.authprofile.controller;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UserLoginResponse;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UserProfileResponse;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UserProfileUpdateRequest;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.User;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UserRole;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UserStatus;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.service.UserService;
+import id.ac.ui.cs.advprog.jsonbackend.order.service.OrderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -15,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +30,9 @@ class UserControllerTest {
 
     @Mock
     private UserService userService;
+    
+    @Mock
+    private OrderService orderService;
 
     @InjectMocks
     private UserController userController;
@@ -104,21 +110,21 @@ class UserControllerTest {
         when(principal.getName()).thenReturn("john");
         when(userService.getUserByUsername("john")).thenReturn(Optional.of(user1));
         
-        ResponseEntity<?> response = userController.getProfile(principal);
+        ResponseEntity<UserProfileResponse> response = userController.getProfile(principal);
         
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        User body = (User) response.getBody();
-        assertEquals("john", body.getUsername());
+        assertEquals("john", response.getBody().getUsername());
     }
 
     @Test
-    void testGetPublicProfile() {
-        when(userService.getUserByUsername("john")).thenReturn(Optional.of(user1));
+    void testGetPublicProfileJastiper() {
+        when(userService.getUserByUsername("jane")).thenReturn(Optional.of(user2));
+        when(orderService.getOrderByJastiperId(user2.getId().toString())).thenReturn(new ArrayList<>());
         
-        ResponseEntity<?> response = userController.getPublicProfile("john");
+        ResponseEntity<UserProfileResponse> response = userController.getPublicProfile("jane");
         
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        User body = (User) response.getBody();
-        assertEquals("john", body.getUsername());
+        assertEquals("jane", response.getBody().getUsername());
+        assertEquals(0L, response.getBody().getSuccessfulTransactions());
     }
 }

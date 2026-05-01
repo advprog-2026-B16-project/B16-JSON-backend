@@ -1,9 +1,13 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.authprofile.controller;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UserLoginResponse;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UserProfileResponse;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UserProfileUpdateRequest;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.User;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UserRole;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.service.UserService;
+import id.ac.ui.cs.advprog.jsonbackend.order.enums.OrderStatus;
+import id.ac.ui.cs.advprog.jsonbackend.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +25,7 @@ import java.util.stream.Collectors;
 public class UserController {
 
     private final UserService userService;
+    private final OrderService orderService;
 
     @GetMapping("/getUsers")
     @PreAuthorize("hasRole('ADMIN')")
@@ -55,17 +60,41 @@ public class UserController {
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<User> getProfile(Principal principal) {
+    public ResponseEntity<UserProfileResponse> getProfile(Principal principal) {
         String username = principal.getName();
         return userService.getUserByUsername(username)
+                .map(this::convertToProfileResponse)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/profile/{username}")
-    public ResponseEntity<User> getPublicProfile(@PathVariable String username) {
+    public ResponseEntity<UserProfileResponse> getPublicProfile(@PathVariable String username) {
         return userService.getUserByUsername(username)
+                .map(this::convertToProfileResponse)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    private UserProfileResponse convertToProfileResponse(User user) {
+        Long successfulTransactions = null;
+        if (user.getRole() == UserRole.JASTIPER) {
+            successfulTransactions = orderService.getOrderByJastiperId(user.getId().toString()).stream()
+                    .filter(order -> order.getOrderStatus() == OrderStatus.COMPLETED)
+                    .count();
+        }
+        
+        return UserProfileResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .role(user.getRole().name())
+                .status(user.getStatus().name())
+                .fullName(user.getFullName())
+                .bio(user.getBio())
+                .location(user.getLocation())
+                .avatarUrl(user.getAvatarUrl())
+                .successfulTransactions(successfulTransactions)
+                .build();
     }
 }
