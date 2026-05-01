@@ -11,13 +11,17 @@ class UserTest {
     @Test
     void testUserAllArgsConstructor() {
         UUID id = UUID.randomUUID();
-        User user = new User(id, "user", "email", "pass", UserRole.TITIPER, UserStatus.ACTIVE, "profile");
+        User user = new User(id, "user", "email", "pass", UserRole.TITIPER, UserStatus.ACTIVE, "Full Name", "Bio", "Location", "Avatar", "profile");
         assertEquals(id, user.getId());
         assertEquals("user", user.getUsername());
         assertEquals("email", user.getEmail());
         assertEquals("pass", user.getPassword());
         assertEquals(UserRole.TITIPER, user.getRole());
         assertEquals(UserStatus.ACTIVE, user.getStatus());
+        assertEquals("Full Name", user.getFullName());
+        assertEquals("Bio", user.getBio());
+        assertEquals("Location", user.getLocation());
+        assertEquals("Avatar", user.getAvatarUrl());
         assertEquals("profile", user.getJastiperProfile());
     }
 
@@ -32,12 +36,17 @@ class UserTest {
         builder.password("pass");
         builder.role(UserRole.TITIPER);
         builder.status(UserStatus.ACTIVE);
+        builder.fullName("Full Name");
+        builder.bio("Bio");
+        builder.location("Location");
+        builder.avatarUrl("Avatar");
         builder.jastiperProfile("profile");
         assertNotNull(builder.toString());
         User user = builder.build();
-        
+
         assertEquals(id, user.getId());
         assertEquals("user", user.getUsername());
+        assertEquals("Full Name", user.getFullName());
         assertTrue(user.toString().contains("user"));
     }
 
@@ -51,6 +60,10 @@ class UserTest {
         user.setPassword("pass");
         user.setRole(UserRole.TITIPER);
         user.setStatus(UserStatus.ACTIVE);
+        user.setFullName("Full Name");
+        user.setBio("Bio");
+        user.setLocation("Location");
+        user.setAvatarUrl("Avatar");
         user.setJastiperProfile("profile");
 
         assertEquals(id, user.getId());
@@ -59,6 +72,10 @@ class UserTest {
         assertEquals("pass", user.getPassword());
         assertEquals(UserRole.TITIPER, user.getRole());
         assertEquals(UserStatus.ACTIVE, user.getStatus());
+        assertEquals("Full Name", user.getFullName());
+        assertEquals("Bio", user.getBio());
+        assertEquals("Location", user.getLocation());
+        assertEquals("Avatar", user.getAvatarUrl());
         assertEquals("profile", user.getJastiperProfile());
     }
 

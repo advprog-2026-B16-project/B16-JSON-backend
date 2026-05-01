@@ -37,6 +37,18 @@ public class User {
     @Column(name = "status", nullable = false)
     private UserStatus status;
 
+    @Column(name = "full_name")
+    private String fullName;
+
+    @Column(name = "bio")
+    private String bio;
+
+    @Column(name = "location")
+    private String location;
+
+    @Column(name = "avatar_url")
+    private String avatarUrl;
+
     @Column(name = "jastiper_profile")
     private String jastiperProfile;
 
