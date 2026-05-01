@@ -5,14 +5,12 @@ import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
-
-import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("api/user")
@@ -28,5 +26,19 @@ public class UserController {
                 .map(user -> UserLoginResponse.fromUser(user, null))
                 .collect(Collectors.toList());
         return new ResponseEntity<>(users, HttpStatus.OK);
+    }
+
+    @PatchMapping("/{id}/ban")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> banUser(@PathVariable UUID id) {
+        userService.banUser(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/{id}/demote")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> demoteUser(@PathVariable UUID id) {
+        userService.demoteUser(id);
+        return ResponseEntity.ok().build();
     }
 }
