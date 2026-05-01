@@ -1,5 +1,7 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.authprofile.controller;
 
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UserLoginResponse;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UserProfileUpdateRequest;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.User;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UserRole;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UserStatus;
@@ -12,13 +14,14 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class UserControllerTest {
 
@@ -77,5 +80,45 @@ class UserControllerTest {
         ResponseEntity<?> response = userController.demoteUser(id);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(userService).demoteUser(id);
+    }
+
+    @Test
+    void testUpdateProfile() {
+        Principal principal = mock(Principal.class);
+        when(principal.getName()).thenReturn("john");
+        when(userService.getUserByUsername("john")).thenReturn(Optional.of(user1));
+        
+        UserProfileUpdateRequest request = UserProfileUpdateRequest.builder()
+                .fullName("John Doe")
+                .build();
+        
+        ResponseEntity<?> response = userController.updateProfile(request, principal);
+        
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(userService).updateProfile(user1.getId(), request);
+    }
+
+    @Test
+    void testGetProfile() {
+        Principal principal = mock(Principal.class);
+        when(principal.getName()).thenReturn("john");
+        when(userService.getUserByUsername("john")).thenReturn(Optional.of(user1));
+        
+        ResponseEntity<?> response = userController.getProfile(principal);
+        
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        User body = (User) response.getBody();
+        assertEquals("john", body.getUsername());
+    }
+
+    @Test
+    void testGetPublicProfile() {
+        when(userService.getUserByUsername("john")).thenReturn(Optional.of(user1));
+        
+        ResponseEntity<?> response = userController.getPublicProfile("john");
+        
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        User body = (User) response.getBody();
+        assertEquals("john", body.getUsername());
     }
 }
