@@ -1,12 +1,16 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.authprofile.service;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.User;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UserRole;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UserStatus;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +34,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<User> getUserById(java.util.UUID id) {
+    public Optional<User> getUserById(UUID id) {
         return userRepo.findById(id);
     }
 
@@ -40,9 +44,31 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public void promoteToJastiper(User user) {
-        user.setRole(id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UserRole.JASTIPER);
+        user.setRole(UserRole.JASTIPER);
         userRepo.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void banUser(UUID userId) {
+        userRepo.findById(userId).ifPresent(user -> {
+            if (user.getRole() != UserRole.ADMIN) {
+                user.setStatus(UserStatus.BANNED);
+                userRepo.save(user);
+            }
+        });
+    }
+
+    @Override
+    @Transactional
+    public void demoteUser(UUID userId) {
+        userRepo.findById(userId).ifPresent(user -> {
+            if (user.getRole() == UserRole.JASTIPER) {
+                user.setRole(UserRole.TITIPER);
+                userRepo.save(user);
+            }
+        });
     }
 }
