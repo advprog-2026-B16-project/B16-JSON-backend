@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.authprofile.service;
 
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UserProfileUpdateRequest;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.User;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UserRole;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UserStatus;
@@ -69,6 +70,18 @@ public class UserServiceImpl implements UserService {
                 user.setRole(UserRole.TITIPER);
                 userRepo.save(user);
             }
+        });
+    }
+
+    @Override
+    @Transactional
+    public void updateProfile(UUID userId, UserProfileUpdateRequest request) {
+        userRepo.findById(userId).ifPresent(user -> {
+            user.setFullName(request.getFullName());
+            user.setBio(request.getBio());
+            user.setLocation(request.getLocation());
+            user.setAvatarUrl(request.getAvatarUrl());
+            userRepo.save(user);
         });
     }
 }

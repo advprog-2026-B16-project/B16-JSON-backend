@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.User;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UserProfileUpdateRequest;
 
 public interface UserService {
     List<User> getAllUsers();
@@ -15,4 +16,5 @@ public interface UserService {
     void promoteToJastiper(User user);
     void banUser(UUID userId);
     void demoteUser(UUID userId);
+    void updateProfile(UUID userId, UserProfileUpdateRequest request);
 }
