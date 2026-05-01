@@ -7,6 +7,8 @@ import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.User;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UserRole;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UserStatus;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.service.UserService;
+import id.ac.ui.cs.advprog.jsonbackend.order.model.Order;
+import id.ac.ui.cs.advprog.jsonbackend.order.enums.OrderStatus;
 import id.ac.ui.cs.advprog.jsonbackend.order.service.OrderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +26,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.*;
 
 class UserControllerTest {
@@ -114,17 +117,37 @@ class UserControllerTest {
         
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("john", response.getBody().getUsername());
+        assertNull(response.getBody().getSuccessfulTransactions());
     }
 
     @Test
-    void testGetPublicProfileJastiper() {
+    void testGetPublicProfileJastiperWithCompletedOrders() {
         when(userService.getUserByUsername("jane")).thenReturn(Optional.of(user2));
-        when(orderService.getOrderByJastiperId(user2.getId().toString())).thenReturn(new ArrayList<>());
+        
+        Order completedOrder = mock(Order.class);
+        when(completedOrder.getOrderStatus()).thenReturn(OrderStatus.COMPLETED);
+        
+        Order pendingOrder = mock(Order.class);
+        when(pendingOrder.getOrderStatus()).thenReturn(OrderStatus.PENDING);
+        
+        List<Order> orders = Arrays.asList(completedOrder, pendingOrder);
+        when(orderService.getOrderByJastiperId(user2.getId().toString())).thenReturn(orders);
         
         ResponseEntity<UserProfileResponse> response = userController.getPublicProfile("jane");
         
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("jane", response.getBody().getUsername());
-        assertEquals(0L, response.getBody().getSuccessfulTransactions());
+        assertEquals(1L, response.getBody().getSuccessfulTransactions());
+    }
+
+    @Test
+    void testGetProfileNotFound() {
+        Principal principal = mock(Principal.class);
+        when(principal.getName()).thenReturn("nonexistent");
+        when(userService.getUserByUsername("nonexistent")).thenReturn(Optional.empty());
+        
+        ResponseEntity<UserProfileResponse> response = userController.getProfile(principal);
+        
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 }
