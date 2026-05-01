@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class UserControllerTest {
@@ -60,5 +61,21 @@ class UserControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         List<?> body = (List<?>) response.getBody();
         assertEquals(2, body.size());
+    }
+
+    @Test
+    void testBanUser() {
+        UUID id = UUID.randomUUID();
+        ResponseEntity<?> response = userController.banUser(id);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(userService).banUser(id);
+    }
+
+    @Test
+    void testDemoteUser() {
+        UUID id = UUID.randomUUID();
+        ResponseEntity<?> response = userController.demoteUser(id);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(userService).demoteUser(id);
     }
 }
