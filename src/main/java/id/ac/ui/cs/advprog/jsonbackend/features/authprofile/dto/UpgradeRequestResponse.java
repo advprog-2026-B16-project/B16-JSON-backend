@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UpgradeRequest;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.User;
 import lombok.Builder;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -15,15 +16,21 @@ public record UpgradeRequestResponse (
     String credential,
     String status
 ) {
-    public static UpgradeRequestResponse fromRequest(UpgradeRequest request) {
+    public static UpgradeRequestResponse fromRequest(UpgradeRequest r) {
+        if (r == null) return null;
+        
+        User user = r.getRequesterUser();
+        String userId = (user != null && user.getId() != null) ? user.getId().toString() : "unknown";
+        String username = (user != null) ? user.getUsername() : "unknown";
+        
         return UpgradeRequestResponse.builder()
-                .id(request.getUpgrReqId())
-                .createdAt(request.getCreatedAt())
-                .requesterUserId(request.getRequesterUser().getId().toString())
-                .requesterUsername(request.getRequesterUser().getUsername())
-                .fullName(request.getFullName())
-                .credential(request.getCredential())
-                .status(request.getStatus())
+                .id(r.getUpgrReqId())
+                .createdAt(r.getCreatedAt())
+                .requesterUserId(userId)
+                .requesterUsername(username)
+                .fullName(r.getFullName())
+                .credential(r.getCredential())
+                .status(r.getStatus())
                 .build();
     }
 }

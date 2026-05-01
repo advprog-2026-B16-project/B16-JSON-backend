@@ -1,61 +1,18 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.wallet.service;
-
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Wallet;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Transaction;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.*;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.enums.TransactionType;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.repository.WalletRepository;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.repository.TransactionRepository;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.WalletNotFoundException;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.UUID;
-
-@Service
-@Transactional
+@Service @Transactional
 public class TransactionServiceImpl implements TransactionService {
-
-    private final TransactionRepository transactionRepository;
+    private final TransactionRepository transactionRepo;
     private final WalletService walletService;
-
-    public TransactionServiceImpl(TransactionRepository transactionRepository, WalletService walletService) {
-        this.transactionRepository = transactionRepository;
-        this.walletService = walletService;
-    }
-
-    @Override
-    public List<Transaction> getUserTransactions(String userId) {
-        Wallet wallet = walletService.findWallet(userId);
-        return transactionRepository.findByWalletId(wallet.getId());
-    }
-
-    @Override
-    public Transaction createTransaction(Wallet wallet, TransactionType type, BigDecimal amount, String description) {
-
-        Transaction transaction = new Transaction(
-                wallet.getId(),
-                type,
-                amount,
-                description
-        );
-
-        return transactionRepository.save(transaction);
-    }
-
-    @Override
-    public void markSuccess(String transactionId) {
-        Transaction transaction = transactionRepository.findById(transactionId)
-                .orElseThrow(() -> new IllegalArgumentException("Transaction not found: " + transactionId));
-        transaction.markSuccess();
-    }
-
-    @Override
-    public void markFailed(String transactionId) {
-        Transaction transaction = transactionRepository.findById(transactionId)
-                .orElseThrow(() -> new IllegalArgumentException("Transaction not found: " + transactionId));
-        transaction.markFailed();
-    }
+    public TransactionServiceImpl(TransactionRepository tr, WalletService ws) { this.transactionRepo = tr; this.walletService = ws; }
+    @Override public List<Transaction> getUserTransactions(String userId) { return transactionRepo.findByWalletId(walletService.findWallet(userId).getId().toString()); }
+    @Override public Transaction createTransaction(Wallet wallet, TransactionType type, BigDecimal amount, String description) { return transactionRepo.save(new Transaction(wallet.getId().toString(), type, amount, description)); }
+    @Override public void markSuccess(String id) { transactionRepo.findById(id).ifPresent(Transaction::markSuccess); }
+    @Override public void markFailed(String id) { transactionRepo.findById(id).ifPresent(Transaction::markFailed); }
 }

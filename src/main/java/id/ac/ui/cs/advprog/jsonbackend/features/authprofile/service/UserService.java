@@ -1,12 +1,9 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.authprofile.service;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.User;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UserProfileUpdateRequest;
-
 public interface UserService {
     List<User> getAllUsers();
     Optional<User> getUserByUsername(String username);
