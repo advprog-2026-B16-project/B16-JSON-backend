@@ -16,6 +16,7 @@ class TestWalletTransactionServiceImpl {
     @Test void testGetUserTransactions() {
         String userId = UUID.randomUUID().toString();
         Wallet wallet = new Wallet(userId);
+        wallet.setId(UUID.randomUUID().toString()); // FIXED: Using String for ID
         when(walletService.findWallet(userId)).thenReturn(wallet);
         transactionService.getUserTransactions(userId);
         verify(transactionRepository).findByWalletId(any());
