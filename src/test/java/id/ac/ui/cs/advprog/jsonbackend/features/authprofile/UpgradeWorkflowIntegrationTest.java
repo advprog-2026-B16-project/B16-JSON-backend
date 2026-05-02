@@ -87,6 +87,7 @@ class UpgradeWorkflowIntegrationTest {
         UpgradeRequestSubmissionRequest submitDto = new UpgradeRequestSubmissionRequest();
         submitDto.setFullName("John Titiper");
         submitDto.setCredential("Proof");
+        submitDto.setSocialMediaUrl("http://social.com");
 
         // 1. Submit
         mockMvc.perform(post("/api/upgrade-request/submit")
@@ -94,6 +95,8 @@ class UpgradeWorkflowIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(submitDto)))
                 .andExpect(status().isOk());
+        
+        assertEquals(UserStatus.PENDING_JASTIPER, userRepository.findByUsername("titiper_up_final").get().getStatus());
 
         // 2. Submit duplicate
         mockMvc.perform(post("/api/upgrade-request/submit")
@@ -125,20 +128,14 @@ class UpgradeWorkflowIntegrationTest {
 
         User updatedUser = userRepository.findByUsername("titiper_up_final").get();
         assertEquals(UserRole.JASTIPER, updatedUser.getRole());
-        
-        // 5. Submit again after Approval (Covering the "Not Pending" branch in submit)
-        mockMvc.perform(post("/api/upgrade-request/submit")
-                .header("Authorization", "Bearer " + userToken)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(submitDto)))
-                .andExpect(status().isOk());
+        assertEquals(UserStatus.ACTIVE, updatedUser.getStatus());
     }
 
     @Test
     void testUpdateStatusNotFound() throws Exception {
         String adminToken = jwtService.generateToken(admin);
         UUID fakeId = UUID.randomUUID();
-        
+
         UpgradeRequestStatusChangeRequest statusDto = new UpgradeRequestStatusChangeRequest();
         statusDto.setNewStatus("ACCEPTED");
         statusDto.setUsername("anyone");

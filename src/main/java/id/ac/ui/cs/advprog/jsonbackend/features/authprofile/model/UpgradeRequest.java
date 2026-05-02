@@ -9,6 +9,6 @@ public class UpgradeRequest {
     @Column(name = "created_at", updatable = false, nullable = false) @Builder.Default private OffsetDateTime createdAt = OffsetDateTime.now();
     @OneToOne(fetch = FetchType.EAGER) @JoinColumn(name = "requester_user", referencedColumnName = "id", nullable = false) private User requesterUser;
     @Column(name = "full_name", nullable = false) private String fullName;
-    @Column(name = "credential", nullable = false) private String credential;
+    @Column(name = "credential", nullable = false) private String credential; private String socialMediaUrl;
     @Column(name = "status", nullable = false) @Builder.Default private String status = "PENDING";
 }

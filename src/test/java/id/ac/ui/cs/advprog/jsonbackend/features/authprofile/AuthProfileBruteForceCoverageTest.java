@@ -86,7 +86,7 @@ class AuthProfileBruteForceCoverageTest {
     void testUpgradeRequestStatusChangeService_Branches() {
         UpgradeRequestSubmissionRequest dto = new UpgradeRequestSubmissionRequest();
         dto.setFullName("Name");
-        dto.setCredential("Cred");
+        dto.setCredential("Cred"); dto.setSocialMediaUrl("url");
         
         UpgradeRequestResponse res = statusChangeService.submitUpgradeRequest(titiper, dto);
         UUID requestId = res.id();
@@ -107,6 +107,6 @@ class AuthProfileBruteForceCoverageTest {
         UpgradeRequestResponse res2 = statusChangeService.submitUpgradeRequest(u2, dto);
         
         statusChangeService.updateRequestStatus(res2.id(), "REJECTED");
-        assertEquals(UserRole.TITIPER, userRepository.findByUsername("user2").get().getRole());
+        assertEquals(UserRole.TITIPER, userRepository.findByUsername("user2").get().getRole()); assertEquals(UserStatus.ACTIVE, userRepository.findByUsername("user2").get().getStatus());
     }
 }

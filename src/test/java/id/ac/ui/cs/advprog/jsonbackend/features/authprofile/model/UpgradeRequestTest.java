@@ -14,7 +14,7 @@ class UpgradeRequestTest {
         UUID id = UUID.randomUUID();
         OffsetDateTime now = OffsetDateTime.now();
         User user = new User();
-        UpgradeRequest request = new UpgradeRequest(id, now, user, "Name", "Cred", "PENDING");
+        UpgradeRequest request = new UpgradeRequest(id, now, user, "Name", "Cred", "social", "PENDING");
         
         assertEquals(id, request.getUpgrReqId());
         assertEquals(now, request.getCreatedAt());

@@ -36,7 +36,7 @@ class DtoCoverageTest {
                 .build();
         UpgradeRequestResponse res2 = UpgradeRequestResponse.fromRequest(r2);
         assertEquals("unknown", res2.requesterUserId());
-        assertEquals("u2", res2.requesterUsername());
+        assertEquals("u2", res2.requesterUsername()); assertEquals(null, res2.socialMediaUrl());
     }
 
     @Test

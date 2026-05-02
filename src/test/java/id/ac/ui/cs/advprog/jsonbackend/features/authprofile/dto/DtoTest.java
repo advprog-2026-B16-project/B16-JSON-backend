@@ -64,24 +64,24 @@ class DtoTest {
         UUID userId = UUID.randomUUID();
 
         // Canonical
-        UpgradeRequestResponse r = new UpgradeRequestResponse(id, now, userId.toString(), "un", "fn", "cr", "st");
+        UpgradeRequestResponse r = new UpgradeRequestResponse(id, now, userId.toString(), "un", "fn", "cr", "social", "st");
         assertEquals(id, r.id());
         
         // Builder exhaustive
         UpgradeRequestResponse.UpgradeRequestResponseBuilder b = UpgradeRequestResponse.builder();
-        b.id(id); b.createdAt(now); b.requesterUserId(userId.toString()); b.requesterUsername("un"); b.fullName("fn"); b.credential("cr"); b.status("st");
+        b.id(id); b.createdAt(now); b.requesterUserId(userId.toString()); b.requesterUsername("un"); b.fullName("fn"); b.credential("cr"); b.socialMediaUrl("social"); b.status("st");
         assertNotNull(b.toString());
         assertEquals(r, b.build());
         
         // Builder nulls
         UpgradeRequestResponse.UpgradeRequestResponseBuilder b2 = UpgradeRequestResponse.builder();
-        b2.id(null); b2.createdAt(null); b2.requesterUserId(null); b2.requesterUsername(null); b2.fullName(null); b2.credential(null); b2.status(null);
+        b2.id(null); b2.createdAt(null); b2.requesterUserId(null); b2.requesterUsername(null); b2.fullName(null); b2.credential(null); b2.socialMediaUrl(null); b2.status(null);
         assertNull(b2.build().id());
 
         // fromRequest
         User user = User.builder().id(userId).username("un").build();
         UpgradeRequest ur = UpgradeRequest.builder()
-                .upgrReqId(id).createdAt(now).requesterUser(user).fullName("fn").credential("cr").status("st")
+                .upgrReqId(id).createdAt(now).requesterUser(user).fullName("fn").credential("cr").socialMediaUrl("social").status("st")
                 .build();
         assertEquals(r, UpgradeRequestResponse.fromRequest(ur));
         
@@ -123,12 +123,12 @@ class DtoTest {
         bruteForceLombok(UpgradeRequestSubmissionRequest.class);
         
         // Specific complex branch check for Equals
-        UpgradeRequestSubmissionRequest a = new UpgradeRequestSubmissionRequest("F", "C");
+        UpgradeRequestSubmissionRequest a = new UpgradeRequestSubmissionRequest("F", "C", "S");
         assertFalse(a.equals(null));
         assertFalse(a.equals("not an object"));
         assertTrue(a.equals(a));
         
-        UpgradeRequestSubmissionRequest b = new UpgradeRequestSubmissionRequest("F", "C");
+        UpgradeRequestSubmissionRequest b = new UpgradeRequestSubmissionRequest("F", "C", "S");
         assertTrue(a.equals(b));
         assertTrue(b.equals(a));
         assertEquals(a.hashCode(), b.hashCode());
@@ -136,9 +136,9 @@ class DtoTest {
         // Field permutations for equals/hashCode
         String[] v = {"V", null};
         for(String f1:v) for(String c1:v) {
-            UpgradeRequestSubmissionRequest o1 = new UpgradeRequestSubmissionRequest(f1, c1);
+            UpgradeRequestSubmissionRequest o1 = new UpgradeRequestSubmissionRequest(f1, c1, "S");
             for(String f2:v) for(String c2:v) {
-                UpgradeRequestSubmissionRequest o2 = new UpgradeRequestSubmissionRequest(f2, c2);
+                UpgradeRequestSubmissionRequest o2 = new UpgradeRequestSubmissionRequest(f2, c2, "S");
                 if (java.util.Objects.equals(f1, f2) && java.util.Objects.equals(c1, c2)) {
                     assertEquals(o1, o2);
                     assertEquals(o1.hashCode(), o2.hashCode());
@@ -151,7 +151,7 @@ class DtoTest {
         // canEqual branches
         assertTrue(a.canEqual(b));
         assertFalse(a.canEqual("string"));
-        UpgradeRequestSubmissionRequest subclass = new UpgradeRequestSubmissionRequest("F", "C") {
+        UpgradeRequestSubmissionRequest subclass = new UpgradeRequestSubmissionRequest("F", "C", "S") {
             @Override public boolean canEqual(Object o) { return false; }
         };
         assertFalse(a.equals(subclass));

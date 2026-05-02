@@ -17,6 +17,7 @@ public class UpgradeRequestStatusChangeServiceImpl implements UpgradeRequestStat
 
     private final UpgradeRequestRepository upgradeRepo;
     private final UserService userService;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
@@ -25,15 +26,19 @@ public class UpgradeRequestStatusChangeServiceImpl implements UpgradeRequestStat
             if ("PENDING".equals(r.getStatus())) {
                 throw new RuntimeException("Pending request exists");
             }
+            upgradeRepo.delete(r);
         });
 
         UpgradeRequest request = UpgradeRequest.builder()
                 .requesterUser(user)
                 .fullName(dto.getFullName())
                 .credential(dto.getCredential())
+                .socialMediaUrl(dto.getSocialMediaUrl())
                 .status("PENDING")
                 .build();
-        
+
+        user.setStatus(UserStatus.PENDING_JASTIPER);
+        userRepository.save(user);
         return UpgradeRequestResponse.fromRequest(upgradeRepo.save(request));
     }
 
@@ -42,8 +47,13 @@ public class UpgradeRequestStatusChangeServiceImpl implements UpgradeRequestStat
     public void updateRequestStatus(UUID requestId, String status) {
         UpgradeRequest r = upgradeRepo.findById(requestId).orElseThrow(() -> new RuntimeException("Not found"));
         r.setStatus(status);
+        
+        User requester = r.getRequesterUser();
+        requester.setStatus(UserStatus.ACTIVE);
+        userRepository.save(requester);
+        
         if ("ACCEPTED".equalsIgnoreCase(status)) {
-            userService.promoteToJastiper(r.getRequesterUser());
+            userService.promoteToJastiper(requester);
         }
         upgradeRepo.save(r);
     }

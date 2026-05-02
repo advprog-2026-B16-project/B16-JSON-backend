@@ -4,7 +4,7 @@ import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.controller.UpgradeRe
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.*;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UpgradeRequest;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.User;
-import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UpgradeRequestRepository;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UpgradeRequestRepository; import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UserRepository;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.service.UpgradeRequestRetrievalService;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.service.UpgradeRequestRetrievalServiceImpl;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.service.UpgradeRequestStatusChangeServiceImpl;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.*;
 
 class AuthProfileFinalCoverageTest {
 
-    @Mock private UpgradeRequestRepository upgradeRepo;
+    @Mock private UpgradeRequestRepository upgradeRepo; @Mock private UserRepository userRepository;
     @Mock private UpgradeRequestRetrievalService retrievalService;
     @Mock private UserService userService;
     
@@ -91,7 +91,7 @@ class AuthProfileFinalCoverageTest {
         User user = new User();
         UpgradeRequestSubmissionRequest dto = new UpgradeRequestSubmissionRequest();
         dto.setFullName("John");
-        dto.setCredential("Proof");
+        dto.setCredential("Proof"); dto.setSocialMediaUrl("url");
 
         // 1. Existing request NOT PENDING (False branch of L25)
         UpgradeRequest existing = new UpgradeRequest();

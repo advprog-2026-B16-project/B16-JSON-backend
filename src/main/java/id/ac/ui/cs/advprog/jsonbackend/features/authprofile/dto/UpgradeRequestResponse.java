@@ -13,7 +13,7 @@ public record UpgradeRequestResponse (
     String requesterUserId,
     String requesterUsername,
     String fullName,
-    String credential,
+    String credential, String socialMediaUrl,
     String status
 ) {
     public static UpgradeRequestResponse fromRequest(UpgradeRequest r) {
@@ -29,7 +29,7 @@ public record UpgradeRequestResponse (
                 .requesterUserId(userId)
                 .requesterUsername(username)
                 .fullName(r.getFullName())
-                .credential(r.getCredential())
+                .credential(r.getCredential()).socialMediaUrl(r.getSocialMediaUrl())
                 .status(r.getStatus())
                 .build();
     }
