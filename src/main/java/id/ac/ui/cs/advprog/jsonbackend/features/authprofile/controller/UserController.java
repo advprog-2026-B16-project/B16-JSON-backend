@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 public class UserController {
     private final UserService userService;
     private final OrderService orderService;
-    @GetMapping("/getUsers") @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<List<UserLoginResponse>> getUsers() { return ResponseEntity.ok(userService.getAllUsers().stream().map(u -> UserLoginResponse.fromUser(u, null)).collect(Collectors.toList())); }
+    @GetMapping("/getUsers") @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<List<UserLoginResponse>> getUsers() { return new ResponseEntity<>(userService.getAllUsers().stream().map(u -> UserLoginResponse.fromUser(u, null)).collect(Collectors.toList()), HttpStatus.OK); }
     @PatchMapping("/{id}/ban") @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<Void> banUser(@PathVariable UUID id) { userService.banUser(id); return ResponseEntity.ok().build(); }
     @PatchMapping("/{id}/demote") @PreAuthorize("hasRole('ADMIN')") public ResponseEntity<Void> demoteUser(@PathVariable UUID id) { userService.demoteUser(id); return ResponseEntity.ok().build(); }
     @PutMapping("/profile") public ResponseEntity<Void> updateProfile(@RequestBody UserProfileUpdateRequest request, Principal principal) { userService.getUserByUsername(principal.getName()).ifPresent(u -> userService.updateProfile(u.getId(), request)); return ResponseEntity.ok().build(); }

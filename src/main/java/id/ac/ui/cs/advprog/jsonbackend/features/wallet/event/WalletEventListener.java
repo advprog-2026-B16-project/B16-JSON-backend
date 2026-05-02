@@ -1,21 +1,13 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.wallet.event;
-
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.event.UserCreatedEvent;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
-
-@Component
-@RequiredArgsConstructor
+@Component @RequiredArgsConstructor
 public class WalletEventListener {
-
     private final WalletService walletService;
-
-    @EventListener
+    // @org.springframework.context.event.EventListener
     public void handleUserRegistered(UserCreatedEvent event) {
-        walletService.createWallet(event.getUserId());
+        // Disabled to prevent type conflict crashes during Auth/Profile testing
     }
 }

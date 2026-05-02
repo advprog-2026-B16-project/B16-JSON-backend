@@ -7,7 +7,7 @@ import java.util.UUID;
 public class UpgradeRequest {
     @Id @GeneratedValue(strategy = GenerationType.UUID) @Column(name = "upgr_req_id") private UUID upgrReqId;
     @Column(name = "created_at", updatable = false, nullable = false) @Builder.Default private OffsetDateTime createdAt = OffsetDateTime.now();
-    @OneToOne @JoinColumn(name = "requester_user", referencedColumnName = "username", nullable = false) private User requesterUser;
+    @OneToOne(fetch = FetchType.EAGER) @JoinColumn(name = "requester_user", referencedColumnName = "id", nullable = false) private User requesterUser;
     @Column(name = "full_name", nullable = false) private String fullName;
     @Column(name = "credential", nullable = false) private String credential;
     @Column(name = "status", nullable = false) @Builder.Default private String status = "PENDING";
