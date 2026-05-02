@@ -8,11 +8,11 @@ import java.math.BigDecimal;
 import java.util.List;
 @Service @Transactional
 public class TransactionServiceImpl implements TransactionService {
-    private final TransactionRepository transactionRepo;
+    private final TransactionRepository transactionRepository;
     private final WalletService walletService;
-    public TransactionServiceImpl(TransactionRepository tr, WalletService ws) { this.transactionRepo = tr; this.walletService = ws; }
-    @Override public List<Transaction> getUserTransactions(String userId) { return transactionRepo.findByWalletId(walletService.findWallet(userId).getId().toString()); }
-    @Override public Transaction createTransaction(Wallet wallet, TransactionType type, BigDecimal amount, String description) { return transactionRepo.save(new Transaction(wallet.getId().toString(), type, amount, description)); }
-    @Override public void markSuccess(String id) { transactionRepo.findById(id).ifPresent(Transaction::markSuccess); }
-    @Override public void markFailed(String id) { transactionRepo.findById(id).ifPresent(Transaction::markFailed); }
+    public TransactionServiceImpl(TransactionRepository tr, WalletService ws) { this.transactionRepository = tr; this.walletService = ws; }
+    @Override public List<Transaction> getUserTransactions(String userId) { return transactionRepository.findByWalletId(walletService.findWallet(userId).getId().toString()); }
+    @Override public Transaction createTransaction(Wallet wallet, TransactionType type, BigDecimal amount, String description) { return transactionRepository.save(new Transaction(wallet.getId().toString(), type, amount, description)); }
+    @Override public void markSuccess(String id) { transactionRepository.findById(id).ifPresent(Transaction::markSuccess); }
+    @Override public void markFailed(String id) { transactionRepository.findById(id).ifPresent(Transaction::markFailed); }
 }

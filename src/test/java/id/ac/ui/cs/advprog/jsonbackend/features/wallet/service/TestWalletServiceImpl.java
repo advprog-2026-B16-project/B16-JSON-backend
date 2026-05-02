@@ -15,9 +15,9 @@ class TestWalletServiceImpl {
     @InjectMocks private WalletServiceImpl walletService;
     @BeforeEach void setUp() { MockitoAnnotations.openMocks(this); }
     @Test void testCreateWallet() {
-        String userId = UUID.randomUUID().toString();
+        UUID userId = UUID.randomUUID();
         when(walletRepository.findByUserId(userId)).thenReturn(Optional.empty());
-        walletService.createWallet(userId);
+        walletService.createWallet(userId.toString());
         verify(walletRepository).save(any(Wallet.class));
     }
 }

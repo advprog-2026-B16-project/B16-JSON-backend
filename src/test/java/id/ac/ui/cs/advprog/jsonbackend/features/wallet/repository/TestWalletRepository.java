@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class TestWalletRepository {
     @Autowired private WalletRepository walletRepository;
     @Test void testFindByUserId() {
-        String USER_ID = UUID.randomUUID().toString();
+        UUID USER_ID = UUID.randomUUID();
         Wallet testWallet = new Wallet(USER_ID);
         walletRepository.save(testWallet);
         Optional<Wallet> foundWallet = walletRepository.findByUserId(USER_ID);

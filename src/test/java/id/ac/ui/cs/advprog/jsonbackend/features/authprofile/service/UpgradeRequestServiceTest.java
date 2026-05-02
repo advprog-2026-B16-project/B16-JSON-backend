@@ -31,9 +31,6 @@ class UpgradeRequestServiceTest {
     private UserRepository userRepository;
     
     @Mock
-    private JdbcTemplate jdbcTemplate;
-
-    @Mock
     private UserService userService;
 
     @InjectMocks
@@ -52,14 +49,13 @@ class UpgradeRequestServiceTest {
 
     @Test
     void testSubmitUpgradeRequestSuccess() {
-        when(jdbcTemplate.queryForObject(anyString(), eq(Integer.class), any())).thenReturn(0);
-        
         UpgradeRequest request = UpgradeRequest.builder()
                 .upgrReqId(UUID.randomUUID())
                 .requesterUser(testUser)
                 .status("PENDING")
                 .build();
         
+        when(upgradeRequestRepository.findByRequesterUser(testUser)).thenReturn(Optional.empty());
         when(upgradeRequestRepository.save(any(UpgradeRequest.class))).thenReturn(request);
 
         UpgradeRequestSubmissionRequest dto = new UpgradeRequestSubmissionRequest();
@@ -73,10 +69,15 @@ class UpgradeRequestServiceTest {
     }
 
     @Test
-    void testGetAllRequests() {
-        UpgradeRequestRetrievalServiceImpl retrievalService = new UpgradeRequestRetrievalServiceImpl(upgradeRequestRepository, userRepository, jdbcTemplate);
-        // Repository and JdbcTemplate are mocked, result doesn't matter for compile check
-        List<UpgradeRequest> result = retrievalService.getAllRequests();
-        assertNotNull(result);
+    void testGetAllRequestsAndGetByUsername() {
+        UpgradeRequestRetrievalServiceImpl retrievalService = new UpgradeRequestRetrievalServiceImpl(upgradeRequestRepository);
+        
+        // 1. getAllRequests
+        when(upgradeRequestRepository.findAll()).thenReturn(Collections.emptyList());
+        assertNotNull(retrievalService.getAllRequests());
+
+        // 2. getRequestByUsername
+        when(upgradeRequestRepository.findByRequesterUser(testUser)).thenReturn(Optional.empty());
+        assertFalse(retrievalService.getRequestByUsername(testUser).isPresent());
     }
 }

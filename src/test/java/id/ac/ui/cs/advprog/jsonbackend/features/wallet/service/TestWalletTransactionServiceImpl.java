@@ -14,11 +14,11 @@ class TestWalletTransactionServiceImpl {
     @InjectMocks private TransactionServiceImpl transactionService;
     @BeforeEach void setUp() { MockitoAnnotations.openMocks(this); }
     @Test void testGetUserTransactions() {
-        String userId = UUID.randomUUID().toString();
+        UUID userId = UUID.randomUUID();
         Wallet wallet = new Wallet(userId);
-        wallet.setId(UUID.randomUUID().toString()); // FIXED: Using String for ID
-        when(walletService.findWallet(userId)).thenReturn(wallet);
-        transactionService.getUserTransactions(userId);
+        wallet.setId(UUID.randomUUID()); 
+        when(walletService.findWallet(userId.toString())).thenReturn(wallet);
+        transactionService.getUserTransactions(userId.toString());
         verify(transactionRepository).findByWalletId(any());
     }
 }
