@@ -6,7 +6,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 class TestWallet {
     private Wallet wallet;
-    private final UUID USER_ID = UUID.randomUUID();
+    private final String USER_ID = UUID.randomUUID().toString();
     @BeforeEach void setUp() { wallet = new Wallet(USER_ID); }
     @Test void testWalletCreation() { assertEquals(USER_ID, wallet.getUserId()); assertEquals(BigDecimal.ZERO, wallet.getBalance()); }
 }

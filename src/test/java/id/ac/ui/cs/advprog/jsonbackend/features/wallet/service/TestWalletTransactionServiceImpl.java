@@ -15,7 +15,7 @@ class TestWalletTransactionServiceImpl {
     @BeforeEach void setUp() { MockitoAnnotations.openMocks(this); }
     @Test void testGetUserTransactions() {
         String userId = UUID.randomUUID().toString();
-        Wallet wallet = new Wallet(UUID.fromString(userId));
+        Wallet wallet = new Wallet(userId);
         when(walletService.findWallet(userId)).thenReturn(wallet);
         transactionService.getUserTransactions(userId);
         verify(transactionRepository).findByWalletId(any());

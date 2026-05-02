@@ -29,7 +29,7 @@ class UpgradeControllerTest {
     @Test void testUpdate() {
         UUID id = UUID.randomUUID();
         UpgradeRequestStatusChangeRequest dto = new UpgradeRequestStatusChangeRequest();
-        controller.update(id.toString(), dto);
+        controller.update(id, dto);
         verify(upgradeService).updateRequestStatus(any(), any());
     }
 }
