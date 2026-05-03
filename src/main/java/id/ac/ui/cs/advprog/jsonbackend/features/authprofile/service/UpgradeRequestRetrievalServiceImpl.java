@@ -1,7 +1,6 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.authprofile.service;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.*;
-import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UpgradeRequestRepository;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,45 +20,32 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UpgradeRequestRetrievalServiceImpl implements UpgradeRequestRetrievalService {
 
-    private final UpgradeRequestRepository upgradeRequestRepository;
     private final UserRepository userRepository;
     private final JdbcTemplate jdbcTemplate;
 
     @Override
     @Transactional(readOnly = true)
     public List<UpgradeRequest> getAllRequests() {
-        try {
-            // Try standard JPA first, as it is cleaner
-            return upgradeRequestRepository.findAll();
-        } catch (Exception e) {
-            log.warn("[STABILITY] JPA findAll failed with: {}. Falling back to robust JdbcTemplate retrieval.", e.getMessage());
-            String sql = "SELECT * FROM \"upgrade_request\"";
-            return jdbcTemplate.query(sql, (rs, rowNum) -> mapRow(rs));
-        }
+        // Quoted identifiers to match Hibernate's globally_quoted_identifiers=true
+        String sql = "SELECT \"upgr_req_id\", \"created_at\", \"credential\", \"full_name\", \"requester_user\", \"social_media_url\", \"status\" FROM \"upgrade_request\"";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> mapRow(rs));
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<UpgradeRequest> getRequestByUsername(User user) {
-        try {
-            return upgradeRequestRepository.findByRequesterUser(user);
-        } catch (Exception e) {
-            log.warn("[STABILITY] JPA findByRequesterUser failed. Falling back to JdbcTemplate.");
-            String sql = "SELECT * FROM \"upgrade_request\" WHERE \"requester_user\" = ?";
-            List<UpgradeRequest> results = jdbcTemplate.query(sql, (rs, rowNum) -> {
-                UpgradeRequest r = mapRow(rs);
-                r.setRequesterUser(user);
-                return r;
-            }, user.getId());
-            return results.stream().findFirst();
-        }
+        String sql = "SELECT \"upgr_req_id\", \"created_at\", \"credential\", \"full_name\", \"requester_user\", \"social_media_url\", \"status\" FROM \"upgrade_request\" WHERE \"requester_user\" = ?";
+        List<UpgradeRequest> results = jdbcTemplate.query(sql, (rs, rowNum) -> {
+            UpgradeRequest r = mapRow(rs);
+            r.setRequesterUser(user);
+            return r;
+        }, user.getId());
+        return results.stream().findFirst();
     }
 
     private UpgradeRequest mapRow(java.sql.ResultSet rs) throws java.sql.SQLException {
         UpgradeRequest r = new UpgradeRequest();
-        
-        // Manual column name mapping to be robust against case sensitivity and aliases
-        r.setUpgrReqId(getUuidString(rs.getObject(1))); // upgr_req_id is usually 1st
+        r.setUpgrReqId(rs.getString("upgr_req_id"));
         
         Object createdAt = rs.getObject("created_at");
         if (createdAt instanceof Timestamp ts) {
@@ -76,7 +61,6 @@ public class UpgradeRequestRetrievalServiceImpl implements UpgradeRequestRetriev
         r.setSocialMediaUrl(rs.getString("social_media_url"));
         r.setStatus(rs.getString("status"));
         
-        // Handle User association manually
         Object userIdObj = rs.getObject("requester_user");
         UUID userId = parseUuid(userIdObj);
         if (userId != null) {
@@ -84,11 +68,6 @@ public class UpgradeRequestRetrievalServiceImpl implements UpgradeRequestRetriev
         }
         
         return r;
-    }
-
-    private String getUuidString(Object obj) {
-        if (obj == null) return null;
-        return obj.toString();
     }
 
     private UUID parseUuid(Object obj) {

@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Transactional
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
-    "spring.datasource.url=jdbc:h2:mem:UpgradeWorkflowTestFinal;DB_CLOSE_DELAY=-1;NON_KEYWORDS=USER",
+    "spring.datasource.url=jdbc:h2:mem:UpgradeWorkflowTestFinal;DB_CLOSE_DELAY=-1;NON_KEYWORDS=USER;DATABASE_TO_UPPER=FALSE",
     "app.debug.verbose=true"
 })
 class UpgradeWorkflowIntegrationTest {
