@@ -2,13 +2,11 @@ package id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import java.sql.Types;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "\"upgrade_request\"")
+@Table(name = "upgrade_request")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,7 +16,6 @@ public class UpgradeRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "upgr_req_id")
-    @JdbcTypeCode(Types.VARCHAR)
     private UUID upgrReqId;
 
     @Column(name = "created_at", updatable = false, nullable = false)
@@ -27,7 +24,6 @@ public class UpgradeRequest {
 
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "requester_user", referencedColumnName = "id", nullable = false)
-    @JdbcTypeCode(Types.VARCHAR)
     private User requesterUser;
 
     @Column(name = "full_name", nullable = false)

@@ -2,8 +2,6 @@ package id.ac.ui.cs.advprog.jsonbackend.features.wallet.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import java.sql.Types;
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -16,11 +14,9 @@ import java.util.UUID;
 public class Wallet {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @JdbcTypeCode(Types.VARCHAR)
     private UUID id;
 
     @Column(name = "user_id", nullable = false, unique = true)
-    @JdbcTypeCode(Types.VARCHAR)
     private UUID userId;
 
     @Column(name = "balance", nullable = false)

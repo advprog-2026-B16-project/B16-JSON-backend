@@ -1,13 +1,14 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.wallet.model;
 
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.enums.TransactionType;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.enums.TransactionStatus;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.enums.TransactionType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "wallet_transactions")
@@ -19,7 +20,8 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    private String walletId;
+    @Column(name = "wallet_id")
+    private UUID walletId;
 
     @Enumerated(EnumType.STRING)
     private TransactionType type;
@@ -35,7 +37,7 @@ public class Transaction {
 
     protected Transaction() {}
 
-    public Transaction(String walletId,
+    public Transaction(UUID walletId,
                        TransactionType type,
                        BigDecimal amount,
                        String description) {

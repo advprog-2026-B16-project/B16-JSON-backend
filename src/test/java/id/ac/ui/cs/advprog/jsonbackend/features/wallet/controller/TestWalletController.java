@@ -1,11 +1,11 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.wallet.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UserRepository;
 import id.ac.ui.cs.advprog.jsonbackend.common.config.JwtService;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.dto.WalletRequest;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletService;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletTransactionService;
-
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.dto.WalletRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -18,7 +18,6 @@ import java.math.BigDecimal;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(WalletController.class)
@@ -37,12 +36,14 @@ class TestWalletController {
     @MockBean
     private JwtService jwtService;
 
+    @MockBean
+    private UserRepository userRepository;
+
     @Autowired
     private ObjectMapper objectMapper;
 
     @Test
     void testTopUp() throws Exception {
-
         WalletRequest request = new WalletRequest();
         request.setUserId("user1");
         request.setAmount(new BigDecimal("100"));
@@ -60,7 +61,6 @@ class TestWalletController {
 
     @Test
     void testWithdraw() throws Exception {
-
         WalletRequest request = new WalletRequest();
         request.setUserId("user1");
         request.setAmount(new BigDecimal("50"));
@@ -78,7 +78,6 @@ class TestWalletController {
 
     @Test
     void testGetBalance() throws Exception {
-
         when(walletService.getBalance("user1"))
                 .thenReturn(new BigDecimal("200"));
 

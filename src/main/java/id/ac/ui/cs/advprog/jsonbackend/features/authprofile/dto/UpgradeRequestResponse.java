@@ -10,26 +10,23 @@ import java.util.UUID;
 public record UpgradeRequestResponse (
     UUID id,
     OffsetDateTime createdAt,
-    String requesterUserId,
+    UUID requesterUserId,
     String requesterUsername,
     String fullName,
-    String credential, String socialMediaUrl,
+    String credential,
+    String socialMediaUrl,
     String status
 ) {
     public static UpgradeRequestResponse fromRequest(UpgradeRequest r) {
-        if (r == null) return null;
-        
         User u = r.getRequesterUser();
-        String userId = (u != null && u.getId() != null) ? u.getId().toString() : "unknown";
-        String username = (u != null) ? u.getUsername() : "unknown";
-        
         return UpgradeRequestResponse.builder()
                 .id(r.getUpgrReqId())
                 .createdAt(r.getCreatedAt())
-                .requesterUserId(userId)
-                .requesterUsername(username)
+                .requesterUserId(u != null ? u.getId() : null)
+                .requesterUsername(u != null ? u.getUsername() : "unknown")
                 .fullName(r.getFullName())
-                .credential(r.getCredential()).socialMediaUrl(r.getSocialMediaUrl())
+                .credential(r.getCredential())
+                .socialMediaUrl(r.getSocialMediaUrl())
                 .status(r.getStatus())
                 .build();
     }

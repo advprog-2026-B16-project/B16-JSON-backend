@@ -2,12 +2,10 @@ package id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.sql.Types;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
@@ -22,7 +20,6 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false, updatable = false)
-    @JdbcTypeCode(Types.VARCHAR)
     private UUID id;
 
     @Column(name = "username", unique = true, nullable = false)
@@ -74,4 +71,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() { return true; }
+    
+    @Override
+    public String getUsername() { return username; }
 }

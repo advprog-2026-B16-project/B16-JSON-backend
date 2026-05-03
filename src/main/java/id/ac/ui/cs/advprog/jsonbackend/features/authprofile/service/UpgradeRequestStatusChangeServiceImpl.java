@@ -2,8 +2,8 @@ package id.ac.ui.cs.advprog.jsonbackend.features.authprofile.service;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.*;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.*;
-import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UpgradeRequestRepository;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UserRepository;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UpgradeRequestRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,9 +14,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UpgradeRequestStatusChangeServiceImpl implements UpgradeRequestStatusChangeService {
 
-    private final UpgradeRequestRepository upgradeRepo;
     private final UserService userService;
     private final UserRepository userRepository;
+    private final UpgradeRequestRepository upgradeRepo;
 
     @Override
     @Transactional
@@ -26,7 +26,11 @@ public class UpgradeRequestStatusChangeServiceImpl implements UpgradeRequestStat
                 throw new RuntimeException("Pending request exists");
             }
             upgradeRepo.delete(r);
+            upgradeRepo.flush();
         });
+
+        user.setStatus(UserStatus.PENDING_JASTIPER);
+        userRepository.save(user);
 
         UpgradeRequest request = UpgradeRequest.builder()
                 .requesterUser(user)
@@ -36,9 +40,8 @@ public class UpgradeRequestStatusChangeServiceImpl implements UpgradeRequestStat
                 .status("PENDING")
                 .build();
 
-        user.setStatus(UserStatus.PENDING_JASTIPER);
-        userRepository.save(user);
-        return UpgradeRequestResponse.fromRequest(upgradeRepo.save(request));
+        UpgradeRequest saved = upgradeRepo.save(request);
+        return UpgradeRequestResponse.fromRequest(saved);
     }
 
     @Override

@@ -3,8 +3,6 @@ package id.ac.ui.cs.advprog.jsonbackend.order.model;
 import id.ac.ui.cs.advprog.jsonbackend.order.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -18,18 +16,15 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "order_id")
-    @JdbcTypeCode(Types.VARCHAR)
     private UUID orderId;
 
     @Column(name = "product_id", nullable = false)
     private String productId;
 
     @Column(name = "titipers_id", nullable = false)
-    @JdbcTypeCode(Types.VARCHAR)
     private UUID titipersId;
 
     @Column(name = "jastiper_id")
-    @JdbcTypeCode(Types.VARCHAR)
     private UUID jastiperId;
 
     @Column(name = "quantity", nullable = false)
@@ -66,7 +61,7 @@ public class Order {
         this.shippingAddress = shippingAddress;
         this.orderStatus = OrderStatus.PENDING;
         this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = null;
     }
 
     public void updateStatus(OrderStatus status) {
@@ -81,6 +76,9 @@ public class Order {
     }
 
     public void submitRating(int jastiperRating, int productRating) {
+        if (this.orderStatus != OrderStatus.COMPLETED) {
+            throw new IllegalStateException("Rating can only be submitted for COMPLETED orders");
+        }
         this.jastiperRating = jastiperRating;
         this.productRating = productRating;
         this.updatedAt = LocalDateTime.now();
