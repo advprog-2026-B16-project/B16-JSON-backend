@@ -4,10 +4,10 @@ import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UpgradeRequestRe
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UpgradeRequestSubmissionRequest;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UpgradeRequest;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.User;
-import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UpgradeRequestRepository;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UpgradeRequestRepository; import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UserRepository; import org.springframework.jdbc.core.JdbcTemplate;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Test; import org.springframework.test.util.ReflectionTestUtils;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -31,7 +31,7 @@ class UpgradeRequestServiceTest {
     private UserRepository userRepository;
     
     @Mock
-    private UserService userService;
+    private UserService userService; @Mock private JdbcTemplate jdbcTemplate;
 
     @InjectMocks
     private UpgradeRequestStatusChangeServiceImpl statusChangeService;
@@ -70,14 +70,32 @@ class UpgradeRequestServiceTest {
 
     @Test
     void testGetAllRequestsAndGetByUsername() {
-        UpgradeRequestRetrievalServiceImpl retrievalService = new UpgradeRequestRetrievalServiceImpl(upgradeRequestRepository);
+        UpgradeRequestRetrievalServiceImpl retrievalService = new UpgradeRequestRetrievalServiceImpl(upgradeRequestRepository, userRepository, jdbcTemplate);
         
         // 1. getAllRequests
-        when(upgradeRequestRepository.findAll()).thenReturn(Collections.emptyList());
+        
+        when(jdbcTemplate.query(anyString(), any(org.springframework.jdbc.core.RowMapper.class))).thenAnswer(invocation -> {
+            org.springframework.jdbc.core.RowMapper<UpgradeRequest> mapper = invocation.getArgument(1);
+            java.sql.ResultSet rs = mock(java.sql.ResultSet.class);
+            when(rs.getObject("upgr_req_id")).thenReturn(UUID.randomUUID());
+            when(rs.getObject("created_at")).thenReturn(java.sql.Timestamp.from(java.time.Instant.now()));
+            when(rs.getObject("requester_user")).thenReturn(UUID.randomUUID().toString());
+            when(rs.getString("status")).thenReturn("PENDING");
+            List<UpgradeRequest> list = new java.util.ArrayList<>();
+            list.add(mapper.mapRow(rs, 0));
+            return list;
+        });
         assertNotNull(retrievalService.getAllRequests());
 
         // 2. getRequestByUsername
         when(upgradeRequestRepository.findByRequesterUser(testUser)).thenReturn(Optional.empty());
+        
         assertFalse(retrievalService.getRequestByUsername(testUser).isPresent());
+
+        // 3. getUuid coverage
+        ReflectionTestUtils.invokeMethod(retrievalService, "getUuid", "invalid-uuid");
+        ReflectionTestUtils.invokeMethod(retrievalService, "getUuid", UUID.randomUUID().toString());
+        ReflectionTestUtils.invokeMethod(retrievalService, "getUuid", new Object());
+        
     }
 }

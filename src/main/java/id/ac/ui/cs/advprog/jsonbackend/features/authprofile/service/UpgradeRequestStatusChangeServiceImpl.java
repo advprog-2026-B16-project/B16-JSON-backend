@@ -6,9 +6,10 @@ import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UpgradeRe
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -18,16 +19,21 @@ public class UpgradeRequestStatusChangeServiceImpl implements UpgradeRequestStat
     private final UpgradeRequestRepository upgradeRepo;
     private final UserService userService;
     private final UserRepository userRepository;
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     @Transactional
     public UpgradeRequestResponse submitUpgradeRequest(User user, UpgradeRequestSubmissionRequest dto) {
-        upgradeRepo.findByRequesterUser(user).ifPresent(r -> {
-            if ("PENDING".equals(r.getStatus())) {
+        String sql = "SELECT \"status\" FROM \"upgrade_request\" WHERE \"requester_user\" = ?";
+        List<String> statuses = jdbcTemplate.query(sql, (rs, rowNum) -> rs.getString("status"), user.getId());
+        
+        for (String s : statuses) {
+            if ("PENDING".equals(s)) {
                 throw new RuntimeException("Pending request exists");
             }
-            upgradeRepo.delete(r);
-        });
+        }
+        
+        jdbcTemplate.update("DELETE FROM \"upgrade_request\" WHERE \"requester_user\" = ?", user.getId());
 
         UpgradeRequest request = UpgradeRequest.builder()
                 .requesterUser(user)
@@ -47,11 +53,11 @@ public class UpgradeRequestStatusChangeServiceImpl implements UpgradeRequestStat
     public void updateRequestStatus(UUID requestId, String status) {
         UpgradeRequest r = upgradeRepo.findById(requestId).orElseThrow(() -> new RuntimeException("Not found"));
         r.setStatus(status);
-        
+
         User requester = r.getRequesterUser();
         requester.setStatus(UserStatus.ACTIVE);
         userRepository.save(requester);
-        
+
         if ("ACCEPTED".equalsIgnoreCase(status)) {
             userService.promoteToJastiper(requester);
         }
