@@ -8,7 +8,7 @@ import java.util.UUID;
 
 @Builder
 public record UpgradeRequestResponse (
-    UUID id,
+    String id,
     OffsetDateTime createdAt,
     String requesterUserId,
     String requesterUsername,

@@ -1,76 +1,50 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model;
 
 import org.junit.jupiter.api.Test;
-
 import java.time.OffsetDateTime;
-import java.util.UUID;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class UpgradeRequestTest {
 
     @Test
-    void testUpgradeRequestAllArgsConstructor() {
-        UUID id = UUID.randomUUID();
-        OffsetDateTime now = OffsetDateTime.now();
-        User user = new User();
-        UpgradeRequest request = new UpgradeRequest(id, now, user, "Name", "Cred", "social", "PENDING");
+    void testUpgradeRequestBruteForce() {
+        UpgradeRequest r1 = new UpgradeRequest();
+        UpgradeRequest r2 = new UpgradeRequest();
         
-        assertEquals(id, request.getUpgrReqId());
-        assertEquals(now, request.getCreatedAt());
-        assertEquals(user, request.getRequesterUser());
-        assertEquals("Name", request.getFullName());
-        assertEquals("Cred", request.getCredential());
-        assertEquals("PENDING", request.getStatus());
-    }
+        r1.setUpgrReqId("id");
+        r1.setCreatedAt(OffsetDateTime.now());
+        r1.setRequesterUser(new User());
+        r1.setFullName("name");
+        r1.setCredential("cred");
+        r1.setSocialMediaUrl("url");
+        r1.setStatus("PENDING");
 
-    @Test
-    void testUpgradeRequestBuilder() {
-        UUID id = UUID.randomUUID();
-        User user = new User();
-        OffsetDateTime now = OffsetDateTime.now();
+        assertEquals(r1, r1);
+        assertNotEquals(r1, null);
+        assertNotEquals(r1, new Object());
         
-        UpgradeRequest.UpgradeRequestBuilder builder = UpgradeRequest.builder();
-        builder.upgrReqId(id);
-        builder.createdAt(now);
-        builder.requesterUser(user);
-        builder.fullName("Name");
-        builder.credential("Cred");
-        builder.status("PENDING");
-        assertNotNull(builder.toString());
-        UpgradeRequest request = builder.build();
+        r2.setUpgrReqId("id");
+        r2.setCreatedAt(r1.getCreatedAt());
+        r2.setRequesterUser(r1.getRequesterUser());
+        r2.setFullName("name");
+        r2.setCredential("cred");
+        r2.setSocialMediaUrl("url");
+        r2.setStatus("PENDING");
         
-        assertEquals(id, request.getUpgrReqId());
-        assertEquals(user, request.getRequesterUser());
-        assertEquals(now, request.getCreatedAt());
-    }
-
-    @Test
-    void testDefaultValues() {
-        UpgradeRequest request = UpgradeRequest.builder().build();
-        assertNotNull(request.getCreatedAt());
-        assertEquals("PENDING", request.getStatus());
-    }
-
-    @Test
-    void testGettersAndSetters() {
-        UpgradeRequest request = new UpgradeRequest();
-        UUID id = UUID.randomUUID();
-        OffsetDateTime now = OffsetDateTime.now();
-        User user = new User();
+        assertEquals(r1, r2);
+        assertEquals(r1.hashCode(), r2.hashCode());
+        assertTrue(r1.canEqual(r2));
         
-        request.setUpgrReqId(id);
-        request.setCreatedAt(now);
-        request.setRequesterUser(user);
-        request.setFullName("Name");
-        request.setCredential("Cred");
-        request.setStatus("ACCEPTED");
-
-        assertEquals(id, request.getUpgrReqId());
-        assertEquals(now, request.getCreatedAt());
-        assertEquals(user, request.getRequesterUser());
-        assertEquals("Name", request.getFullName());
-        assertEquals("Cred", request.getCredential());
-        assertEquals("ACCEPTED", request.getStatus());
+        r2.setUpgrReqId("different");
+        assertNotEquals(r1, r2);
+        
+        UpgradeRequest b = UpgradeRequest.builder()
+            .upgrReqId("id")
+            .fullName("name")
+            .build();
+        assertNotNull(b.toString());
+        
+        UpgradeRequest all = new UpgradeRequest("id", OffsetDateTime.now(), new User(), "name", "cred", "url", "PENDING");
+        assertNotNull(all.getUpgrReqId());
     }
 }

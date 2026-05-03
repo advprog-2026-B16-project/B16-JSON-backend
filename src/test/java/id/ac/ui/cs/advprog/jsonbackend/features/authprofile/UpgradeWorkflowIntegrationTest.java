@@ -113,7 +113,7 @@ class UpgradeWorkflowIntegrationTest {
                 .andReturn().getResponse().getContentAsString();
 
         UpgradeRequestResponse[] responses = objectMapper.readValue(requestsJson, UpgradeRequestResponse[].class);
-        UUID requestId = responses[0].id();
+        String requestId = responses[0].id();
 
         // 4. Approve
         UpgradeRequestStatusChangeRequest statusDto = new UpgradeRequestStatusChangeRequest();

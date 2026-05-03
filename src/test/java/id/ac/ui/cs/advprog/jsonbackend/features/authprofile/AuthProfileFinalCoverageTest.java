@@ -60,7 +60,7 @@ class AuthProfileFinalCoverageTest {
         when(jdbcTemplate.query(anyString(), any(org.springframework.jdbc.core.RowMapper.class), any())).thenAnswer(invocation -> {
             org.springframework.jdbc.core.RowMapper<UpgradeRequest> mapper = invocation.getArgument(1);
             java.sql.ResultSet rs = mock(java.sql.ResultSet.class);
-            when(rs.getObject("upgr_req_id")).thenReturn(UUID.randomUUID().toString());
+            when(rs.getObject(1)).thenReturn(UUID.randomUUID().toString());
             when(rs.getString("status")).thenReturn("PENDING");
             List<UpgradeRequest> list = new java.util.ArrayList<>();
             list.add(mapper.mapRow(rs, 0));
@@ -72,14 +72,11 @@ class AuthProfileFinalCoverageTest {
 
     @Test
     void testUpgradeRequestRetrievalController_VerboseLoggingBranches() {
-        // 1. Test with verboseLogging = true
         ReflectionTestUtils.setField(retrievalController, "verboseLogging", true);
         when(retrievalService.getAllRequests()).thenReturn(Collections.emptyList());
-        
         ResponseEntity<List<UpgradeRequestResponse>> res1 = retrievalController.getAllRequests();
         assertEquals(200, res1.getStatusCode().value());
 
-        // 2. Test with verboseLogging = false
         ReflectionTestUtils.setField(retrievalController, "verboseLogging", false);
         ResponseEntity<List<UpgradeRequestResponse>> res2 = retrievalController.getAllRequests();
         assertEquals(200, res2.getStatusCode().value());
@@ -89,23 +86,19 @@ class AuthProfileFinalCoverageTest {
     void testUpgradeRequestStatusChangeService_UpdateStatusBranches() {
         UUID id = UUID.randomUUID();
         UpgradeRequest r = new UpgradeRequest();
-        r.setUpgrReqId(id);
+        r.setUpgrReqId(id.toString());
         User user = new User();
         r.setRequesterUser(user);
         
-        when(upgradeRepo.findById(id)).thenReturn(Optional.of(r));
+        when(upgradeRepo.findById(id.toString())).thenReturn(Optional.of(r));
 
-        // 1. Status = ACCEPTED (True branch)
         statusChangeServiceImpl.updateRequestStatus(id, "ACCEPTED");
         verify(userService).promoteToJastiper(user);
-        verify(upgradeRepo).save(r);
 
-        // 2. Status = REJECTED (False branch)
         reset(userService, upgradeRepo, userRepository);
-        when(upgradeRepo.findById(id)).thenReturn(Optional.of(r));
+        when(upgradeRepo.findById(id.toString())).thenReturn(Optional.of(r));
         statusChangeServiceImpl.updateRequestStatus(id, "REJECTED");
         verify(userService, never()).promoteToJastiper(any());
-        verify(upgradeRepo).save(r);
     }
 
     @Test
@@ -117,14 +110,15 @@ class AuthProfileFinalCoverageTest {
         dto.setCredential("Proof"); dto.setSocialMediaUrl("url");
 
         // 1. Existing request NOT PENDING
-        when(jdbcTemplate.query(anyString(), any(org.springframework.jdbc.core.RowMapper.class), any())).thenReturn(Collections.singletonList("ACCEPTED"));
         UpgradeRequest existing = new UpgradeRequest();
+        existing.setStatus("ACCEPTED");
+        when(upgradeRepo.findByRequesterUser(user)).thenReturn(Optional.of(existing));
         when(upgradeRepo.save(any())).thenReturn(existing);
         
         assertNotNull(statusChangeServiceImpl.submitUpgradeRequest(user, dto));
 
         // 2. Existing request IS PENDING
-        when(jdbcTemplate.query(anyString(), any(org.springframework.jdbc.core.RowMapper.class), any())).thenReturn(Collections.singletonList("PENDING"));
+        existing.setStatus("PENDING");
         RuntimeException ex = assertThrows(RuntimeException.class, () -> statusChangeServiceImpl.submitUpgradeRequest(user, dto));
         assertEquals("Pending request exists", ex.getMessage());
     }

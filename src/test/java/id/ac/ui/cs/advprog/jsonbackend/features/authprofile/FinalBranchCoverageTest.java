@@ -95,7 +95,7 @@ class FinalBranchCoverageTest {
         submitDto.setCredential("Proof");
         
         UpgradeRequestResponse res = statusChangeService.submitUpgradeRequest(titiper, submitDto);
-        UUID requestId = res.id();
+        String requestId = res.id();
 
         UpgradeRequestStatusChangeRequest statusDto = new UpgradeRequestStatusChangeRequest();
         statusDto.setNewStatus("REJECTED");

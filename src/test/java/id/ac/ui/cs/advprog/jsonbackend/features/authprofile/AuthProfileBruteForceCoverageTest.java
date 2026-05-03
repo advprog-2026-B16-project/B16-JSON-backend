@@ -89,10 +89,10 @@ class AuthProfileBruteForceCoverageTest {
         dto.setCredential("Cred"); dto.setSocialMediaUrl("url");
         
         UpgradeRequestResponse res = statusChangeService.submitUpgradeRequest(titiper, dto);
-        UUID requestId = res.id();
+        String requestId = res.id();
 
         // 1. ACCEPTED (promotes user)
-        statusChangeService.updateRequestStatus(requestId, "ACCEPTED");
+        statusChangeService.updateRequestStatus(UUID.fromString(requestId), "ACCEPTED");
         assertEquals(UserRole.JASTIPER, userRepository.findByUsername("titiper_bf").get().getRole());
 
         // 2. REJECTED (does not promote user)
@@ -106,7 +106,7 @@ class AuthProfileBruteForceCoverageTest {
         userRepository.save(u2);
         UpgradeRequestResponse res2 = statusChangeService.submitUpgradeRequest(u2, dto);
         
-        statusChangeService.updateRequestStatus(res2.id(), "REJECTED");
+        statusChangeService.updateRequestStatus(UUID.fromString(res2.id()), "REJECTED");
         assertEquals(UserRole.TITIPER, userRepository.findByUsername("user2").get().getRole()); assertEquals(UserStatus.ACTIVE, userRepository.findByUsername("user2").get().getStatus());
     }
 }

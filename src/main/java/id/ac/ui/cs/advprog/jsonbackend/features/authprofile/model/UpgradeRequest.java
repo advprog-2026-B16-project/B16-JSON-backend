@@ -4,21 +4,18 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.OffsetDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "upgrade_request")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class UpgradeRequest {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "upgr_req_id")
-    private UUID upgrReqId;
+    private String upgrReqId;
 
     @Column(name = "created_at", updatable = false, nullable = false)
     @Builder.Default
