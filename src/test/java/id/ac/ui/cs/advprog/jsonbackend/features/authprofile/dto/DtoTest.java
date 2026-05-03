@@ -64,12 +64,12 @@ class DtoTest {
         UUID userId = UUID.randomUUID();
 
         // Canonical
-        UpgradeRequestResponse r = new UpgradeRequestResponse(id.toString(), now, userId.toString(), "un", "fn", "cr", "social", "st");
-        assertEquals(id.toString(), r.id());
+        UpgradeRequestResponse r = new UpgradeRequestResponse(id, now, userId.toString(), "un", "fn", "cr", "social", "st");
+        assertEquals(id, r.id());
         
         // Builder exhaustive
         UpgradeRequestResponse.UpgradeRequestResponseBuilder b = UpgradeRequestResponse.builder();
-        b.id(id.toString()); b.createdAt(now); b.requesterUserId(userId.toString()); b.requesterUsername("un"); b.fullName("fn"); b.credential("cr"); b.socialMediaUrl("social"); b.status("st");
+        b.id(id); b.createdAt(now); b.requesterUserId(userId.toString()); b.requesterUsername("un"); b.fullName("fn"); b.credential("cr"); b.socialMediaUrl("social"); b.status("st");
         assertNotNull(b.toString());
         assertEquals(r, b.build());
         
@@ -81,7 +81,7 @@ class DtoTest {
         // fromRequest
         User user = User.builder().id(userId).username("un").build();
         UpgradeRequest ur = UpgradeRequest.builder()
-                .upgrReqId(id.toString()).createdAt(now).requesterUser(user).fullName("fn").credential("cr").socialMediaUrl("social").status("st")
+                .upgrReqId(id).createdAt(now).requesterUser(user).fullName("fn").credential("cr").socialMediaUrl("social").status("st")
                 .build();
         assertEquals(r, UpgradeRequestResponse.fromRequest(ur));
         

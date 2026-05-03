@@ -21,7 +21,6 @@ public class OrderServiceImpl implements OrderService {
 
     private static final BigDecimal DEFAULT_UNIT_PRICE = BigDecimal.valueOf(10000L);
 
-    // Temporary in-memory catalog price until Inventory/Catalog integration is ready.
     private static final Map<String, BigDecimal> HARDCODED_PRODUCT_PRICES = Map.of(
             "prod-abc-123", BigDecimal.valueOf(125000L),
             "prod-xyz-456", BigDecimal.valueOf(250000L),
@@ -125,6 +124,9 @@ public class OrderServiceImpl implements OrderService {
         }
         if (request.getTitipersId() == null) {
             throw new IllegalArgumentException("titipersId wajib diisi");
+        }
+        if (request.getTitipersId().equals(request.getJastiperId())) {
+            throw new IllegalArgumentException("Jastiper tidak boleh membeli barang dirinya sendiri");
         }
         if (request.getQuantity() <= 0) {
             throw new IllegalArgumentException("quantity harus lebih dari 0");

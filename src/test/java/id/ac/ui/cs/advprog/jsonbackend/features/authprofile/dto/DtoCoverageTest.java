@@ -20,7 +20,7 @@ class DtoCoverageTest {
 
         // 2. null requester user
         UpgradeRequest r1 = UpgradeRequest.builder()
-                .upgrReqId(UUID.randomUUID().toString())
+                .upgrReqId(UUID.randomUUID())
                 .requesterUser(null)
                 .build();
         UpgradeRequestResponse res1 = UpgradeRequestResponse.fromRequest(r1);
@@ -31,7 +31,7 @@ class DtoCoverageTest {
         User u2 = new User();
         u2.setUsername("u2");
         UpgradeRequest r2 = UpgradeRequest.builder()
-                .upgrReqId(UUID.randomUUID().toString())
+                .upgrReqId(UUID.randomUUID())
                 .requesterUser(u2)
                 .build();
         UpgradeRequestResponse res2 = UpgradeRequestResponse.fromRequest(r2);
