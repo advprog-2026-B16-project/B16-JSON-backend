@@ -1,7 +1,8 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.wallet.service;
 
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.enums.TransactionStatus;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.enums.TransactionType;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InvalidAmountException;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InsufficientBalanceException;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Transaction;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Wallet;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,11 +11,8 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class TestWalletTransactionServiceImpl {
 
@@ -30,73 +28,105 @@ class TestWalletTransactionServiceImpl {
     }
 
     @Test
-    void testTopUp() {
+    void testRequestTopUp() {
         String userId = "user1";
         BigDecimal amount = new BigDecimal("100");
         Wallet wallet = new Wallet(userId);
-        Transaction transaction = new Transaction(wallet.getId(), TransactionType.TOP_UP, amount, "Top Up");
-        transaction.setId("tx-1");
+
+        Transaction trx = new Transaction(userId, wallet.getId(), TransactionType.TOP_UP, amount, "Top Up Request");
 
         when(walletService.findWallet(userId)).thenReturn(wallet);
-        when(transactionService.createTransaction(wallet, TransactionType.TOP_UP, amount, "Top Up"))
-                .thenReturn(transaction);
+        when(transactionService.createTransaction(wallet, TransactionType.TOP_UP, amount, "Top Up Request"))
+                .thenReturn(trx);
 
-        walletTransactionService.topUp(userId, amount);
+        Transaction result = walletTransactionService.requestTopUp(userId, amount);
 
-        verify(walletService).credit(userId, amount);
-        verify(transactionService).markSuccess("tx-1");
+        assertEquals(trx, result);
+        verify(transactionService).createTransaction(wallet, TransactionType.TOP_UP, amount, "Top Up Request");
+
+        verify(walletService, never()).credit(any(), any());
     }
 
     @Test
-    void testWithdraw() {
+    void testConfirmTopUpSuccess() {
+        String trxId = "tx-1";
+
+        Transaction trx = mock(Transaction.class);
+        when(trx.getStatus()).thenReturn(TransactionStatus.PENDING);
+        when(trx.getUserId()).thenReturn("user1");
+        when(trx.getAmount()).thenReturn(new BigDecimal("100"));
+
+        when(transactionService.getTransactionById(trxId)).thenReturn(trx);
+
+        walletTransactionService.confirmTopUp(trxId);
+
+        verify(walletService).credit("user1", new BigDecimal("100"));
+        verify(transactionService).markSuccess(trxId);
+    }
+
+    @Test
+    void testConfirmTopUpAlreadySuccess() {
+        String trxId = "tx-1";
+
+        Transaction trx = mock(Transaction.class);
+        when(trx.getStatus()).thenReturn(TransactionStatus.SUCCESS);
+
+        when(transactionService.getTransactionById(trxId)).thenReturn(trx);
+
+        walletTransactionService.confirmTopUp(trxId);
+
+        verify(walletService, never()).credit(any(), any());
+        verify(transactionService, never()).markSuccess(any());
+    }
+
+    @Test
+    void testRequestWithdrawSuccess() {
         String userId = "user1";
         BigDecimal amount = new BigDecimal("50");
-        Wallet wallet = new Wallet(userId);
-        Transaction transaction = new Transaction(wallet.getId(), TransactionType.WITHDRAW, amount, "Withdraw");
-        transaction.setId("tx-2");
+
+        Wallet wallet = mock(Wallet.class);
+        when(wallet.getBalance()).thenReturn(new BigDecimal("100"));
+
+        Transaction trx = new Transaction(userId, "wallet1", TransactionType.WITHDRAW, amount, "Withdraw Request");
+        trx.setId("tx-2");
 
         when(walletService.findWallet(userId)).thenReturn(wallet);
-        when(transactionService.createTransaction(wallet, TransactionType.WITHDRAW, amount, "Withdraw"))
-                .thenReturn(transaction);
+        when(transactionService.createTransaction(wallet, TransactionType.WITHDRAW, amount, "Withdraw Request"))
+                .thenReturn(trx);
 
-        walletTransactionService.withdraw(userId, amount);
+        walletTransactionService.requestWithdraw(userId, amount);
 
         verify(walletService).debit(userId, amount);
         verify(transactionService).markSuccess("tx-2");
     }
 
     @Test
-    void testGetTransactionHistory() {
+    void testRequestWithdrawInsufficientBalance() {
         String userId = "user1";
-        Transaction transaction = new Transaction("wallet1", TransactionType.TOP_UP, new BigDecimal("100"), "Top Up");
+        BigDecimal amount = new BigDecimal("200");
 
-        when(transactionService.getUserTransactions(userId)).thenReturn(List.of(transaction));
+        Wallet wallet = mock(Wallet.class);
+        when(wallet.getBalance()).thenReturn(new BigDecimal("100"));
 
-        List<Transaction> history = walletTransactionService.getTransactionHistory(userId);
+        when(walletService.findWallet(userId)).thenReturn(wallet);
 
-        assertEquals(1, history.size());
-        verify(transactionService).getUserTransactions(userId);
+        assertThrows(InsufficientBalanceException.class,
+                () -> walletTransactionService.requestWithdraw(userId, amount));
+
+        verify(transactionService, never()).createTransaction(any(), any(), any(), any());
     }
 
     @Test
-    void testFailedTransactionIsMarkedFailed() {
+    void testGetTransactionHistory() {
         String userId = "user1";
-        BigDecimal amount = BigDecimal.ZERO;
-        Wallet wallet = new Wallet(userId);
-        Transaction transaction = new Transaction(wallet.getId(), TransactionType.TOP_UP, amount, "Top Up");
-        transaction.setId("tx-3");
 
-        when(walletService.findWallet(userId)).thenReturn(wallet);
-        when(transactionService.createTransaction(wallet, TransactionType.TOP_UP, amount, "Top Up"))
-                .thenReturn(transaction);
+        Transaction trx = new Transaction(userId, "wallet1", TransactionType.TOP_UP, new BigDecimal("100"), "Top Up");
 
-        when(transactionService.createTransaction(wallet, TransactionType.TOP_UP, amount, "Top Up"))
-                .thenReturn(transaction);
+        when(transactionService.getUserTransactions(userId)).thenReturn(List.of(trx));
 
-        org.mockito.Mockito.doThrow(new InvalidAmountException())
-                .when(walletService).credit(userId, amount);
+        List<Transaction> result = walletTransactionService.getTransactionHistory(userId);
 
-        assertThrows(InvalidAmountException.class, () -> walletTransactionService.topUp(userId, amount));
-        verify(transactionService).markFailed("tx-3");
+        assertEquals(1, result.size());
+        verify(transactionService).getUserTransactions(userId);
     }
 }

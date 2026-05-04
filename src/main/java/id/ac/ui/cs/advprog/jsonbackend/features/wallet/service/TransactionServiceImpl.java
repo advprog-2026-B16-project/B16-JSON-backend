@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.wallet.service;
 
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.TransactionNotFoundException;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Wallet;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Transaction;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.enums.TransactionType;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -33,9 +35,16 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    public Transaction getTransactionById(String transactionId) {
+        return transactionRepository.findById(transactionId)
+                .orElseThrow(() -> new TransactionNotFoundException(transactionId));
+    }
+
+    @Override
     public Transaction createTransaction(Wallet wallet, TransactionType type, BigDecimal amount, String description) {
 
         Transaction transaction = new Transaction(
+                wallet.getUserId(),
                 wallet.getId(),
                 type,
                 amount,

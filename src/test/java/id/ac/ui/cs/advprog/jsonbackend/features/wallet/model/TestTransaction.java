@@ -14,18 +14,20 @@ class TestTransaction {
 
     private Transaction transaction;
     private final String WALLET_ID = "wallet-abc";
+    private final String USER_ID = "user1";
     private final TransactionType TYPE = TransactionType.TOP_UP;
     private final BigDecimal AMOUNT = BigDecimal.valueOf(250);
     private final String DESCRIPTION = "Top up initial balance";
 
     @BeforeEach
     void setUp() {
-        transaction = new Transaction(WALLET_ID, TYPE, AMOUNT, DESCRIPTION);
+        transaction = new Transaction(WALLET_ID, USER_ID, TYPE, AMOUNT, DESCRIPTION);
     }
 
     @Test
     void testTransactionConstructor_shouldInitializeFieldsCorrectly() {
         assertEquals(WALLET_ID, transaction.getWalletId());
+        assertEquals(USER_ID, transaction.getUserId());
         assertEquals(TYPE, transaction.getType());
         assertEquals(AMOUNT, transaction.getAmount());
         assertEquals(DESCRIPTION, transaction.getDescription());

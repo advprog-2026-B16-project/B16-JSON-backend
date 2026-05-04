@@ -20,6 +20,7 @@ public class Transaction {
     private String id;
 
     private String walletId;
+    private String userId;
 
     @Enumerated(EnumType.STRING)
     private TransactionType type;
@@ -36,10 +37,12 @@ public class Transaction {
     protected Transaction() {}
 
     public Transaction(String walletId,
+                       String userId,
                        TransactionType type,
                        BigDecimal amount,
                        String description) {
         this.walletId = walletId;
+        this.userId = userId;
         this.type = type;
         this.amount = amount;
         this.description = description;

@@ -26,11 +26,11 @@ class TestTransactionRepository {
     void setUp() {
         transactionRepository.deleteAll();
 
-        Transaction transaction1 = new Transaction(WALLET_ID_1, TransactionType.TOP_UP, BigDecimal.valueOf(100), "Initial deposit");
-        Transaction transaction2 = new Transaction(WALLET_ID_1, TransactionType.WITHDRAW, BigDecimal.valueOf(25), "Purchase");
+        Transaction transaction1 = new Transaction(WALLET_ID_1, "user1", TransactionType.TOP_UP, BigDecimal.valueOf(100), "Initial deposit");
+        Transaction transaction2 = new Transaction(WALLET_ID_1, "user1", TransactionType.WITHDRAW, BigDecimal.valueOf(25), "Purchase");
         transactionRepository.saveAll(List.of(transaction1, transaction2));
 
-        Transaction transaction3 = new Transaction(WALLET_ID_2, TransactionType.TOP_UP, BigDecimal.valueOf(500), "Refund");
+        Transaction transaction3 = new Transaction(WALLET_ID_2, "user2", TransactionType.TOP_UP, BigDecimal.valueOf(500), "Refund");
         transactionRepository.save(transaction3);
     }
 
