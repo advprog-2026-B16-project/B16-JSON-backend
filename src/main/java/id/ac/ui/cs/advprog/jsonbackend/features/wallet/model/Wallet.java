@@ -49,8 +49,8 @@ public class Wallet {
     }
 
     private void validateAmount(BigDecimal amount) {
-        if (this.balance.subtract(amount).compareTo(BigDecimal.ZERO) < 0) {
-            throw new InsufficientBalanceException();
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidAmountException();
         }
     }
 }

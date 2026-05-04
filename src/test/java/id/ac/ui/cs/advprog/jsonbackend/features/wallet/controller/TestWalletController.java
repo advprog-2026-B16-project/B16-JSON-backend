@@ -35,6 +35,8 @@ class TestWalletController {
     @MockBean
     private WalletTransactionService walletTransactionService;
 
+    @MockBean
+    private JwtService jwtService;
 
     @Autowired
     private ObjectMapper objectMapper;
