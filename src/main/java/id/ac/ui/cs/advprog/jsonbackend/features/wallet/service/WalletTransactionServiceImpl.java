@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -103,5 +104,38 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
     @Override
     public List<Transaction> getTransactionHistory(String userId) {
         return transactionService.getUserTransactions(userId);
+    }
+
+    @Override
+    public Transaction requestPayment(String userId, String orderId, BigDecimal amount) {
+        if (orderId == null || orderId.isBlank()) {
+            throw new IllegalArgumentException("Order ID cannot be null or empty");
+        }
+
+        Wallet wallet = walletService.findWallet(userId);
+
+        if (wallet.getBalance().compareTo(amount) < 0) {
+            throw new InsufficientBalanceException();
+        }
+
+        Transaction trx = transactionService.createTransaction(
+                wallet,
+                TransactionType.PAYMENT,
+                amount,
+                "Payment for order " + orderId
+        );
+
+        trx.setOrderId(UUID.fromString(orderId));
+
+        try {
+            walletService.debit(userId, amount);
+            transactionService.markSuccess(trx.getId().toString());
+
+            return trx;
+
+        } catch (Exception e) {
+            transactionService.markFailed(trx.getId().toString());
+            throw e;
+        }
     }
 }

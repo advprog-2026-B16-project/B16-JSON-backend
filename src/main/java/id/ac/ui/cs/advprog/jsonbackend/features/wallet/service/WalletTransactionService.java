@@ -15,4 +15,6 @@ public interface WalletTransactionService {
     void refund(String userId, BigDecimal amount);
 
     List<Transaction> getTransactionHistory(String userId);
+
+    Transaction requestPayment(String userId, String orderId, BigDecimal amount);
 }

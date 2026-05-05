@@ -27,6 +27,9 @@ public class Transaction {
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
+    @Column(name = "order_id")
+    private UUID orderId;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
     private TransactionType type;
