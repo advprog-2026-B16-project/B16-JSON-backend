@@ -50,7 +50,7 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
             throw new RuntimeException("Invalid transaction state");
         }
 
-        walletService.credit(trx.getUserId(), trx.getAmount());
+        walletService.credit(trx.getUserId().toString(), trx.getAmount());
 
         transactionService.markSuccess(transactionId);
     }
@@ -72,10 +72,10 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
 
         try {
             walletService.debit(userId, amount);
-            transactionService.markSuccess(trx.getId());
+            transactionService.markSuccess(trx.getId().toString());
 
         } catch (Exception e) {
-            transactionService.markFailed(trx.getId());
+            transactionService.markFailed(trx.getId().toString());
             throw e;
         }
     }
@@ -93,9 +93,9 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
 
         try {
             walletService.credit(userId, amount);
-            transactionService.markSuccess(trx.getId());
+            transactionService.markSuccess(trx.getId().toString());
         } catch (Exception e) {
-            transactionService.markFailed(trx.getId());
+            transactionService.markFailed(trx.getId().toString());
             throw e;
         }
     }

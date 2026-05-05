@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/wallet")
@@ -28,7 +29,7 @@ public class WalletController {
 
     @PostMapping("/topup/request")
     public ResponseEntity<Transaction> requestTopUp(@RequestBody WalletRequest request) {
-        Transaction trx = walletTransactionService.requestTopUp(request.getUserId(), request.getAmount());
+        Transaction trx = walletTransactionService.requestTopUp(request.getUserId().toString(), request.getAmount());
 
         return ResponseEntity.ok(trx);
     }
@@ -41,7 +42,7 @@ public class WalletController {
 
     @PostMapping("/withdraw")
     public ResponseEntity<String> withdraw(@Valid @RequestBody WalletRequest request) {
-        walletTransactionService.requestWithdraw(request.getUserId(), request.getAmount());
+        walletTransactionService.requestWithdraw(request.getUserId().toString(), request.getAmount());
         return ResponseEntity.ok("Withdraw success");
     }
 

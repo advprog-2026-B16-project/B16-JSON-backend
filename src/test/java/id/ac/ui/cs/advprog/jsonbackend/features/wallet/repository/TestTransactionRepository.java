@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,19 +19,47 @@ class TestTransactionRepository {
     @Autowired
     private TransactionRepository transactionRepository;
 
-    private final String WALLET_ID_1 = "wallet-abc";
-    private final String WALLET_ID_2 = "wallet-xyz";
-    private final String NON_EXISTENT_WALLET_ID = "wallet-999";
+    private UUID WALLET_ID_1;
+    private UUID WALLET_ID_2;
+    private UUID NON_EXISTENT_WALLET_ID;
+
+    private UUID USER_ID_1;
+    private UUID USER_ID_2;
 
     @BeforeEach
     void setUp() {
         transactionRepository.deleteAll();
 
-        Transaction transaction1 = new Transaction(WALLET_ID_1, "user1", TransactionType.TOP_UP, BigDecimal.valueOf(100), "Initial deposit");
-        Transaction transaction2 = new Transaction(WALLET_ID_1, "user1", TransactionType.WITHDRAW, BigDecimal.valueOf(25), "Purchase");
+        WALLET_ID_1 = UUID.randomUUID();
+        WALLET_ID_2 = UUID.randomUUID();
+        NON_EXISTENT_WALLET_ID = UUID.randomUUID();
+
+        USER_ID_1 = UUID.randomUUID();
+        USER_ID_2 = UUID.randomUUID();
+
+        Transaction transaction1 = new Transaction(
+                WALLET_ID_1, USER_ID_1,
+                TransactionType.TOP_UP,
+                BigDecimal.valueOf(100),
+                "Initial deposit"
+        );
+
+        Transaction transaction2 = new Transaction(
+                WALLET_ID_1, USER_ID_1,
+                TransactionType.WITHDRAW,
+                BigDecimal.valueOf(25),
+                "Purchase"
+        );
+
         transactionRepository.saveAll(List.of(transaction1, transaction2));
 
-        Transaction transaction3 = new Transaction(WALLET_ID_2, "user2", TransactionType.TOP_UP, BigDecimal.valueOf(500), "Refund");
+        Transaction transaction3 = new Transaction(
+                WALLET_ID_2, USER_ID_2,
+                TransactionType.TOP_UP,
+                BigDecimal.valueOf(500),
+                "Refund"
+        );
+
         transactionRepository.save(transaction3);
     }
 

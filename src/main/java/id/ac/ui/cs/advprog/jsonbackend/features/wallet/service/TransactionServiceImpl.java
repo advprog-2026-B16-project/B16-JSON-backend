@@ -36,7 +36,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public Transaction getTransactionById(String transactionId) {
-        return transactionRepository.findById(transactionId)
+        return transactionRepository.findById(UUID.fromString(transactionId))
                 .orElseThrow(() -> new TransactionNotFoundException(transactionId));
     }
 
@@ -56,14 +56,14 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public void markSuccess(String transactionId) {
-        Transaction transaction = transactionRepository.findById(transactionId)
+        Transaction transaction = transactionRepository.findById(UUID.fromString(transactionId))
                 .orElseThrow(() -> new IllegalArgumentException("Transaction not found: " + transactionId));
         transaction.markSuccess();
     }
 
     @Override
     public void markFailed(String transactionId) {
-        Transaction transaction = transactionRepository.findById(transactionId)
+        Transaction transaction = transactionRepository.findById(UUID.fromString(transactionId))
                 .orElseThrow(() -> new IllegalArgumentException("Transaction not found: " + transactionId));
         transaction.markFailed();
     }

@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.jsonbackend.features.wallet.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.advprog.jsonbackend.common.config.JwtService;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UserRepository;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.dto.WalletRequest;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Transaction;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletService;
@@ -16,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -38,80 +40,93 @@ class TestWalletController {
     @MockBean
     private JwtService jwtService;
 
+    @MockBean
+    private UserRepository userRepository;
+
     @Autowired
     private ObjectMapper objectMapper;
 
     @Test
     void testRequestTopUp() throws Exception {
 
+        UUID userId = UUID.randomUUID();
+        UUID walletId = UUID.randomUUID();
+        UUID trxId = UUID.randomUUID();
+
         WalletRequest request = new WalletRequest();
-        request.setUserId("user1");
+        request.setUserId(userId);
         request.setAmount(new BigDecimal("100"));
 
         Transaction trx = new Transaction(
-                "wallet1",
-                "user1",
+                walletId,
+                userId,
                 null,
                 new BigDecimal("100"),
                 "Top Up"
         );
-        trx.setId("trx-1");
+        trx.setId(trxId);
 
-        when(walletTransactionService.requestTopUp("user1", new BigDecimal("100")))
+        when(walletTransactionService.requestTopUp(userId.toString(), new BigDecimal("100")))
                 .thenReturn(trx);
 
         mockMvc.perform(post("/api/wallet/topup/request")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value("trx-1"));
+                .andExpect(jsonPath("$.id").value(trxId.toString()));
 
-        verify(walletTransactionService).requestTopUp("user1", new BigDecimal("100"));
+        verify(walletTransactionService).requestTopUp(userId.toString(), new BigDecimal("100"));
     }
 
     @Test
     void testConfirmTopUp() throws Exception {
+        UUID trxId = UUID.randomUUID();
 
-        doNothing().when(walletTransactionService).confirmTopUp("trx-1");
+        doNothing().when(walletTransactionService).confirmTopUp(trxId.toString());
 
-        mockMvc.perform(post("/api/wallet/topup/confirm/trx-1"))
+        mockMvc.perform(post("/api/wallet/topup/confirm/" + trxId))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Top up confirmed"));
 
-        verify(walletTransactionService).confirmTopUp("trx-1");
+        verify(walletTransactionService).confirmTopUp(trxId.toString());
     }
 
     @Test
     void testWithdraw() throws Exception {
 
+        UUID userId = UUID.randomUUID();
+
         WalletRequest request = new WalletRequest();
-        request.setUserId("user1");
+        request.setUserId(userId);
         request.setAmount(new BigDecimal("50"));
 
         doNothing().when(walletTransactionService)
-                .requestWithdraw("user1", new BigDecimal("50"));
+                .requestWithdraw(userId.toString(), new BigDecimal("50"));
 
         mockMvc.perform(post("/api/wallet/withdraw")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding("utf-8")
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Withdraw success"));
 
         verify(walletTransactionService)
-                .requestWithdraw("user1", new BigDecimal("50"));
+                .requestWithdraw(userId.toString(), new BigDecimal("50"));
     }
 
     @Test
     void testGetBalance() throws Exception {
 
-        when(walletService.getBalance("user1"))
+        UUID userId = UUID.randomUUID();
+
+        when(walletService.getBalance(userId.toString()))
                 .thenReturn(new BigDecimal("200"));
 
-        mockMvc.perform(get("/api/wallet/user1"))
+        mockMvc.perform(get("/api/wallet/" + userId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userId").value("user1"))
+                .andExpect(jsonPath("$.userId").value(userId.toString()))
                 .andExpect(jsonPath("$.balance").value(200));
 
-        verify(walletService).getBalance("user1");
+        verify(walletService).getBalance(userId.toString());
     }
 }

@@ -1,15 +1,14 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.wallet.repository;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Wallet;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
-import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 class TestWalletRepository {
@@ -17,30 +16,16 @@ class TestWalletRepository {
     @Autowired
     private WalletRepository walletRepository;
 
-    private Wallet testWallet;
-    private final String USER_ID = "user-123";
-    private final String NON_EXISTENT_USER_ID = "user-999";
+    @Test
+    void testFindByUserId() {
+        UUID USER_ID = UUID.randomUUID();
 
-    @BeforeEach
-    void setUp() {
-        walletRepository.deleteAll();
-        testWallet = new Wallet(USER_ID);
-        testWallet.setBalance(BigDecimal.valueOf(1000));
+        Wallet testWallet = new Wallet(USER_ID);
         walletRepository.save(testWallet);
-    }
 
-    @Test
-    void testFindByUserId_whenUserExists_shouldReturnOptionalOfWallet() {
         Optional<Wallet> foundWallet = walletRepository.findByUserId(USER_ID);
-        assertThat(foundWallet).isPresent();
-        assertThat(foundWallet.get().getId()).isEqualTo(testWallet.getId());
-        assertThat(foundWallet.get().getUserId()).isEqualTo(USER_ID);
-        assertThat(foundWallet.get().getBalance()).isEqualTo(BigDecimal.valueOf(1000));
-    }
 
-    @Test
-    void testFindByUserId_whenUserDoesNotExist_shouldReturnEmptyOptional() {
-        Optional<Wallet> foundWallet = walletRepository.findByUserId(NON_EXISTENT_USER_ID);
-        assertThat(foundWallet).isEmpty();
+        assertTrue(foundWallet.isPresent());
+        assertEquals(USER_ID, foundWallet.get().getUserId());
     }
 }

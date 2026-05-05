@@ -4,17 +4,18 @@ import id.ac.ui.cs.advprog.jsonbackend.features.wallet.enums.TransactionStatus;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.enums.TransactionType;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 public class TransactionResponse {
 
-    private String id;
+    private UUID id;
     private TransactionType type;
     private BigDecimal amount;
     private TransactionStatus status;
     private String description;
 
     public TransactionResponse(
-            String id,
+            UUID id,
             TransactionType type,
             BigDecimal amount,
             TransactionStatus status,
@@ -27,7 +28,7 @@ public class TransactionResponse {
         this.description = description;
     }
 
-    public String getId() { return id; }
+    public UUID getId() { return id; }
     public TransactionType getType() { return type; }
     public BigDecimal getAmount() { return amount; }
     public TransactionStatus getStatus() { return status; }
