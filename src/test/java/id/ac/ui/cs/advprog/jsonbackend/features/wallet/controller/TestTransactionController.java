@@ -2,7 +2,7 @@ package id.ac.ui.cs.advprog.jsonbackend.features.wallet.controller;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UserRepository;
 import id.ac.ui.cs.advprog.jsonbackend.common.config.JwtService;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.TransactionService;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletTransactionService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -24,7 +24,7 @@ class TestTransactionController {
     private MockMvc mockMvc;
 
     @MockBean
-    private TransactionService transactionService;
+    private WalletTransactionService walletTransactionService;
 
     @MockBean
     private JwtService jwtService;
@@ -34,13 +34,13 @@ class TestTransactionController {
 
     @Test
     void testGetTransactionHistory() throws Exception {
-        when(transactionService.getUserTransactions("user1"))
+        when(walletTransactionService.getTransactionHistory("user1"))
                 .thenReturn(Collections.emptyList());
 
-        mockMvc.perform(get("/api/wallet/transactions/user1"))
+        mockMvc.perform(get("/api/wallet/user1/transactions"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
 
-        verify(transactionService).getUserTransactions("user1");
+        verify(walletTransactionService).getTransactionHistory("user1");
     }
 }
