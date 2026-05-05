@@ -15,5 +15,5 @@ public class UpgradeRequestSubmissionRequest {
     private String fullName;
 
     @NotBlank(message = "Credential URL or data is required")
-    private String credential;
+    private String credential; @NotBlank(message = "Social media URL is required") private String socialMediaUrl;
 }

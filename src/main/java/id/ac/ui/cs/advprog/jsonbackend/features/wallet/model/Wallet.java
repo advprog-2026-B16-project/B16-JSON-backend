@@ -1,56 +1,44 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.wallet.model;
 
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InsufficientBalanceException;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InvalidAmountException;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Entity
 @Table(name = "wallet")
-@Getter
-@Setter
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Wallet {
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    private UUID id;
 
-    @Column(nullable = false, unique = true)
-    private String userId;
+    @Column(name = "user_id", nullable = false, unique = true)
+    private UUID userId;
 
-    @Column(nullable = false)
-    private BigDecimal balance;
+    @Column(name = "balance", nullable = false)
+    @Builder.Default
+    private BigDecimal balance = BigDecimal.ZERO;
 
     @Version
     private Long version;
 
-    protected Wallet() {}
-
-    public Wallet(String userId) {
+    public Wallet(UUID userId) {
         this.userId = userId;
         this.balance = BigDecimal.ZERO;
     }
 
     public void credit(BigDecimal amount) {
-        validateAmount(amount);
         this.balance = this.balance.add(amount);
     }
 
     public void debit(BigDecimal amount) {
-        validateAmount(amount);
-
         if (this.balance.compareTo(amount) < 0) {
-            throw new InsufficientBalanceException();
+            throw new RuntimeException("Insufficient balance");
         }
-
         this.balance = this.balance.subtract(amount);
-    }
-
-    private void validateAmount(BigDecimal amount) {
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new InvalidAmountException();
-        }
     }
 }
