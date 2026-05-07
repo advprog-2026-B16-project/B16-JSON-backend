@@ -1,6 +1,6 @@
-package id.ac.ui.cs.advprog.jsonbackend.order.state;
+package id.ac.ui.cs.advprog.jsonbackend.features.order.state;
 
-import id.ac.ui.cs.advprog.jsonbackend.order.enums.OrderStatus;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.enums.OrderStatus;
 
 import java.util.EnumMap;
 import java.util.Map;

@@ -1,6 +1,8 @@
 package id.ac.ui.cs.advprog.jsonbackend.order.dto;
 
 import java.util.UUID;
+
+import id.ac.ui.cs.advprog.jsonbackend.features.order.dto.CreateOrderRequest;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

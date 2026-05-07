@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.jsonbackend.order.dto;
 
-import id.ac.ui.cs.advprog.jsonbackend.order.enums.OrderStatus;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.dto.UpdateOrderStatusRequest;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.enums.OrderStatus;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

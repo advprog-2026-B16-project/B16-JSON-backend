@@ -1,8 +1,11 @@
-package id.ac.ui.cs.advprog.jsonbackend.order.service;
+package id.ac.ui.cs.advprog.jsonbackend.features.order.service;
 
+import id.ac.ui.cs.advprog.jsonbackend.features.order.dto.CreateOrderRequest;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.dto.OrderResponse;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.dto.RatingRequest;
 import id.ac.ui.cs.advprog.jsonbackend.order.dto.*;
-import id.ac.ui.cs.advprog.jsonbackend.order.enums.OrderStatus;
-import id.ac.ui.cs.advprog.jsonbackend.order.model.Order;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.enums.OrderStatus;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.model.Order;
 
 import java.util.List;
 import java.util.Optional;

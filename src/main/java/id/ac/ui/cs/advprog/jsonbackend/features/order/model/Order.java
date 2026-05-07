@@ -1,6 +1,6 @@
-package id.ac.ui.cs.advprog.jsonbackend.order.model;
+package id.ac.ui.cs.advprog.jsonbackend.features.order.model;
 
-import id.ac.ui.cs.advprog.jsonbackend.order.enums.OrderStatus;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.enums.OrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;

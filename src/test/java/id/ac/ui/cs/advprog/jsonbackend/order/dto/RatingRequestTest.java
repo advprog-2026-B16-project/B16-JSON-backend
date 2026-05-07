@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.jsonbackend.order.dto;
 
+import id.ac.ui.cs.advprog.jsonbackend.features.order.dto.RatingRequest;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

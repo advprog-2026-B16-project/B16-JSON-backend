@@ -1,11 +1,14 @@
-package id.ac.ui.cs.advprog.jsonbackend.order.service;
+package id.ac.ui.cs.advprog.jsonbackend.features.order.service;
 
-import id.ac.ui.cs.advprog.jsonbackend.order.dto.CreateOrderRequest;
-import id.ac.ui.cs.advprog.jsonbackend.order.dto.OrderResponse;
-import id.ac.ui.cs.advprog.jsonbackend.order.dto.RatingRequest;
-import id.ac.ui.cs.advprog.jsonbackend.order.enums.OrderStatus;
-import id.ac.ui.cs.advprog.jsonbackend.order.model.Order;
-import id.ac.ui.cs.advprog.jsonbackend.order.repository.OrderRepository;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.dto.CreateOrderRequest;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.dto.OrderResponse;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.dto.RatingRequest;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.enums.OrderStatus;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.event.OrderCreatedEvent;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.model.Order;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.repository.OrderRepository;
+
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -14,10 +17,11 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.context.ApplicationEventPublisher;
 
 @Service
 @RequiredArgsConstructor
-public class OrderServiceImpl implements OrderService {
+public class    OrderServiceImpl implements OrderService {
 
     private static final BigDecimal DEFAULT_UNIT_PRICE = BigDecimal.valueOf(10000L);
 
@@ -28,6 +32,7 @@ public class OrderServiceImpl implements OrderService {
     );
 
     private final OrderRepository orderRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -44,6 +49,16 @@ public class OrderServiceImpl implements OrderService {
         );
 
         Order savedOrder = orderRepository.save(order);
+        BigDecimal totalAmount = calculateTotal(request.getProductId(), request.getQuantity());
+
+        eventPublisher.publishEvent(new OrderCreatedEvent(
+                savedOrder.getOrderId(),
+                savedOrder.getTitipersId().toString(),
+                savedOrder.getProductId(),
+                savedOrder.getQuantity(),
+                totalAmount
+        ));
+
         return mapToOrderResponse(savedOrder);
     }
 

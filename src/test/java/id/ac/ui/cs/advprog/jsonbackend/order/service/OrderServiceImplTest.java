@@ -1,13 +1,15 @@
 package id.ac.ui.cs.advprog.jsonbackend.order.service;
 
-import id.ac.ui.cs.advprog.jsonbackend.order.dto.CreateOrderRequest;
-import id.ac.ui.cs.advprog.jsonbackend.order.dto.OrderResponse;
-import id.ac.ui.cs.advprog.jsonbackend.order.dto.RatingRequest;
-import id.ac.ui.cs.advprog.jsonbackend.order.enums.OrderStatus;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.dto.CreateOrderRequest;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.dto.OrderResponse;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.dto.RatingRequest;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.enums.OrderStatus;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import id.ac.ui.cs.advprog.jsonbackend.features.order.service.OrderServiceImpl;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

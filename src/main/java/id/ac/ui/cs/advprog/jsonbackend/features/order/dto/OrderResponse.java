@@ -1,6 +1,6 @@
-package id.ac.ui.cs.advprog.jsonbackend.order.dto;
+package id.ac.ui.cs.advprog.jsonbackend.features.order.dto;
 
-import id.ac.ui.cs.advprog.jsonbackend.order.enums.OrderStatus;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.enums.OrderStatus;
 import lombok.Builder;
 import lombok.Getter;
 

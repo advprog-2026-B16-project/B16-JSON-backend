@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.jsonbackend.order.model;
 
-import id.ac.ui.cs.advprog.jsonbackend.order.enums.OrderStatus;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.enums.OrderStatus;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.model.Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

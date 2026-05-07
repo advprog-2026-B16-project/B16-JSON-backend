@@ -1,6 +1,6 @@
 package id.ac.ui.cs.advprog.jsonbackend.order.service;
 
-import id.ac.ui.cs.advprog.jsonbackend.order.model.Order;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.model.Order;
 import java.util.ArrayList;
 import java.util.List;
 

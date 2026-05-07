@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.jsonbackend.order.dto;
+package id.ac.ui.cs.advprog.jsonbackend.features.order.dto;
 
 import lombok.Getter;
 import lombok.Setter;
