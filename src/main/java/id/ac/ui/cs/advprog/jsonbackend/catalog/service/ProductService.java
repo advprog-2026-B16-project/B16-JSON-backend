@@ -9,7 +9,7 @@ public interface ProductService {
 
     List<ProductDTO> findAllProducts();
 
-    List<ProductDTO> searchByName(String keyword);
+    List<ProductDTO> searchByName(String name);
 
     List<ProductDTO> findByJastiper(String jastiperId);
 

@@ -26,15 +26,15 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findAll()
                 .stream()
                 .map(ProductMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
-    public List<ProductDTO> searchByName(String keyword) {
-        return productRepository.findByNameContainingIgnoreCase(keyword)
+    public List<ProductDTO> searchByName(String name) {
+        return productRepository.findByNameContainingIgnoreCase(name)
                 .stream()
                 .map(ProductMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -42,7 +42,7 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findByJastiperId(jastiperId)
                 .stream()
                 .map(ProductMapper::toDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
