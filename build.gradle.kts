@@ -108,5 +108,5 @@ tasks.jacocoTestReport {
 
 pmd {
     toolVersion = "6.55.0"
-    ruleSets = listOf("category/java/bestpractices")
+    ruleSets = listOf("category/java/bestpractices.xml")
 }
