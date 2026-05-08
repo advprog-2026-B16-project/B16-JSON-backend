@@ -14,13 +14,14 @@ class TestTransaction {
 
     private Transaction transaction;
     private static final UUID WALLET_ID = UUID.randomUUID();
+    private static final UUID USER_ID = UUID.randomUUID();
     private static final TransactionType TYPE = TransactionType.TOP_UP;
     private static final BigDecimal AMOUNT = BigDecimal.valueOf(100.0);
     private static final String DESCRIPTION = "Top up transaction";
 
     @BeforeEach
     void setUp() {
-        transaction = new Transaction(WALLET_ID, TYPE, AMOUNT, DESCRIPTION);
+        transaction = new Transaction(WALLET_ID, USER_ID, TYPE, AMOUNT, DESCRIPTION);
     }
 
     @Test
