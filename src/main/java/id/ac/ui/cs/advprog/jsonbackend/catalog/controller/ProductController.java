@@ -24,6 +24,20 @@ public class ProductController {
         return service.findAllProducts();
     }
 
+    @GetMapping("/search")
+    public List<ProductDTO> searchByName(
+            @RequestParam String name
+    ) {
+        return service.searchByName(name);
+    }
+
+    @GetMapping("/jastiper/{jastiperId}")
+    public List<ProductDTO> findByJastiper(
+            @PathVariable String jastiperId
+    ) {
+        return service.findByJastiper(jastiperId);
+    }
+
     @PostMapping
     public ProductDTO create(@RequestBody ProductRequest request) {
         return service.create(request);
