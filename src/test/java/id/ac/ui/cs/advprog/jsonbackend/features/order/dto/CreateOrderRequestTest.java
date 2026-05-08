@@ -1,8 +1,7 @@
-package id.ac.ui.cs.advprog.jsonbackend.order.dto;
+package id.ac.ui.cs.advprog.jsonbackend.features.order.dto;
 
 import java.util.UUID;
 
-import id.ac.ui.cs.advprog.jsonbackend.features.order.dto.CreateOrderRequest;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,6 +26,29 @@ class CreateOrderRequestTest {
         assertEquals(jastiperId, request.getJastiperId());
         assertEquals(3, request.getQuantity());
         assertEquals("Jl. Kampus No.5", request.getShippingAddress());
+    }
+
+    @Test
+    void testFieldsCanBeResetToNullAndZero() {
+        CreateOrderRequest request = new CreateOrderRequest();
+
+        request.setProductId("prod-001");
+        request.setTitipersId(UUID.randomUUID());
+        request.setJastiperId(UUID.randomUUID());
+        request.setQuantity(3);
+        request.setShippingAddress("Jl. Kampus No.5");
+
+        request.setProductId(null);
+        request.setTitipersId(null);
+        request.setJastiperId(null);
+        request.setQuantity(0);
+        request.setShippingAddress(null);
+
+        assertNull(request.getProductId());
+        assertNull(request.getTitipersId());
+        assertNull(request.getJastiperId());
+        assertEquals(0, request.getQuantity());
+        assertNull(request.getShippingAddress());
     }
 
     @Test

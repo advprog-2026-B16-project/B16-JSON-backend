@@ -1,9 +1,9 @@
-package id.ac.ui.cs.advprog.jsonbackend.order.dto;
+package id.ac.ui.cs.advprog.jsonbackend.features.order.dto;
 
-import id.ac.ui.cs.advprog.jsonbackend.features.order.dto.RatingRequest;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class RatingRequestTest {
 
@@ -18,10 +18,22 @@ class RatingRequestTest {
     }
 
     @Test
+    void testRatingsCanBeClearedBackToNull() {
+        RatingRequest request = new RatingRequest();
+        request.setJastiperRating(5);
+        request.setProductRating(4);
+
+        request.setJastiperRating(null);
+        request.setProductRating(null);
+
+        assertNull(request.getJastiperRating());
+        assertNull(request.getProductRating());
+    }
+
+    @Test
     void testDefaultFieldsAreNull() {
         RatingRequest request = new RatingRequest();
         assertNull(request.getJastiperRating());
         assertNull(request.getProductRating());
     }
 }
-

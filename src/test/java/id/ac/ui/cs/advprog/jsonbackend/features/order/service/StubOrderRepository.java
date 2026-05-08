@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.jsonbackend.order.service;
+package id.ac.ui.cs.advprog.jsonbackend.features.order.service;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.order.model.Order;
 import java.util.ArrayList;

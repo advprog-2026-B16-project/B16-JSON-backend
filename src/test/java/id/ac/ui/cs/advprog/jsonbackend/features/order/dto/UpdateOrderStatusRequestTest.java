@@ -1,10 +1,10 @@
-package id.ac.ui.cs.advprog.jsonbackend.order.dto;
+package id.ac.ui.cs.advprog.jsonbackend.features.order.dto;
 
-import id.ac.ui.cs.advprog.jsonbackend.features.order.dto.UpdateOrderStatusRequest;
 import id.ac.ui.cs.advprog.jsonbackend.features.order.enums.OrderStatus;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class UpdateOrderStatusRequestTest {
 
@@ -16,6 +16,18 @@ class UpdateOrderStatusRequestTest {
 
         assertEquals(OrderStatus.PAID, request.getNextStatus());
         assertEquals("Out of stock", request.getCancellationReason());
+    }
+
+    @Test
+    void testFieldsCanBeOverwritten() {
+        UpdateOrderStatusRequest request = new UpdateOrderStatusRequest();
+        request.setNextStatus(OrderStatus.PAID);
+        request.setNextStatus(OrderStatus.SHIPPED);
+        request.setCancellationReason("Out of stock");
+        request.setCancellationReason("");
+
+        assertEquals(OrderStatus.SHIPPED, request.getNextStatus());
+        assertEquals("", request.getCancellationReason());
     }
 
     @Test
@@ -32,4 +44,3 @@ class UpdateOrderStatusRequestTest {
         assertEquals(OrderStatus.CANCELLED, request.getNextStatus());
     }
 }
-

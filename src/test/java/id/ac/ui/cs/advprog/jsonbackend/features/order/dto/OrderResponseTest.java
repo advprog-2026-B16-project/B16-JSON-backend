@@ -1,7 +1,7 @@
-package id.ac.ui.cs.advprog.jsonbackend.order.dto;
+package id.ac.ui.cs.advprog.jsonbackend.features.order.dto;
 
-import id.ac.ui.cs.advprog.jsonbackend.features.order.dto.OrderResponse;
 import id.ac.ui.cs.advprog.jsonbackend.features.order.enums.OrderStatus;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -17,6 +17,7 @@ class OrderResponseTest {
         UUID orderId = UUID.randomUUID();
         UUID titipersId = UUID.randomUUID();
         UUID jastiperId = UUID.randomUUID();
+        BigDecimal totalAmount = new BigDecimal("125000.00");
 
         OrderResponse response = OrderResponse.builder()
                 .orderId(orderId)
@@ -26,6 +27,7 @@ class OrderResponseTest {
                 .quantity(2)
                 .shippingAddress("Jl. Margonda No.1")
                 .orderStatus(OrderStatus.PENDING)
+                .totalAmount(totalAmount)
                 .createdAt(now)
                 .updatedAt(null)
                 .jastiperRating(null)
@@ -40,11 +42,33 @@ class OrderResponseTest {
         assertEquals(2, response.getQuantity());
         assertEquals("Jl. Margonda No.1", response.getShippingAddress());
         assertEquals(OrderStatus.PENDING, response.getOrderStatus());
+        assertEquals(totalAmount, response.getTotalAmount());
         assertEquals(now, response.getCreatedAt());
         assertNull(response.getUpdatedAt());
         assertNull(response.getJastiperRating());
         assertNull(response.getProductRating());
         assertNull(response.getCancellationReason());
+    }
+
+    @Test
+    void testBuilderWithMinimalFieldsKeepsOptionalValuesNullOrDefault() {
+        OrderResponse response = OrderResponse.builder()
+                .orderId(UUID.randomUUID())
+                .orderStatus(OrderStatus.COMPLETED)
+                .build();
+
+        assertEquals(0, response.getQuantity());
+        assertNull(response.getProductId());
+        assertNull(response.getTotalAmount());
+        assertNull(response.getShippingAddress());
+        assertNull(response.getCreatedAt());
+        assertNull(response.getUpdatedAt());
+        assertNull(response.getTitipersId());
+        assertNull(response.getJastiperId());
+        assertNull(response.getJastiperRating());
+        assertNull(response.getProductRating());
+        assertNull(response.getCancellationReason());
+        assertEquals(OrderStatus.COMPLETED, response.getOrderStatus());
     }
 
     @Test
