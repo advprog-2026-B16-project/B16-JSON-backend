@@ -1,7 +1,8 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.wallet.service;
 
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.enums.TransactionStatus;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.enums.TransactionType;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InvalidAmountException;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InsufficientBalanceException;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Transaction;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Wallet;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,12 +10,10 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class TestWalletTransactionServiceImpl {
 
@@ -30,73 +29,209 @@ class TestWalletTransactionServiceImpl {
     }
 
     @Test
-    void testTopUp() {
-        String userId = "user1";
+    void testRequestTopUp() {
+        UUID userId = UUID.randomUUID();
+        UUID walletId = UUID.randomUUID();
         BigDecimal amount = new BigDecimal("100");
+
         Wallet wallet = new Wallet(userId);
-        Transaction transaction = new Transaction(wallet.getId(), TransactionType.TOP_UP, amount, "Top Up");
-        transaction.setId("tx-1");
 
-        when(walletService.findWallet(userId)).thenReturn(wallet);
-        when(transactionService.createTransaction(wallet, TransactionType.TOP_UP, amount, "Top Up"))
-                .thenReturn(transaction);
+        Transaction trx = new Transaction(
+                walletId,
+                userId,
+                TransactionType.TOP_UP,
+                amount,
+                "Top Up Request"
+        );
 
-        walletTransactionService.topUp(userId, amount);
+        when(walletService.findWallet(userId.toString())).thenReturn(wallet);
+        when(transactionService.createTransaction(wallet, TransactionType.TOP_UP, amount, "Top Up Request"))
+                .thenReturn(trx);
 
-        verify(walletService).credit(userId, amount);
-        verify(transactionService).markSuccess("tx-1");
+        Transaction result = walletTransactionService.requestTopUp(userId.toString(), amount);
+
+        assertEquals(trx, result);
+        verify(transactionService).createTransaction(wallet, TransactionType.TOP_UP, amount, "Top Up Request");
+        verify(walletService, never()).credit(any(), any());
     }
 
     @Test
-    void testWithdraw() {
-        String userId = "user1";
+    void testConfirmTopUpSuccess() {
+        UUID trxId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        Transaction trx = mock(Transaction.class);
+
+        when(trx.getStatus()).thenReturn(TransactionStatus.PENDING);
+        when(trx.getUserId()).thenReturn(userId);
+        when(trx.getAmount()).thenReturn(new BigDecimal("100"));
+
+        when(transactionService.getTransactionById(trxId.toString())).thenReturn(trx);
+
+        walletTransactionService.confirmTopUp(trxId.toString());
+
+        verify(walletService).credit(userId.toString(), new BigDecimal("100"));
+        verify(transactionService).markSuccess(trxId.toString());
+    }
+
+    @Test
+    void testConfirmTopUpAlreadySuccess() {
+        UUID trxId = UUID.randomUUID();
+
+        Transaction trx = mock(Transaction.class);
+        when(trx.getStatus()).thenReturn(TransactionStatus.SUCCESS);
+
+        when(transactionService.getTransactionById(trxId.toString())).thenReturn(trx);
+
+        walletTransactionService.confirmTopUp(trxId.toString());
+
+        verify(walletService, never()).credit(any(), any());
+        verify(transactionService, never()).markSuccess(any());
+    }
+
+    @Test
+    void testRequestWithdrawSuccess() {
+        UUID userId = UUID.randomUUID();
+        UUID walletId = UUID.randomUUID();
         BigDecimal amount = new BigDecimal("50");
-        Wallet wallet = new Wallet(userId);
-        Transaction transaction = new Transaction(wallet.getId(), TransactionType.WITHDRAW, amount, "Withdraw");
-        transaction.setId("tx-2");
 
-        when(walletService.findWallet(userId)).thenReturn(wallet);
-        when(transactionService.createTransaction(wallet, TransactionType.WITHDRAW, amount, "Withdraw"))
-                .thenReturn(transaction);
+        Wallet wallet = mock(Wallet.class);
+        when(wallet.getBalance()).thenReturn(new BigDecimal("100"));
 
-        walletTransactionService.withdraw(userId, amount);
+        Transaction trx = new Transaction(
+                walletId,
+                userId,
+                TransactionType.WITHDRAW,
+                amount,
+                "Withdraw Request"
+        );
+        UUID trxId = UUID.randomUUID();
+        trx.setId(trxId);
 
-        verify(walletService).debit(userId, amount);
-        verify(transactionService).markSuccess("tx-2");
+        when(walletService.findWallet(userId.toString())).thenReturn(wallet);
+        when(transactionService.createTransaction(wallet, TransactionType.WITHDRAW, amount, "Withdraw Request"))
+                .thenReturn(trx);
+
+        walletTransactionService.requestWithdraw(userId.toString(), amount);
+
+        verify(walletService).debit(userId.toString(), amount);
+        verify(transactionService).markSuccess(trxId.toString());
+    }
+
+    @Test
+    void testRequestWithdrawInsufficientBalance() {
+        UUID userId = UUID.randomUUID();
+        BigDecimal amount = new BigDecimal("200");
+
+        Wallet wallet = mock(Wallet.class);
+        when(wallet.getBalance()).thenReturn(new BigDecimal("100"));
+
+        when(walletService.findWallet(userId.toString())).thenReturn(wallet);
+
+        assertThrows(InsufficientBalanceException.class,
+                () -> walletTransactionService.requestWithdraw(userId.toString(), amount));
+
+        verify(transactionService, never()).createTransaction(any(), any(), any(), any());
     }
 
     @Test
     void testGetTransactionHistory() {
-        String userId = "user1";
-        Transaction transaction = new Transaction("wallet1", TransactionType.TOP_UP, new BigDecimal("100"), "Top Up");
+        UUID userId = UUID.randomUUID();
+        UUID walletId = UUID.randomUUID();
 
-        when(transactionService.getUserTransactions(userId)).thenReturn(List.of(transaction));
+        Transaction trx = new Transaction(
+                walletId,
+                userId,
+                TransactionType.TOP_UP,
+                new BigDecimal("100"),
+                "Top Up"
+        );
 
-        List<Transaction> history = walletTransactionService.getTransactionHistory(userId);
+        when(transactionService.getUserTransactions(userId.toString())).thenReturn(List.of(trx));
 
-        assertEquals(1, history.size());
-        verify(transactionService).getUserTransactions(userId);
+        List<Transaction> result = walletTransactionService.getTransactionHistory(userId.toString());
+
+        assertEquals(1, result.size());
+        verify(transactionService).getUserTransactions(userId.toString());
     }
 
     @Test
-    void testFailedTransactionIsMarkedFailed() {
-        String userId = "user1";
-        BigDecimal amount = BigDecimal.ZERO;
-        Wallet wallet = new Wallet(userId);
-        Transaction transaction = new Transaction(wallet.getId(), TransactionType.TOP_UP, amount, "Top Up");
-        transaction.setId("tx-3");
+    void testRequestPaymentSuccess() {
+        UUID userId = UUID.randomUUID();
+        UUID walletId = UUID.randomUUID();
+        UUID trxId = UUID.randomUUID();
 
-        when(walletService.findWallet(userId)).thenReturn(wallet);
-        when(transactionService.createTransaction(wallet, TransactionType.TOP_UP, amount, "Top Up"))
-                .thenReturn(transaction);
+        String orderId = UUID.randomUUID().toString();
+        BigDecimal amount = new BigDecimal("50");
 
-        when(transactionService.createTransaction(wallet, TransactionType.TOP_UP, amount, "Top Up"))
-                .thenReturn(transaction);
+        Wallet wallet = mock(Wallet.class);
+        when(wallet.getBalance()).thenReturn(new BigDecimal("100"));
 
-        org.mockito.Mockito.doThrow(new InvalidAmountException())
-                .when(walletService).credit(userId, amount);
+        Transaction trx = new Transaction(
+                walletId,
+                userId,
+                TransactionType.PAYMENT,
+                amount,
+                "Payment for order " + orderId
+        );
+        trx.setId(trxId);
 
-        assertThrows(InvalidAmountException.class, () -> walletTransactionService.topUp(userId, amount));
-        verify(transactionService).markFailed("tx-3");
+        when(walletService.findWallet(userId.toString())).thenReturn(wallet);
+        when(transactionService.createTransaction(
+                wallet,
+                TransactionType.PAYMENT,
+                amount,
+                "Payment for order " + orderId
+        )).thenReturn(trx);
+
+        Transaction result = walletTransactionService.requestPayment(
+                userId.toString(),
+                orderId,
+                amount
+        );
+
+        assertEquals(trx, result);
+        assertEquals(orderId, result.getOrderId().toString());
+
+        verify(walletService).debit(userId.toString(), amount);
+        verify(transactionService).markSuccess(trxId.toString());
+    }
+
+    @Test
+    void testRequestPaymentInsufficientBalance() {
+        UUID userId = UUID.randomUUID();
+        String orderId = UUID.randomUUID().toString();
+        BigDecimal amount = new BigDecimal("200");
+
+        Wallet wallet = mock(Wallet.class);
+        when(wallet.getBalance()).thenReturn(new BigDecimal("100"));
+
+        when(walletService.findWallet(userId.toString())).thenReturn(wallet);
+
+        assertThrows(InsufficientBalanceException.class,
+                () -> walletTransactionService.requestPayment(
+                        userId.toString(),
+                        orderId,
+                        amount
+                ));
+
+        verify(transactionService, never()).createTransaction(any(), any(), any(), any());
+        verify(walletService, never()).debit(any(), any());
+    }
+
+    @Test
+    void testRequestPaymentInvalidOrderId() {
+        UUID userId = UUID.randomUUID();
+        BigDecimal amount = new BigDecimal("50");
+
+        assertThrows(IllegalArgumentException.class,
+                () -> walletTransactionService.requestPayment(
+                        userId.toString(),
+                        "",
+                        amount
+                ));
+
+        verifyNoInteractions(walletService);
+        verifyNoInteractions(transactionService);
     }
 }

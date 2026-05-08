@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.wallet.controller;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.dto.WalletRequest;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Transaction;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletTransactionService;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletService;
 import jakarta.validation.Valid;
@@ -8,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/wallet")
@@ -24,21 +27,32 @@ public class WalletController {
         this.walletTransactionService = walletTransactionService;
     }
 
-    @PostMapping("/topup")
-    public ResponseEntity<String> topUp(@RequestBody WalletRequest request) {
-        walletTransactionService.topUp(request.getUserId(), request.getAmount());
-        return ResponseEntity.ok("Top up success");
+    @PostMapping("/topup/request")
+    public ResponseEntity<Transaction> requestTopUp(@RequestBody WalletRequest request) {
+        Transaction trx = walletTransactionService.requestTopUp(request.getUserId().toString(), request.getAmount());
+
+        return ResponseEntity.ok(trx);
+    }
+
+    @PostMapping("/topup/confirm/{transactionId}")
+    public ResponseEntity<String> confirmTopUp(@PathVariable String transactionId) {
+        walletTransactionService.confirmTopUp(transactionId);
+        return ResponseEntity.ok("Top up confirmed");
     }
 
     @PostMapping("/withdraw")
     public ResponseEntity<String> withdraw(@Valid @RequestBody WalletRequest request) {
-        walletTransactionService.withdraw(request.getUserId(), request.getAmount());
+        walletTransactionService.requestWithdraw(request.getUserId().toString(), request.getAmount());
         return ResponseEntity.ok("Withdraw success");
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<BigDecimal> getBalance(@PathVariable String userId) {
+    public ResponseEntity<?> getBalance(@PathVariable String userId) {
         BigDecimal balance = walletService.getBalance(userId);
-        return ResponseEntity.ok(balance);
+        return ResponseEntity.ok(Map.of(
+                "userId", userId,
+                "balance", balance
+            )
+        );
     }
 }

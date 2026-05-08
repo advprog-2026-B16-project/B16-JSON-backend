@@ -32,7 +32,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Permit public endpoints
-                        .requestMatchers("/api/login/**", "/api/register/**", "/api/hello").permitAll()
+                        .requestMatchers("/api/login/**", "/api/register/**", "/api/hello", "/api/user/profile/**").permitAll()
                         // Rest require authentication
                         .anyRequest().authenticated()
                 )

@@ -3,18 +3,21 @@ package id.ac.ui.cs.advprog.jsonbackend.features.authprofile.service;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UserLoginRequest;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.exception.BadCredentialsException;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.User;
-import id.ac.ui.cs.advprog.jsonbackend.common.config.LoginAttemptService;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UserRole;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UserStatus;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UserRepository;
+import id.ac.ui.cs.advprog.jsonbackend.common.config.LoginAttemptService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 class LoginServiceImplTest {
@@ -28,73 +31,82 @@ class LoginServiceImplTest {
     @Mock
     private LoginAttemptService loginAttemptService;
 
-    @InjectMocks
     private LoginServiceImpl loginService;
+    private User testUser;
+    private UserLoginRequest loginRequest;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        loginService = new LoginServiceImpl(userRepository, passwordEncoder, loginAttemptService);
+
+        testUser = User.builder()
+            .id(UUID.randomUUID())
+            .username("testuser")
+            .email("test@example.com")
+            .password("hashedPassword")
+            .role(UserRole.TITIPER)
+            .status(UserStatus.ACTIVE)
+            .build();
+
+        loginRequest = new UserLoginRequest();
+        loginRequest.setEmail("test@example.com");
+        loginRequest.setPassword("password123");
     }
 
     @Test
-    void testLoginSuccess() {
-        UserLoginRequest request = new UserLoginRequest();
-        request.setEmail("test@example.com");
-        request.setPassword("password123");
-
-        User user = User.builder()
-                .email("test@example.com")
-                .password("encoded_password")
-                .build();
-
+    void testLogin_Success() {
         when(loginAttemptService.isBlocked("test@example.com")).thenReturn(false);
-        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches("password123", "encoded_password")).thenReturn(true);
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
+        when(passwordEncoder.matches("password123", "hashedPassword")).thenReturn(true);
 
-        User result = loginService.login(request);
-        assertEquals(user, result);
-        verify(loginAttemptService).loginSucceeded("test@example.com");
+        User result = loginService.login(loginRequest);
+
+        assertEquals(testUser.getId(), result.getId());
+        assertEquals("testuser", result.getUsername());
+        verify(loginAttemptService, times(1)).loginSucceeded("test@example.com");
+        verify(loginAttemptService, never()).loginFailed(anyString());
     }
 
     @Test
-    void testLoginUserNotFound() {
-        UserLoginRequest request = new UserLoginRequest();
-        request.setEmail("notfound@example.com");
-        request.setPassword("password123");
+    void testLogin_AccountBlocked() {
+        when(loginAttemptService.isBlocked("test@example.com")).thenReturn(true);
 
-        when(loginAttemptService.isBlocked("notfound@example.com")).thenReturn(false);
-        when(userRepository.findByEmail("notfound@example.com")).thenReturn(Optional.empty());
+        BadCredentialsException exception = assertThrows(BadCredentialsException.class, () -> {
+            loginService.login(loginRequest);
+        });
 
-        assertThrows(BadCredentialsException.class, () -> loginService.login(request));
-        verify(loginAttemptService).loginFailed("notfound@example.com");
+        assertTrue(exception.getMessage().contains("Account is locked"));
+        verify(userRepository, never()).findByEmail(anyString());
+        verify(passwordEncoder, never()).matches(anyString(), anyString());
     }
 
     @Test
-    void testLoginWrongPassword() {
-        UserLoginRequest request = new UserLoginRequest();
-        request.setEmail("test@example.com");
-        request.setPassword("wrongpass");
-
-        User user = User.builder()
-                .email("test@example.com")
-                .password("encoded_password")
-                .build();
-
+    void testLogin_UserNotFound() {
         when(loginAttemptService.isBlocked("test@example.com")).thenReturn(false);
-        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches("wrongpass", "encoded_password")).thenReturn(false);
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.empty());
 
-        assertThrows(BadCredentialsException.class, () -> loginService.login(request));
-        verify(loginAttemptService).loginFailed("test@example.com");
+        BadCredentialsException exception = assertThrows(BadCredentialsException.class, () -> {
+            loginService.login(loginRequest);
+        });
+
+        assertEquals("Invalid credentials", exception.getMessage());
+        verify(loginAttemptService, times(1)).loginFailed("test@example.com");
+        verify(passwordEncoder, never()).matches(anyString(), anyString());
     }
 
     @Test
-    void testLoginBlocked() {
-        UserLoginRequest request = new UserLoginRequest();
-        request.setEmail("blocked@example.com");
-        
-        when(loginAttemptService.isBlocked("blocked@example.com")).thenReturn(true);
-        
-        assertThrows(BadCredentialsException.class, () -> loginService.login(request));
+    void testLogin_InvalidPassword() {
+        when(loginAttemptService.isBlocked("test@example.com")).thenReturn(false);
+        when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
+        when(passwordEncoder.matches("password123", "hashedPassword")).thenReturn(false);
+
+        BadCredentialsException exception = assertThrows(BadCredentialsException.class, () -> {
+            loginService.login(loginRequest);
+        });
+
+        assertEquals("Invalid credentials", exception.getMessage());
+        verify(loginAttemptService, times(1)).loginFailed("test@example.com");
+        verify(loginAttemptService, never()).loginSucceeded(anyString());
     }
 }

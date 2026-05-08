@@ -7,8 +7,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "upgrade_request")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -21,10 +20,10 @@ public class UpgradeRequest {
 
     @Column(name = "created_at", updatable = false, nullable = false)
     @Builder.Default
-    private java.time.OffsetDateTime createdAt = java.time.OffsetDateTime.now();
+    private OffsetDateTime createdAt = OffsetDateTime.now();
 
-    @OneToOne
-    @JoinColumn(name = "requester_user", referencedColumnName = "username", nullable = false)
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "requester_user", referencedColumnName = "id", nullable = false)
     private User requesterUser;
 
     @Column(name = "full_name", nullable = false)
@@ -32,6 +31,9 @@ public class UpgradeRequest {
 
     @Column(name = "credential", nullable = false)
     private String credential;
+
+    @Column(name = "social_media_url")
+    private String socialMediaUrl;
 
     @Column(name = "status", nullable = false)
     @Builder.Default

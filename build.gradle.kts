@@ -53,6 +53,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("com.h2database:h2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.security:spring-security-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("org.seleniumhq.selenium:selenium-java:$seleniumJavaVersion")
     testImplementation("io.github.bonigarcia:selenium-jupiter:$seleniumJupiterVersion")
@@ -107,5 +108,5 @@ tasks.jacocoTestReport {
 
 pmd {
     toolVersion = "6.55.0"
-    ruleSets = listOf("category/java/bestpractices")
+    ruleSets = listOf("category/java/bestpractices.xml")
 }

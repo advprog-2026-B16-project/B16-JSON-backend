@@ -1,10 +1,14 @@
 package id.ac.ui.cs.advprog.jsonbackend.common.config;
 
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.User;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -15,10 +19,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
-
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 
 @Slf4j
 @Component
@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Value;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final UserRepository userRepository;
 
     @Value("${app.debug.verbose:false}")
     private boolean verboseLogging;
@@ -37,41 +38,40 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
-        
+        final String jwt;
+        final String username;
+
         if (verboseLogging) {
             log.info("[DEBUG] Request URL: {} {}", request.getMethod(), request.getRequestURI());
             log.info("[DEBUG] Authorization Header: {}", authHeader != null ? "Present" : "Missing");
         }
 
-        final String jwt;
-        final String username;
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            if (verboseLogging && authHeader != null) {
+            if (authHeader != null && verboseLogging) {
                 log.warn("[DEBUG] Authorization header does not start with Bearer ");
             }
             filterChain.doFilter(request, response);
             return;
         }
+
         jwt = authHeader.substring(7);
         try {
             username = jwtService.extractUsername(jwt);
             if (verboseLogging) log.info("[DEBUG] Extracted Username: {}", username);
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                if (jwtService.isTokenValid(jwt, username)) {
-                    String role = jwtService.extractClaim(jwt, claims -> claims.get("role", String.class));
-                    if (verboseLogging) log.info("[DEBUG] Extracted Role: {}", role);
-                    
-                    List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role));
+                String role = jwtService.extractClaim(jwt, claims -> claims.get("role", String.class));
+                if (verboseLogging) log.info("[DEBUG] Extracted Role: {}", role);
 
+                User user = userRepository.findByUsername(username).orElse(null);
+
+                if (user != null && jwtService.isTokenValid(jwt, user)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            username,
+                            user,
                             null,
-                            authorities
+                            Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
                     );
-                    authToken.setDetails(
-                            new WebAuthenticationDetailsSource().buildDetails(request)
-                    );
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                     if (verboseLogging) log.info("[DEBUG] Authentication successful for user: {}", username);
                 } else {
@@ -83,6 +83,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 log.error("[DEBUG] JWT Authentication failed: ", t);
             }
         }
+
         filterChain.doFilter(request, response);
     }
 }

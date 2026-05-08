@@ -1,94 +1,57 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.wallet.service;
 
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.WalletNotFoundException;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Wallet;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.repository.WalletRepository;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.mockito.*;
 
-import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class TestWalletServiceImpl {
 
+    @Mock
     private WalletRepository walletRepository;
+
+    @InjectMocks
     private WalletServiceImpl walletService;
 
     @BeforeEach
     void setUp() {
-        walletRepository = Mockito.mock(WalletRepository.class);
-        walletService = new WalletServiceImpl(walletRepository);
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void testCreateWallet() {
-        String userId = "user1";
-        Wallet wallet = new Wallet(userId);
+    void testCreateWallet_whenNotExists_shouldCreateNewWallet() {
+        UUID USER_ID = UUID.randomUUID();
 
-        when(walletRepository.save(any(Wallet.class))).thenReturn(wallet);
+        when(walletRepository.findByUserId(USER_ID))
+                .thenReturn(Optional.empty());
 
-        Wallet result = walletService.createWallet(userId);
+        walletService.createWallet(USER_ID.toString());
 
-        assertEquals(userId, result.getUserId());
-        verify(walletRepository).save(any(Wallet.class));
+        ArgumentCaptor<Wallet> walletCaptor = ArgumentCaptor.forClass(Wallet.class);
+        verify(walletRepository).save(walletCaptor.capture());
+
+        Wallet savedWallet = walletCaptor.getValue();
+
+        assertEquals(USER_ID, savedWallet.getUserId());
+        assertEquals(0, savedWallet.getBalance().compareTo(java.math.BigDecimal.ZERO));
     }
 
     @Test
-    void testCredit() {
-        String userId = "user1";
-        BigDecimal amount = new BigDecimal("100");
+    void testCreateWallet_whenAlreadyExists_shouldNotCreateNewWallet() {
+        UUID USER_ID = UUID.randomUUID();
 
-        Wallet wallet = new Wallet(userId);
+        when(walletRepository.findByUserId(USER_ID))
+                .thenReturn(Optional.of(new Wallet(USER_ID)));
 
-        when(walletRepository.findByUserId(userId)).thenReturn(Optional.of(wallet));
+        walletService.createWallet(USER_ID.toString());
 
-        walletService.credit(userId, amount);
-
-        assertEquals(new BigDecimal("100"), wallet.getBalance());
-    }
-
-    @Test
-    void testDebit() {
-        String userId = "user1";
-        BigDecimal amount = new BigDecimal("50");
-
-        Wallet wallet = new Wallet(userId);
-        wallet.credit(new BigDecimal("100"));
-
-        when(walletRepository.findByUserId(userId)).thenReturn(Optional.of(wallet));
-
-        walletService.debit(userId, amount);
-
-        assertEquals(new BigDecimal("50"), wallet.getBalance());
-    }
-
-    @Test
-    void testGetBalance() {
-        String userId = "user1";
-
-        Wallet wallet = new Wallet(userId);
-        wallet.credit(new BigDecimal("200"));
-
-        when(walletRepository.findByUserId(userId)).thenReturn(Optional.of(wallet));
-
-        BigDecimal balance = walletService.getBalance(userId);
-
-        assertEquals(new BigDecimal("200"), balance);
-    }
-
-    @Test
-    void testWalletNotFound() {
-        String userId = "unknown";
-
-        when(walletRepository.findByUserId(userId)).thenReturn(Optional.empty());
-
-        assertThrows(WalletNotFoundException.class, () -> {
-            walletService.getBalance(userId);
-        });
+        verify(walletRepository, never()).save(any());
     }
 }
