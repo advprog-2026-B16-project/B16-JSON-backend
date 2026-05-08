@@ -4,6 +4,7 @@ import id.ac.ui.cs.advprog.jsonbackend.features.order.dto.CreateOrderRequest;
 import id.ac.ui.cs.advprog.jsonbackend.features.order.dto.OrderResponse;
 import id.ac.ui.cs.advprog.jsonbackend.features.order.dto.RatingRequest;
 import id.ac.ui.cs.advprog.jsonbackend.features.order.enums.OrderStatus;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.event.OrderCancelledEvent;
 import id.ac.ui.cs.advprog.jsonbackend.features.order.event.OrderCreatedEvent;
 import id.ac.ui.cs.advprog.jsonbackend.features.order.model.Order;
 import id.ac.ui.cs.advprog.jsonbackend.features.order.repository.OrderRepository;
@@ -21,7 +22,7 @@ import org.springframework.context.ApplicationEventPublisher;
 
 @Service
 @RequiredArgsConstructor
-public class    OrderServiceImpl implements OrderService {
+public class OrderServiceImpl implements OrderService {
 
     private static final BigDecimal DEFAULT_UNIT_PRICE = BigDecimal.valueOf(10000L);
 
@@ -73,6 +74,16 @@ public class    OrderServiceImpl implements OrderService {
                 : cancellationReason);
 
         Order savedOrder = orderRepository.save(order);
+
+        BigDecimal totalAmount = calculateTotal(savedOrder.getProductId(), savedOrder.getQuantity());
+
+        eventPublisher.publishEvent(new OrderCancelledEvent(
+                savedOrder.getOrderId(),
+                savedOrder.getTitipersId().toString(),
+                totalAmount,
+                savedOrder.getCancellationReason()
+        ));
+
         return mapToOrderResponse(savedOrder);
     }
 
