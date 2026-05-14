@@ -35,16 +35,16 @@ jobs:
             docker rm -f web_server || true
 
             echo ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+
             docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_HUB_REPO_NAME }}:latest
 
-            docker run -d \
-            --restart unless-stopped \
-            --name=web_server \
-            -p 8080:8080 \
-            -e SPRING_PROFILES_ACTIVE=production \
-            -e PROD_DB_URL=${{ secrets.PROD_DB_URL }} \
-            -e PROD_DB_USER=${{ secrets.PROD_DB_USER }} \
-            -e PROD_DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }} \
-            -e PROD_JPA_DDL_AUTO=validate \
-            -e PROD_SHOW_SQL=false \
-            ${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_HUB_REPO_NAME }}:latest
+            docker run -d --restart unless-stopped \
+              --name web_server \
+              -p 8080:8080 \
+              -e SPRING_PROFILES_ACTIVE=production \
+              -e PROD_DB_URL='${{ secrets.PROD_DB_URL }}' \
+              -e PROD_DB_USER='${{ secrets.PROD_DB_USER }}' \
+              -e PROD_DB_PASSWORD='${{ secrets.PROD_DB_PASSWORD }}' \
+              -e PROD_JPA_DDL_AUTO=validate \
+              -e PROD_SHOW_SQL=false \
+              ${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_HUB_REPO_NAME }}:latest
