@@ -46,4 +46,10 @@ public class WalletServiceImpl implements WalletService {
         return walletRepository.findByUserId(UUID.fromString(userId))
                 .orElseThrow(() -> new WalletNotFoundException(userId));
     }
+
+    @Override
+    public Wallet findWalletForUpdate(String userId) {
+        return walletRepository.findByUserIdForUpdate(UUID.fromString(userId))
+                .orElseThrow(() -> new WalletNotFoundException(userId));
+    }
 }

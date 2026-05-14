@@ -1,9 +1,10 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.wallet.service;
 
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.enums.TransactionStatus;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.enums.TransactionType;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionStatus;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionType;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InsufficientBalanceException;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Transaction;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.model.Transaction;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.service.TransactionService;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Wallet;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

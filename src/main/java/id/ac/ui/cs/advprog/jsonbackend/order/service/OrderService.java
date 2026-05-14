@@ -9,13 +9,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface OrderService {
-    // Checkout — verifikasi stok & saldo (TODO: integrasi Inventory & Wallet)
     OrderResponse checkout(CreateOrderRequest request);
 
-    // Pembatalan oleh Jastiper — wajib trigger refund (TODO: integrasi Wallet)
     OrderResponse cancelOrder(String orderId, String cancellationReason) throws Throwable;
 
-    // Sistem rating setelah COMPLETED — kirim ke Profil (TODO: integrasi Profil)
     OrderResponse submitRating(UUID orderId, RatingRequest request);
 
     List<Order> getAllOrder();

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.advprog.jsonbackend.common.config.JwtService;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UserRepository;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.dto.WalletRequest;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Transaction;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.model.Transaction;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletService;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletTransactionService;
 

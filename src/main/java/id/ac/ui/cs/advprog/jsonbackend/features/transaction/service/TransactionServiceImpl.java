@@ -1,19 +1,17 @@
-package id.ac.ui.cs.advprog.jsonbackend.features.wallet.service;
+package id.ac.ui.cs.advprog.jsonbackend.features.transaction.service;
 
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.TransactionNotFoundException;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.exception.TransactionNotFoundException;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Wallet;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Transaction;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.enums.TransactionType;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.repository.WalletRepository;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.repository.TransactionRepository;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.WalletNotFoundException;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.model.Transaction;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionType;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.repository.TransactionRepository;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletService;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -41,11 +39,17 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    public Transaction getTransactionByIdForUpdate(String transactionId) {
+        return transactionRepository.findByIdForUpdate(UUID.fromString(transactionId))
+                .orElseThrow(() -> new TransactionNotFoundException(transactionId));
+    }
+
+    @Override
     public Transaction createTransaction(Wallet wallet, TransactionType type, BigDecimal amount, String description) {
 
         Transaction transaction = new Transaction(
-                wallet.getUserId(),
                 wallet.getId(),
+                wallet.getUserId(),
                 type,
                 amount,
                 description

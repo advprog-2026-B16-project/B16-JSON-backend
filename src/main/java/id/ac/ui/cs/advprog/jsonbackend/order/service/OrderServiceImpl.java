@@ -6,9 +6,7 @@ import id.ac.ui.cs.advprog.jsonbackend.order.dto.RatingRequest;
 import id.ac.ui.cs.advprog.jsonbackend.order.enums.OrderStatus;
 import id.ac.ui.cs.advprog.jsonbackend.order.model.Order;
 import id.ac.ui.cs.advprog.jsonbackend.order.repository.OrderRepository;
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -19,15 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
-    private static final BigDecimal DEFAULT_UNIT_PRICE = BigDecimal.valueOf(10000L);
-
-    private static final Map<String, BigDecimal> HARDCODED_PRODUCT_PRICES = Map.of(
-            "prod-abc-123", BigDecimal.valueOf(125000L),
-            "prod-xyz-456", BigDecimal.valueOf(250000L),
-            "prod-mno-789", BigDecimal.valueOf(175000L)
-    );
-
     private final OrderRepository orderRepository;
+    private final OrderPricingService orderPricingService;
 
     @Override
     @Transactional
@@ -136,20 +127,12 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-    private BigDecimal resolveUnitPrice(String productId) {
-        return HARDCODED_PRODUCT_PRICES.getOrDefault(productId, DEFAULT_UNIT_PRICE);
-    }
-
-    private BigDecimal calculateTotal(String productId, int quantity) {
-        return resolveUnitPrice(productId).multiply(BigDecimal.valueOf(quantity));
-    }
-
     private OrderResponse mapToOrderResponse(Order order) {
         return OrderResponse.builder()
                 .orderId(order.getOrderId())
                 .productId(order.getProductId())
                 .quantity(order.getQuantity())
-                .totalAmount(calculateTotal(order.getProductId(), order.getQuantity()))
+                .totalAmount(orderPricingService.calculateTotal(order))
                 .shippingAddress(order.getShippingAddress())
                 .orderStatus(order.getOrderStatus())
                 .createdAt(order.getCreatedAt())

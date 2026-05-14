@@ -1,7 +1,7 @@
-package id.ac.ui.cs.advprog.jsonbackend.features.wallet.dto;
+package id.ac.ui.cs.advprog.jsonbackend.features.transaction.dto;
 
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.enums.TransactionStatus;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.enums.TransactionType;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionStatus;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionType;
 
 import java.math.BigDecimal;
 import java.util.UUID;

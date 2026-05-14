@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.jsonbackend.features.wallet.enums;
+package id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums;
 
 public enum TransactionStatus {
     PENDING,

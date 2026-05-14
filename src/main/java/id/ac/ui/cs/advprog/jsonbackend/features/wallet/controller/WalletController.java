@@ -1,7 +1,7 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.wallet.controller;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.dto.WalletRequest;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Transaction;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.model.Transaction;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletTransactionService;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletService;
 import jakarta.validation.Valid;

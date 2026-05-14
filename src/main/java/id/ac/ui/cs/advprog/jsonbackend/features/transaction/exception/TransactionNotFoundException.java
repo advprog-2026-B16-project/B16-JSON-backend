@@ -1,5 +1,6 @@
-package id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception;
+package id.ac.ui.cs.advprog.jsonbackend.features.transaction.exception;
 
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.WalletException;
 import org.springframework.http.HttpStatus;
 
 public class TransactionNotFoundException extends WalletException {
