@@ -4,6 +4,7 @@ import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionSta
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionType;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.service.TransactionService;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InsufficientBalanceException;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InvalidAmountException;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.model.Transaction;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Wallet;
 import org.junit.jupiter.api.BeforeEach;
@@ -318,5 +319,23 @@ class TestWalletTransactionServiceImpl {
 
         assertThrows(RuntimeException.class, () -> walletTransactionService.requestPayment(userId.toString(), orderId, amount));
         verify(transactionService).markFailed(trx.getId().toString());
+    }
+
+    @Test
+    void testWalletTransactionsRejectInvalidAmountsBeforeRepositoryAccess() {
+        UUID userId = UUID.randomUUID();
+        String orderId = UUID.randomUUID().toString();
+
+        assertThrows(InvalidAmountException.class, () -> walletTransactionService.requestTopUp(userId.toString(), BigDecimal.ZERO));
+        assertThrows(InvalidAmountException.class, () -> walletTransactionService.requestTopUp(userId.toString(), null));
+        assertThrows(InvalidAmountException.class, () -> walletTransactionService.requestWithdraw(userId.toString(), new BigDecimal("-1")));
+        assertThrows(InvalidAmountException.class, () -> walletTransactionService.requestWithdraw(userId.toString(), null));
+        assertThrows(InvalidAmountException.class, () -> walletTransactionService.refund(userId.toString(), BigDecimal.ZERO));
+        assertThrows(InvalidAmountException.class, () -> walletTransactionService.refund(userId.toString(), null));
+        assertThrows(InvalidAmountException.class, () -> walletTransactionService.requestPayment(userId.toString(), orderId, BigDecimal.ZERO));
+        assertThrows(InvalidAmountException.class, () -> walletTransactionService.requestPayment(userId.toString(), orderId, null));
+
+        verifyNoInteractions(walletService);
+        verifyNoInteractions(transactionService);
     }
 }

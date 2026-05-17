@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.jsonbackend.features.wallet.service;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionStatus;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionType;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InsufficientBalanceException;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InvalidAmountException;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.model.Transaction;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.service.TransactionService;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Wallet;
@@ -30,6 +31,7 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
 
     @Override
     public Transaction requestTopUp(String userId, BigDecimal amount) {
+        validatePositiveAmount(amount);
         Wallet wallet = walletService.findWallet(userId);
 
         return transactionService.createTransaction(
@@ -59,6 +61,7 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
 
     @Override
     public void requestWithdraw(String userId, BigDecimal amount) {
+        validatePositiveAmount(amount);
         Wallet wallet = walletService.findWallet(userId);
 
         if (wallet.getBalance().compareTo(amount) < 0) {
@@ -84,6 +87,7 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
 
     @Override
     public void refund(String userId, BigDecimal amount) {
+        validatePositiveAmount(amount);
         Wallet wallet = walletService.findWallet(userId);
 
         Transaction trx = transactionService.createTransaction(
@@ -109,6 +113,7 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
 
     @Override
     public Transaction requestPayment(String userId, String orderId, BigDecimal amount) {
+        validatePositiveAmount(amount);
         if (orderId == null || orderId.isBlank()) {
             throw new IllegalArgumentException("Order ID cannot be null or empty");
         }
@@ -137,6 +142,12 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
         } catch (Exception e) {
             transactionService.markFailed(trx.getId().toString());
             throw e;
+        }
+    }
+
+    private void validatePositiveAmount(BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidAmountException();
         }
     }
 }

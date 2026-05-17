@@ -16,10 +16,10 @@ import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InsufficientBal
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Wallet;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletService;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletTransactionService;
-import id.ac.ui.cs.advprog.jsonbackend.order.enums.OrderStatus;
-import id.ac.ui.cs.advprog.jsonbackend.order.model.Order;
-import id.ac.ui.cs.advprog.jsonbackend.order.repository.OrderRepository;
-import id.ac.ui.cs.advprog.jsonbackend.order.service.OrderPricingService;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.enums.OrderStatus;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.model.Order;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.repository.OrderRepository;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.service.OrderPricingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

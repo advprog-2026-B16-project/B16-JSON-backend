@@ -12,9 +12,9 @@ import id.ac.ui.cs.advprog.jsonbackend.features.transaction.model.Transaction;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.service.TransactionService;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Wallet;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.repository.RefundRepository;
-import id.ac.ui.cs.advprog.jsonbackend.order.enums.OrderStatus;
-import id.ac.ui.cs.advprog.jsonbackend.order.model.Order;
-import id.ac.ui.cs.advprog.jsonbackend.order.repository.OrderRepository;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.enums.OrderStatus;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.model.Order;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.repository.OrderRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

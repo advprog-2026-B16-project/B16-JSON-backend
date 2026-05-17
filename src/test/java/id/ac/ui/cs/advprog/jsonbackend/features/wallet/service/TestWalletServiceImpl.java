@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.jsonbackend.features.wallet.service;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Wallet;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.repository.WalletRepository;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InvalidAmountException;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.WalletNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,6 +71,16 @@ class TestWalletServiceImpl {
     }
 
     @Test
+    void testCreditRejectsInvalidAmount() {
+        UUID userId = UUID.randomUUID();
+
+        assertThrows(InvalidAmountException.class, () -> walletService.credit(userId.toString(), BigDecimal.ZERO));
+        assertThrows(InvalidAmountException.class, () -> walletService.credit(userId.toString(), null));
+
+        verify(walletRepository, never()).findByUserId(userId);
+    }
+
+    @Test
     void testDebitSubtractsBalance() {
         UUID userId = UUID.randomUUID();
         Wallet wallet = new Wallet(userId);
@@ -80,6 +91,16 @@ class TestWalletServiceImpl {
         walletService.debit(userId.toString(), new BigDecimal("75"));
 
         assertEquals(new BigDecimal("125"), wallet.getBalance());
+    }
+
+    @Test
+    void testDebitRejectsInvalidAmount() {
+        UUID userId = UUID.randomUUID();
+
+        assertThrows(InvalidAmountException.class, () -> walletService.debit(userId.toString(), new BigDecimal("-1")));
+        assertThrows(InvalidAmountException.class, () -> walletService.debit(userId.toString(), null));
+
+        verify(walletRepository, never()).findByUserId(userId);
     }
 
     @Test
