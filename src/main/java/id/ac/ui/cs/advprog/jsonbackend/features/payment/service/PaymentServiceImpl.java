@@ -8,12 +8,11 @@ import id.ac.ui.cs.advprog.jsonbackend.features.payment.exception.PaymentNotFoun
 import id.ac.ui.cs.advprog.jsonbackend.features.payment.exception.PaymentUnauthorizedException;
 import id.ac.ui.cs.advprog.jsonbackend.features.payment.model.Payment;
 import id.ac.ui.cs.advprog.jsonbackend.features.payment.repository.PaymentRepository;
-import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionType;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.model.Transaction;
-import id.ac.ui.cs.advprog.jsonbackend.features.transaction.service.TransactionService;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InsufficientBalanceException;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Wallet;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletService;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletTransactionService;
 import id.ac.ui.cs.advprog.jsonbackend.order.enums.OrderStatus;
 import id.ac.ui.cs.advprog.jsonbackend.order.model.Order;
 import id.ac.ui.cs.advprog.jsonbackend.order.repository.OrderRepository;
@@ -42,7 +41,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final OrderRepository orderRepository;
     private final OrderPricingService orderPricingService;
     private final WalletService walletService;
-    private final TransactionService transactionService;
+    private final WalletTransactionService walletTransactionService;
     private final SecureRandom secureRandom = new SecureRandom();
 
     public PaymentServiceImpl(
@@ -50,13 +49,13 @@ public class PaymentServiceImpl implements PaymentService {
             OrderRepository orderRepository,
             OrderPricingService orderPricingService,
             WalletService walletService,
-            TransactionService transactionService
+            WalletTransactionService walletTransactionService
     ) {
         this.paymentRepository = paymentRepository;
         this.orderRepository = orderRepository;
         this.orderPricingService = orderPricingService;
         this.walletService = walletService;
-        this.transactionService = transactionService;
+        this.walletTransactionService = walletTransactionService;
     }
 
     @Override
@@ -123,27 +122,18 @@ public class PaymentServiceImpl implements PaymentService {
         validateOrderOwner(user, order);
         validateOrderPending(order);
 
-        Wallet wallet = walletService.findWalletForUpdate(user.getId().toString());
-        if (wallet.getBalance().compareTo(payment.getAmount()) < 0) {
-            throw new InsufficientBalanceException();
-        }
-
-        Transaction transaction = transactionService.createTransaction(
-                wallet,
-                TransactionType.PAYMENT,
-                payment.getAmount(),
-                "Payment " + payment.getReferenceCode() + " for order " + order.getOrderId()
-        );
-        transaction.setOrderId(order.getOrderId());
-
         try {
-            wallet.debit(payment.getAmount());
-            transactionService.markSuccess(transaction.getId().toString());
+            Transaction transaction = walletTransactionService.requestPayment(
+                    user.getId().toString(),
+                    order.getOrderId().toString(),
+                    payment.getAmount()
+            );
             order.updateStatus(OrderStatus.PAID);
             payment.markSuccess(transaction.getId());
             return paymentRepository.save(payment);
+        } catch (InsufficientBalanceException ex) {
+            throw ex;
         } catch (Exception ex) {
-            transactionService.markFailed(transaction.getId().toString());
             payment.markFailed();
             paymentRepository.save(payment);
             throw ex;

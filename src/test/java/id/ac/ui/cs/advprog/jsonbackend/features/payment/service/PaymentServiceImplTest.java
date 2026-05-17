@@ -12,10 +12,10 @@ import id.ac.ui.cs.advprog.jsonbackend.features.payment.model.Payment;
 import id.ac.ui.cs.advprog.jsonbackend.features.payment.repository.PaymentRepository;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionType;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.model.Transaction;
-import id.ac.ui.cs.advprog.jsonbackend.features.transaction.service.TransactionService;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InsufficientBalanceException;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Wallet;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletService;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletTransactionService;
 import id.ac.ui.cs.advprog.jsonbackend.order.enums.OrderStatus;
 import id.ac.ui.cs.advprog.jsonbackend.order.model.Order;
 import id.ac.ui.cs.advprog.jsonbackend.order.repository.OrderRepository;
@@ -41,7 +41,7 @@ class PaymentServiceImplTest {
     private OrderRepository orderRepository;
     private OrderPricingService orderPricingService;
     private WalletService walletService;
-    private TransactionService transactionService;
+    private WalletTransactionService walletTransactionService;
     private PaymentServiceImpl paymentService;
 
     @BeforeEach
@@ -50,13 +50,13 @@ class PaymentServiceImplTest {
         orderRepository = mock(OrderRepository.class);
         orderPricingService = mock(OrderPricingService.class);
         walletService = mock(WalletService.class);
-        transactionService = mock(TransactionService.class);
+        walletTransactionService = mock(WalletTransactionService.class);
         paymentService = new PaymentServiceImpl(
                 paymentRepository,
                 orderRepository,
                 orderPricingService,
                 walletService,
-                transactionService
+                walletTransactionService
         );
     }
 
@@ -227,8 +227,11 @@ class PaymentServiceImplTest {
 
         when(paymentRepository.findByReferenceCodeForUpdate(payment.getReferenceCode())).thenReturn(Optional.of(payment));
         when(orderRepository.findByIdForUpdate(order.getOrderId())).thenReturn(Optional.of(order));
-        when(walletService.findWalletForUpdate(user.getId().toString())).thenReturn(wallet);
-        when(transactionService.createTransaction(eq(wallet), eq(TransactionType.PAYMENT), eq(payment.getAmount()), anyString()))
+        when(walletTransactionService.requestPayment(
+                user.getId().toString(),
+                order.getOrderId().toString(),
+                payment.getAmount()
+        ))
                 .thenReturn(transaction);
         when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -237,8 +240,11 @@ class PaymentServiceImplTest {
         assertEquals(PaymentStatus.SUCCESS, result.getStatus());
         assertEquals(transactionId, result.getTransactionId());
         assertEquals(OrderStatus.PAID, order.getOrderStatus());
-        assertEquals(new BigDecimal("75000"), wallet.getBalance());
-        verify(transactionService).markSuccess(transactionId.toString());
+        verify(walletTransactionService).requestPayment(
+                user.getId().toString(),
+                order.getOrderId().toString(),
+                payment.getAmount()
+        );
     }
 
     @Test
@@ -254,6 +260,7 @@ class PaymentServiceImplTest {
         assertSame(payment, result);
         verifyNoInteractions(orderRepository);
         verifyNoInteractions(walletService);
+        verifyNoInteractions(walletTransactionService);
     }
 
     @Test
@@ -308,6 +315,7 @@ class PaymentServiceImplTest {
         assertEquals(PaymentStatus.EXPIRED, result.getStatus());
         verifyNoInteractions(orderRepository);
         verifyNoInteractions(walletService);
+        verifyNoInteractions(walletTransactionService);
     }
 
     @Test
@@ -339,38 +347,39 @@ class PaymentServiceImplTest {
     void payRejectsInsufficientBalance() {
         User user = buildUser();
         Order order = buildOrder(user.getId());
-        Wallet wallet = buildWallet(user.getId(), new BigDecimal("50000"));
         Payment payment = buildPayment(user, order, PaymentStatus.PENDING, LocalDateTime.now().plusMinutes(5));
 
         when(paymentRepository.findByReferenceCodeForUpdate(payment.getReferenceCode())).thenReturn(Optional.of(payment));
         when(orderRepository.findByIdForUpdate(order.getOrderId())).thenReturn(Optional.of(order));
-        when(walletService.findWalletForUpdate(user.getId().toString())).thenReturn(wallet);
+        doThrow(new InsufficientBalanceException()).when(walletTransactionService).requestPayment(
+                user.getId().toString(),
+                order.getOrderId().toString(),
+                payment.getAmount()
+        );
 
         assertThrows(InsufficientBalanceException.class, () -> paymentService.pay(user, payment.getReferenceCode()));
-        verify(transactionService, never()).createTransaction(any(), any(), any(), any());
+        assertEquals(PaymentStatus.PENDING, payment.getStatus());
+        verify(paymentRepository, never()).save(any(Payment.class));
     }
 
     @Test
     void payMarksPaymentFailedWhenDebitFailsAfterTransactionCreated() {
         User user = buildUser();
         Order order = buildOrder(user.getId());
-        Wallet wallet = spy(buildWallet(user.getId(), new BigDecimal("200000")));
         Payment payment = buildPayment(user, order, PaymentStatus.PENDING, LocalDateTime.now().plusMinutes(5));
-        Transaction transaction = new Transaction(wallet.getId(), user.getId(), TransactionType.PAYMENT, payment.getAmount(), "Payment");
-        UUID transactionId = UUID.randomUUID();
-        transaction.setId(transactionId);
 
         when(paymentRepository.findByReferenceCodeForUpdate(payment.getReferenceCode())).thenReturn(Optional.of(payment));
         when(orderRepository.findByIdForUpdate(order.getOrderId())).thenReturn(Optional.of(order));
-        when(walletService.findWalletForUpdate(user.getId().toString())).thenReturn(wallet);
-        when(transactionService.createTransaction(eq(wallet), eq(TransactionType.PAYMENT), eq(payment.getAmount()), anyString()))
-                .thenReturn(transaction);
         when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        doThrow(new RuntimeException("debit failed")).when(wallet).debit(payment.getAmount());
+        doThrow(new RuntimeException("debit failed")).when(walletTransactionService).requestPayment(
+                user.getId().toString(),
+                order.getOrderId().toString(),
+                payment.getAmount()
+        );
 
         assertThrows(RuntimeException.class, () -> paymentService.pay(user, payment.getReferenceCode()));
         assertEquals(PaymentStatus.FAILED, payment.getStatus());
-        verify(transactionService).markFailed(transactionId.toString());
+        verify(paymentRepository).save(payment);
     }
 
     @Test

@@ -113,7 +113,7 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
             throw new IllegalArgumentException("Order ID cannot be null or empty");
         }
 
-        Wallet wallet = walletService.findWallet(userId);
+        Wallet wallet = walletService.findWalletForUpdate(userId);
 
         if (wallet.getBalance().compareTo(amount) < 0) {
             throw new InsufficientBalanceException();

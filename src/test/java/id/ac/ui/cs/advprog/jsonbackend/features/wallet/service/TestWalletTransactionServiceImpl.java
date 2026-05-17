@@ -208,7 +208,7 @@ class TestWalletTransactionServiceImpl {
         );
         trx.setId(trxId);
 
-        when(walletService.findWallet(userId.toString())).thenReturn(wallet);
+        when(walletService.findWalletForUpdate(userId.toString())).thenReturn(wallet);
         when(transactionService.createTransaction(
                 wallet,
                 TransactionType.PAYMENT,
@@ -238,7 +238,7 @@ class TestWalletTransactionServiceImpl {
         Wallet wallet = mock(Wallet.class);
         when(wallet.getBalance()).thenReturn(new BigDecimal("100"));
 
-        when(walletService.findWallet(userId.toString())).thenReturn(wallet);
+        when(walletService.findWalletForUpdate(userId.toString())).thenReturn(wallet);
 
         assertThrows(InsufficientBalanceException.class,
                 () -> walletTransactionService.requestPayment(
@@ -312,7 +312,7 @@ class TestWalletTransactionServiceImpl {
         trx.setId(UUID.randomUUID());
 
         when(wallet.getBalance()).thenReturn(new BigDecimal("100"));
-        when(walletService.findWallet(userId.toString())).thenReturn(wallet);
+        when(walletService.findWalletForUpdate(userId.toString())).thenReturn(wallet);
         when(transactionService.createTransaction(wallet, TransactionType.PAYMENT, amount, "Payment for order " + orderId)).thenReturn(trx);
         doThrow(new RuntimeException("debit failed")).when(walletService).debit(userId.toString(), amount);
 
