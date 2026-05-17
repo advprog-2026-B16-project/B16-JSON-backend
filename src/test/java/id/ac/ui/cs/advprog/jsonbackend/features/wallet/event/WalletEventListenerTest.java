@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.wallet.event;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.event.UserCreatedEvent;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.event.UserLoggedInEvent;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletService;
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +16,16 @@ class WalletEventListenerTest {
         WalletEventListener listener = new WalletEventListener(walletService);
 
         listener.handleUserRegistered(new UserCreatedEvent("user-123"));
+
+        verify(walletService).createWallet("user-123");
+    }
+
+    @Test
+    void handleUserLoggedInShouldCreateWallet() {
+        WalletService walletService = mock(WalletService.class);
+        WalletEventListener listener = new WalletEventListener(walletService);
+
+        listener.handleUserLoggedIn(new UserLoggedInEvent("user-123"));
 
         verify(walletService).createWallet("user-123");
     }
