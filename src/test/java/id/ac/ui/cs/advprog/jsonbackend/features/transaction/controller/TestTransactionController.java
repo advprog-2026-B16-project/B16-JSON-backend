@@ -1,16 +1,21 @@
-package id.ac.ui.cs.advprog.jsonbackend.features.wallet.controller;
+package id.ac.ui.cs.advprog.jsonbackend.features.transaction.controller;
 
 import id.ac.ui.cs.advprog.jsonbackend.common.config.JwtService;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.User;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UserRole;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UserStatus;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UserRepository;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.enums.TransactionStatus;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.enums.TransactionType;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Transaction;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionStatus;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionType;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.model.Transaction;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletTransactionService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -59,13 +64,28 @@ class TestTransactionController {
         when(walletTransactionService.getTransactionHistory(userId.toString()))
                 .thenReturn(List.of(tx));
 
-        mockMvc.perform(get("/api/transaction/" + userId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].id").value(transactionId.toString()))
-                .andExpect(jsonPath("$[0].type").value("TOP_UP"))
-                .andExpect(jsonPath("$[0].amount").value(100))
-                .andExpect(jsonPath("$[0].status").value("SUCCESS"));
+        User user = User.builder()
+                .id(userId)
+                .username("titiper")
+                .email("titiper@example.com")
+                .password("password")
+                .role(UserRole.TITIPER)
+                .status(UserStatus.ACTIVE)
+                .build();
+
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(user, null));
+
+        try {
+            mockMvc.perform(get("/api/transaction/" + userId))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.length()").value(1))
+                    .andExpect(jsonPath("$[0].id").value(transactionId.toString()))
+                    .andExpect(jsonPath("$[0].type").value("TOP_UP"))
+                    .andExpect(jsonPath("$[0].amount").value(100))
+                    .andExpect(jsonPath("$[0].status").value("SUCCESS"));
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
 
         verify(walletTransactionService).getTransactionHistory(userId.toString());
     }

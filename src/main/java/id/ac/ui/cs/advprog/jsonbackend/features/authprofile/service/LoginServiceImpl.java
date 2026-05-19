@@ -1,11 +1,13 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.authprofile.service;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UserLoginRequest;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.event.UserLoggedInEvent;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.exception.BadCredentialsException;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.User;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UserRepository;
 import id.ac.ui.cs.advprog.jsonbackend.common.config.LoginAttemptService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +20,7 @@ public class LoginServiceImpl implements LoginService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final LoginAttemptService loginAttemptService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public User login(UserLoginRequest dto) {
@@ -42,6 +45,7 @@ public class LoginServiceImpl implements LoginService {
         }
 
         loginAttemptService.loginSucceeded(dtoEmail);
+        eventPublisher.publishEvent(new UserLoggedInEvent(user.getId().toString()));
         return user;
     }
 }

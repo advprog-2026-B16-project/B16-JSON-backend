@@ -1,9 +1,12 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.wallet.service;
 
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.enums.TransactionStatus;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.enums.TransactionType;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionStatus;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionType;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InvalidWalletTransactionException;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InsufficientBalanceException;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Transaction;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InvalidAmountException;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.model.Transaction;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.service.TransactionService;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Wallet;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +32,7 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
 
     @Override
     public Transaction requestTopUp(String userId, BigDecimal amount) {
+        validatePositiveAmount(amount);
         Wallet wallet = walletService.findWallet(userId);
 
         return transactionService.createTransaction(
@@ -40,15 +44,25 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<Transaction> getPendingTopUpRequests() {
+        return transactionService.getTransactionsByTypeAndStatus(TransactionType.TOP_UP, TransactionStatus.PENDING);
+    }
+
+    @Override
     public void confirmTopUp(String transactionId) {
-        Transaction trx = transactionService.getTransactionById(transactionId);
+        Transaction trx = transactionService.getTransactionByIdForUpdate(transactionId);
+
+        if (trx.getType() != TransactionType.TOP_UP) {
+            throw new InvalidWalletTransactionException("Only top up transactions can be confirmed");
+        }
 
         if (trx.getStatus() == TransactionStatus.SUCCESS) {
             return;
         }
 
         if (trx.getStatus() != TransactionStatus.PENDING) {
-            throw new RuntimeException("Invalid transaction state");
+            throw new InvalidWalletTransactionException("Only pending top up transactions can be confirmed");
         }
 
         walletService.credit(trx.getUserId().toString(), trx.getAmount());
@@ -57,7 +71,33 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
     }
 
     @Override
+    public void rejectTopUp(String transactionId) {
+        Transaction trx = transactionService.getTransactionByIdForUpdate(transactionId);
+
+        if (trx.getType() != TransactionType.TOP_UP) {
+            throw new InvalidWalletTransactionException(
+                    "Only top up transactions can be rejected"
+            );
+        }
+
+        if (trx.getStatus() == TransactionStatus.FAILED) {
+            return;
+        }
+
+        if (trx.getStatus() != TransactionStatus.PENDING) {
+            throw new InvalidWalletTransactionException(
+                    "Only pending top up transactions can be rejected"
+            );
+        }
+
+        transactionService.markFailed(transactionId);
+    }
+
+
+
+    @Override
     public void requestWithdraw(String userId, BigDecimal amount) {
+        validatePositiveAmount(amount);
         Wallet wallet = walletService.findWallet(userId);
 
         if (wallet.getBalance().compareTo(amount) < 0) {
@@ -83,6 +123,7 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
 
     @Override
     public void refund(String userId, BigDecimal amount) {
+        validatePositiveAmount(amount);
         Wallet wallet = walletService.findWallet(userId);
 
         Transaction trx = transactionService.createTransaction(
@@ -108,11 +149,12 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
 
     @Override
     public Transaction requestPayment(String userId, String orderId, BigDecimal amount) {
+        validatePositiveAmount(amount);
         if (orderId == null || orderId.isBlank()) {
             throw new IllegalArgumentException("Order ID cannot be null or empty");
         }
 
-        Wallet wallet = walletService.findWallet(userId);
+        Wallet wallet = walletService.findWalletForUpdate(userId);
 
         if (wallet.getBalance().compareTo(amount) < 0) {
             throw new InsufficientBalanceException();
@@ -136,6 +178,12 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
         } catch (Exception e) {
             transactionService.markFailed(trx.getId().toString());
             throw e;
+        }
+    }
+
+    private void validatePositiveAmount(BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidAmountException();
         }
     }
 }

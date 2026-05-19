@@ -1,9 +1,12 @@
-package id.ac.ui.cs.advprog.jsonbackend.features.wallet.controller;
+package id.ac.ui.cs.advprog.jsonbackend.features.transaction.controller;
 
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.dto.TransactionResponse;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Transaction;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.User;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.dto.TransactionResponse;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.model.Transaction;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.WalletUnauthorizedException;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletTransactionService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,7 +25,13 @@ public class TransactionController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<List<TransactionResponse>> getHistory(@PathVariable String userId) {
+    public ResponseEntity<List<TransactionResponse>> getHistory(
+            @AuthenticationPrincipal User authenticatedUser,
+            @PathVariable String userId
+    ) {
+        if (authenticatedUser == null || !authenticatedUser.getId().toString().equals(userId)) {
+            throw new WalletUnauthorizedException("You can only view your own transaction history");
+        }
 
         List<TransactionResponse> response = walletTransactionService
                 .getTransactionHistory(userId)

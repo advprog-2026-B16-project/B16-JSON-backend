@@ -1,7 +1,7 @@
-package id.ac.ui.cs.advprog.jsonbackend.features.wallet.repository;
+package id.ac.ui.cs.advprog.jsonbackend.features.transaction.repository;
 
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Transaction;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.enums.TransactionType;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.model.Transaction;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,4 +82,21 @@ class TestTransactionRepository {
         assertThat(transactions).isNotNull();
         assertThat(transactions).isEmpty();
     }
+
+    @Test
+    void testFindByIdAndUserId_whenTransactionExists_shouldReturnTransaction() {
+        Transaction transaction = transactionRepository.findByWalletId(WALLET_ID_1).getFirst();
+
+        assertThat(transactionRepository.findByIdAndUserId(transaction.getId(), USER_ID_1))
+                .contains(transaction);
+    }
+
+    @Test
+    void testFindByIdAndUserId_whenUserDoesNotMatch_shouldReturnEmpty() {
+        Transaction transaction = transactionRepository.findByWalletId(WALLET_ID_1).getFirst();
+
+        assertThat(transactionRepository.findByIdAndUserId(transaction.getId(), USER_ID_2))
+                .isEmpty();
+    }
+
 }

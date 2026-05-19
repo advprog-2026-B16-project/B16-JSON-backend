@@ -10,4 +10,5 @@ public interface WalletService {
     void debit(String userId, BigDecimal amount);
     BigDecimal getBalance(String userId);
     Wallet findWallet(String userId);
+    Wallet findWalletForUpdate(String userId);
 }

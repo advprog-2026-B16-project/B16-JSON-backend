@@ -44,12 +44,14 @@ cp .env.example .env
 .\gradlew bootRun
 
 Default profile is `local`, so the app will use:
+- `JWT_SECRET_KEY`
 - `LOCAL_DB_URL`
 - `LOCAL_DB_USER`
 - `LOCAL_DB_PASSWORD`
 
 For production, set:
 - `SPRING_PROFILES_ACTIVE=production`
+- `JWT_SECRET_KEY`
 - `PROD_DB_URL`
 - `PROD_DB_USER`
 - `PROD_DB_PASSWORD`
