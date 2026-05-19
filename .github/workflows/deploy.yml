@@ -41,7 +41,6 @@ jobs:
             --restart unless-stopped \
             --name=web_server \
             -p 8080:8080 \
-            -e SPRING_PROFILES_ACTIVE=production \
             -e SERVER_PORT=8080 \
             -e DB_URL="${{ secrets.PROD_DB_URL }}" \
             -e DB_USER="${{ secrets.PROD_DB_USER }}" \
