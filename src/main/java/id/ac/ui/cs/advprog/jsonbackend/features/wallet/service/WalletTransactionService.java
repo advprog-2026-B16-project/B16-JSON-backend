@@ -8,7 +8,9 @@ import java.util.List;
 public interface WalletTransactionService {
 
     Transaction requestTopUp(String userId, BigDecimal amount);
+    List<Transaction> getPendingTopUpRequests();
     void confirmTopUp(String transactionId);
+    void rejectTopUp(String transactionId);
 
     void requestWithdraw(String userId, BigDecimal amount);
 

@@ -141,6 +141,36 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    public Payment cancelPayment(User authenticatedUser, String referenceCode) {
+        User user = requireAuthenticatedUser(authenticatedUser);
+
+        Payment payment = paymentRepository.findByReferenceCodeForUpdate(referenceCode)
+                .orElseThrow(() -> new PaymentNotFoundException(referenceCode));
+
+        if (!payment.getUserId().equals(user.getId())) {
+            throw new PaymentUnauthorizedException(
+                    "You can only cancel your own payment"
+            );
+        }
+
+        if (payment.getStatus() == PaymentStatus.SUCCESS) {
+            throw new PaymentNotAllowedException(
+                    "Successful payment cannot be cancelled"
+            );
+        }
+
+        if (payment.getStatus() != PaymentStatus.PENDING) {
+            throw new PaymentNotAllowedException(
+                    "Only pending payment can be cancelled"
+            );
+        }
+
+        payment.markCancelled();
+
+        return paymentRepository.save(payment);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<Payment> getMyPayments(User authenticatedUser) {
         User user = requireAuthenticatedUser(authenticatedUser);

@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.jsonbackend.features.wallet.service;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionStatus;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionType;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.service.TransactionService;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InvalidWalletTransactionException;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InsufficientBalanceException;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InvalidAmountException;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.model.Transaction;
@@ -65,10 +66,11 @@ class TestWalletTransactionServiceImpl {
         Transaction trx = mock(Transaction.class);
 
         when(trx.getStatus()).thenReturn(TransactionStatus.PENDING);
+        when(trx.getType()).thenReturn(TransactionType.TOP_UP);
         when(trx.getUserId()).thenReturn(userId);
         when(trx.getAmount()).thenReturn(new BigDecimal("100"));
 
-        when(transactionService.getTransactionById(trxId.toString())).thenReturn(trx);
+        when(transactionService.getTransactionByIdForUpdate(trxId.toString())).thenReturn(trx);
 
         walletTransactionService.confirmTopUp(trxId.toString());
 
@@ -81,9 +83,10 @@ class TestWalletTransactionServiceImpl {
         UUID trxId = UUID.randomUUID();
 
         Transaction trx = mock(Transaction.class);
+        when(trx.getType()).thenReturn(TransactionType.TOP_UP);
         when(trx.getStatus()).thenReturn(TransactionStatus.SUCCESS);
 
-        when(transactionService.getTransactionById(trxId.toString())).thenReturn(trx);
+        when(transactionService.getTransactionByIdForUpdate(trxId.toString())).thenReturn(trx);
 
         walletTransactionService.confirmTopUp(trxId.toString());
 
@@ -96,12 +99,36 @@ class TestWalletTransactionServiceImpl {
         UUID trxId = UUID.randomUUID();
         Transaction trx = mock(Transaction.class);
 
+        when(trx.getType()).thenReturn(TransactionType.TOP_UP);
         when(trx.getStatus()).thenReturn(TransactionStatus.FAILED);
-        when(transactionService.getTransactionById(trxId.toString())).thenReturn(trx);
+        when(transactionService.getTransactionByIdForUpdate(trxId.toString())).thenReturn(trx);
 
-        assertThrows(RuntimeException.class, () -> walletTransactionService.confirmTopUp(trxId.toString()));
+        assertThrows(InvalidWalletTransactionException.class, () -> walletTransactionService.confirmTopUp(trxId.toString()));
         verify(walletService, never()).credit(any(), any());
         verify(transactionService, never()).markSuccess(any());
+    }
+
+    @Test
+    void testConfirmTopUpRejectsNonTopUpTransaction() {
+        UUID trxId = UUID.randomUUID();
+        Transaction trx = mock(Transaction.class);
+
+        when(trx.getType()).thenReturn(TransactionType.PAYMENT);
+        when(transactionService.getTransactionByIdForUpdate(trxId.toString())).thenReturn(trx);
+
+        assertThrows(InvalidWalletTransactionException.class, () -> walletTransactionService.confirmTopUp(trxId.toString()));
+        verify(walletService, never()).credit(any(), any());
+        verify(transactionService, never()).markSuccess(any());
+    }
+
+    @Test
+    void testGetPendingTopUpRequests() {
+        Transaction trx = new Transaction(UUID.randomUUID(), UUID.randomUUID(), TransactionType.TOP_UP, BigDecimal.TEN, "Top Up Request");
+
+        when(transactionService.getTransactionsByTypeAndStatus(TransactionType.TOP_UP, TransactionStatus.PENDING))
+                .thenReturn(List.of(trx));
+
+        assertEquals(List.of(trx), walletTransactionService.getPendingTopUpRequests());
     }
 
     @Test

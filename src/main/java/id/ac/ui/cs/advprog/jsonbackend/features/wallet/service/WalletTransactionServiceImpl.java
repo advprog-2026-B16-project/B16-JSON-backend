@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.jsonbackend.features.wallet.service;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionStatus;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionType;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InvalidWalletTransactionException;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InsufficientBalanceException;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InvalidAmountException;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.model.Transaction;
@@ -43,21 +44,56 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<Transaction> getPendingTopUpRequests() {
+        return transactionService.getTransactionsByTypeAndStatus(TransactionType.TOP_UP, TransactionStatus.PENDING);
+    }
+
+    @Override
     public void confirmTopUp(String transactionId) {
-        Transaction trx = transactionService.getTransactionById(transactionId);
+        Transaction trx = transactionService.getTransactionByIdForUpdate(transactionId);
+
+        if (trx.getType() != TransactionType.TOP_UP) {
+            throw new InvalidWalletTransactionException("Only top up transactions can be confirmed");
+        }
 
         if (trx.getStatus() == TransactionStatus.SUCCESS) {
             return;
         }
 
         if (trx.getStatus() != TransactionStatus.PENDING) {
-            throw new RuntimeException("Invalid transaction state");
+            throw new InvalidWalletTransactionException("Only pending top up transactions can be confirmed");
         }
 
         walletService.credit(trx.getUserId().toString(), trx.getAmount());
 
         transactionService.markSuccess(transactionId);
     }
+
+    @Override
+    public void rejectTopUp(String transactionId) {
+        Transaction trx = transactionService.getTransactionByIdForUpdate(transactionId);
+
+        if (trx.getType() != TransactionType.TOP_UP) {
+            throw new InvalidWalletTransactionException(
+                    "Only top up transactions can be rejected"
+            );
+        }
+
+        if (trx.getStatus() == TransactionStatus.FAILED) {
+            return;
+        }
+
+        if (trx.getStatus() != TransactionStatus.PENDING) {
+            throw new InvalidWalletTransactionException(
+                    "Only pending top up transactions can be rejected"
+            );
+        }
+
+        transactionService.markFailed(transactionId);
+    }
+
+
 
     @Override
     public void requestWithdraw(String userId, BigDecimal amount) {

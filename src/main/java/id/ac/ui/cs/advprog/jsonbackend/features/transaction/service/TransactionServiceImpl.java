@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.jsonbackend.features.transaction.service;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.exception.TransactionNotFoundException;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Wallet;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.model.Transaction;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionStatus;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionType;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.repository.TransactionRepository;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletService;
@@ -30,6 +31,12 @@ public class TransactionServiceImpl implements TransactionService {
     public List<Transaction> getUserTransactions(String userId) {
         Wallet wallet = walletService.findWallet(userId);
         return transactionRepository.findByWalletId(wallet.getId());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Transaction> getTransactionsByTypeAndStatus(TransactionType type, TransactionStatus status) {
+        return transactionRepository.findByTypeAndStatusOrderByCreatedAtDesc(type, status);
     }
 
     @Override

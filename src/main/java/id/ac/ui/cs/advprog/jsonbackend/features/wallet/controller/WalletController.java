@@ -1,6 +1,8 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.wallet.controller;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.User;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UserRole;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.dto.TopUpRequestResponse;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.dto.WalletRequest;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.model.Transaction;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.WalletUnauthorizedException;
@@ -12,8 +14,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/wallet")
@@ -42,9 +44,36 @@ public class WalletController {
     }
 
     @PostMapping("/topup/confirm/{transactionId}")
-    public ResponseEntity<String> confirmTopUp(@PathVariable String transactionId) {
+    public ResponseEntity<String> confirmTopUp(
+            @AuthenticationPrincipal User authenticatedUser,
+            @PathVariable String transactionId
+    ) {
+        requireAdmin(authenticatedUser);
         walletTransactionService.confirmTopUp(transactionId);
         return ResponseEntity.ok("Top up confirmed");
+    }
+
+    @PostMapping("/topup/reject/{transactionId}")
+    public ResponseEntity<String> rejectTopUp(
+            @AuthenticationPrincipal User authenticatedUser,
+            @PathVariable String transactionId
+    ) {
+        requireAdmin(authenticatedUser);
+        walletTransactionService.rejectTopUp(transactionId);
+
+        return ResponseEntity.ok("Top up rejected");
+    }
+
+    @GetMapping("/topup/requests")
+    public ResponseEntity<List<TopUpRequestResponse>> getPendingTopUpRequests(
+            @AuthenticationPrincipal User authenticatedUser
+    ) {
+        requireAdmin(authenticatedUser);
+        List<TopUpRequestResponse> response = walletTransactionService.getPendingTopUpRequests()
+                .stream()
+                .map(TopUpRequestResponse::new)
+                .toList();
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/withdraw")
@@ -80,6 +109,13 @@ public class WalletController {
             throw new WalletUnauthorizedException("Authentication is required for wallet operations");
         }
         return authenticatedUser;
+    }
+
+    private void requireAdmin(User authenticatedUser) {
+        User user = requireAuthenticatedUser(authenticatedUser);
+        if (user.getRole() != UserRole.ADMIN) {
+            throw new WalletUnauthorizedException("Admin role is required for this wallet operation");
+        }
     }
 
     private ResponseEntity<?> buildBalanceResponse(String userId) {

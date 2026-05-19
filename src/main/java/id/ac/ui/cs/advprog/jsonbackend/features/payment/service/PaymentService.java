@@ -12,4 +12,6 @@ public interface PaymentService {
     Payment pay(User authenticatedUser, String referenceCode);
 
     List<Payment> getMyPayments(User authenticatedUser);
+
+    Payment cancelPayment(User authenticatedUser, String referenceCode);
 }

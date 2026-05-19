@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.transaction.service;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionType;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionStatus;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.model.Transaction;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Wallet;
 
@@ -18,4 +19,6 @@ public interface TransactionService {
     void markFailed(String transactionId);
 
     List<Transaction> getUserTransactions(String userId);
+
+    List<Transaction> getTransactionsByTypeAndStatus(TransactionType type, TransactionStatus status);
 }

@@ -89,6 +89,7 @@ tasks.register<Test>("functionalTest"){
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+    systemProperty("spring.profiles.active", "test")
 }
 
 tasks.test {

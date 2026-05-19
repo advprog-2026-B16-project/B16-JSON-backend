@@ -94,4 +94,9 @@ public class Payment {
         this.status = PaymentStatus.FAILED;
         this.updatedAt = LocalDateTime.now();
     }
+
+    public void markCancelled() {
+        this.status = PaymentStatus.CANCELLED;
+        this.updatedAt = LocalDateTime.now();
+    }
 }

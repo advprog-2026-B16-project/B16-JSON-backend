@@ -60,6 +60,18 @@ class TransactionServiceImplTest {
     }
 
     @Test
+    void getTransactionsByTypeAndStatusUsesRepositoryFilter() {
+        Transaction transaction = buildTransaction();
+
+        when(transactionRepository.findByTypeAndStatusOrderByCreatedAtDesc(TransactionType.TOP_UP, TransactionStatus.PENDING))
+                .thenReturn(List.of(transaction));
+
+        List<Transaction> result = transactionService.getTransactionsByTypeAndStatus(TransactionType.TOP_UP, TransactionStatus.PENDING);
+
+        assertEquals(List.of(transaction), result);
+    }
+
+    @Test
     void getTransactionByIdReturnsTransaction() {
         Transaction transaction = buildTransaction();
 

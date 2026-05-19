@@ -37,6 +37,14 @@ public class PaymentController {
         return ResponseEntity.ok(new PaymentResponse(paymentService.pay(authenticatedUser, referenceCode)));
     }
 
+    @PatchMapping("/{referenceCode}/cancel")
+    public ResponseEntity<PaymentResponse> cancelPayment(
+            @AuthenticationPrincipal User user,
+            @PathVariable String referenceCode
+    ) {
+        return ResponseEntity.ok(new PaymentResponse(paymentService.cancelPayment(user, referenceCode)));
+    }
+
     @GetMapping("/me")
     public ResponseEntity<List<PaymentResponse>> getMyPayments(@AuthenticationPrincipal User authenticatedUser) {
         List<PaymentResponse> response = paymentService.getMyPayments(authenticatedUser)
