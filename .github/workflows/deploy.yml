@@ -42,9 +42,15 @@ jobs:
             --name=web_server \
             -p 8080:8080 \
             -e SPRING_PROFILES_ACTIVE=production \
-            -e PROD_DB_URL=${{ secrets.PROD_DB_URL }} \
-            -e PROD_DB_USER=${{ secrets.PROD_DB_USER }} \
-            -e PROD_DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }} \
-            -e PROD_JPA_DDL_AUTO=validate \
-            -e PROD_SHOW_SQL=false \
+            -e SERVER_PORT=8080 \
+            -e DB_URL="${{ secrets.PROD_DB_URL }}" \
+            -e DB_USER="${{ secrets.PROD_DB_USER }}" \
+            -e DB_PASSWORD="${{ secrets.PROD_DB_PASSWORD }}" \
+            -e JPA_DDL_AUTO=validate \
+            -e SHOW_SQL=false \
+            -e JWT_SECRET_KEY="${{ secrets.JWT_SECRET_KEY }}" \
+            -e JWT_EXPIRATION=3600000 \
+            -e ADMIN_EMAIL="${{ secrets.ADMIN_EMAIL }}" \
+            -e ADMIN_USERNAME="${{ secrets.ADMIN_USERNAME }}" \
+            -e ADMIN_PASSWORD="${{ secrets.ADMIN_PASSWORD }}" \
             ${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_HUB_REPO_NAME }}:latest
