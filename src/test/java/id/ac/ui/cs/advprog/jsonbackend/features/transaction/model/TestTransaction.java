@@ -60,6 +60,7 @@ class TestTransaction {
         assertEquals(transactionId, transaction.getId());
         assertEquals(USER_ID, transaction.getUserId());
         assertEquals(orderId, transaction.getOrderId());
+        other.setCreatedAt(transaction.getCreatedAt());
         assertEquals(transaction, other);
         assertEquals(transaction.hashCode(), other.hashCode());
         assertTrue(transaction.toString().contains("Top up transaction"));
