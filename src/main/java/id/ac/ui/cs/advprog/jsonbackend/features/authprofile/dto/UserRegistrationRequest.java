@@ -10,7 +10,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserRegistrationRequest {
-    @NotBlank(message = "Username is required")
     private String username;
 
     @NotBlank(message = "Email is required")
@@ -21,7 +20,7 @@ public class UserRegistrationRequest {
     @Size(min = 8, message = "Password must be at least 8 characters")
     @Pattern(
         regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{8,}$",
-        message = "Password must contain at least one digit, one lowercase, one uppercase, one special character, and no whitespace"
+        message = "Password must contain at least one digit, one lowercase, one uppercase, one special character, and no whitespace"        
     )
     private String password;
 

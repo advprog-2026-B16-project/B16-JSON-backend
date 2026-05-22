@@ -1,12 +1,14 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.wallet.service;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.WalletNotFoundException;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InvalidAmountException;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Wallet;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.repository.WalletRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -20,31 +22,43 @@ public class WalletServiceImpl implements WalletService {
 
     @Override
     public Wallet createWallet(String userId) {
-        return walletRepository.findByUserId(userId)
-                .orElseGet(() -> walletRepository.save(new Wallet(userId)));
+        UUID uid = UUID.fromString(userId);
+        return walletRepository.findByUserId(uid)
+                .orElseGet(() -> walletRepository.save(new Wallet(uid)));
     }
 
     @Override
     public void credit(String userId, BigDecimal amount) {
-        Wallet wallet = findWallet(userId);
-        wallet.credit(amount);
+        validatePositiveAmount(amount);
+        findWallet(userId).credit(amount);
     }
 
     @Override
     public void debit(String userId, BigDecimal amount) {
-        Wallet wallet = findWallet(userId);
-        wallet.debit(amount);
+        validatePositiveAmount(amount);
+        findWallet(userId).debit(amount);
     }
 
     @Override
     public BigDecimal getBalance(String userId) {
-        Wallet wallet = findWallet(userId);
-        return wallet.getBalance();
+        return findWallet(userId).getBalance();
     }
 
     @Override
     public Wallet findWallet(String userId) {
-        return walletRepository.findByUserId(userId)
+        return walletRepository.findByUserId(UUID.fromString(userId))
                 .orElseThrow(() -> new WalletNotFoundException(userId));
+    }
+
+    @Override
+    public Wallet findWalletForUpdate(String userId) {
+        return walletRepository.findByUserIdForUpdate(UUID.fromString(userId))
+                .orElseThrow(() -> new WalletNotFoundException(userId));
+    }
+
+    private void validatePositiveAmount(BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidAmountException();
+        }
     }
 }

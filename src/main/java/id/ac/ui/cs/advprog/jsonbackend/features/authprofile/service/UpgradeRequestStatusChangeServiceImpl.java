@@ -1,85 +1,61 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.authprofile.service;
 
-import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UpgradeRequestResponse;
-import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UpgradeRequestSubmissionRequest;
-import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UpgradeRequest;
-import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.User;
-import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UserRole;
-import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UpgradeRequestRepository;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.*;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.*;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UserRepository;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UpgradeRequestRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UpgradeRequestStatusChangeServiceImpl implements UpgradeRequestStatusChangeService {
 
-    private final UpgradeRequestRepository upgradeRequestRepository;
-    private final UserRepository userRepository;
     private final UserService userService;
-
-    @Value("${app.debug.verbose:false}")
-    private boolean verboseLogging;
+    private final UserRepository userRepository;
+    private final UpgradeRequestRepository upgradeRepo;
 
     @Override
     @Transactional
-    public UpgradeRequestResponse submitUpgradeRequest(User user, UpgradeRequestSubmissionRequest requestDto) {
-        if (verboseLogging) {
-            log.debug("[DEBUG] Execution started: submitUpgradeRequest | User: {}", user.getUsername());
-        }
-
-        upgradeRequestRepository.findByRequesterUser(user).ifPresent(r -> {
+    public UpgradeRequestResponse submitUpgradeRequest(User user, UpgradeRequestSubmissionRequest dto) {
+        upgradeRepo.findByRequesterUser(user).ifPresent(r -> {
             if ("PENDING".equals(r.getStatus())) {
-                throw new RuntimeException("An upgrade request is already pending.");
+                throw new RuntimeException("Pending request exists");
             }
+            upgradeRepo.delete(r);
+            upgradeRepo.flush();
         });
+
+        user.setStatus(UserStatus.PENDING_JASTIPER);
+        userRepository.save(user);
 
         UpgradeRequest request = UpgradeRequest.builder()
                 .requesterUser(user)
-                .fullName(requestDto.getFullName())
-                .credential(requestDto.getCredential())
+                .fullName(dto.getFullName())
+                .credential(dto.getCredential())
+                .socialMediaUrl(dto.getSocialMediaUrl())
                 .status("PENDING")
                 .build();
 
-        UpgradeRequest savedRequest = upgradeRequestRepository.save(request);
-
-        if (verboseLogging) {
-            log.debug("[DEBUG] UpgradeRequest created: {}", savedRequest.getUpgrReqId());
-        }
-
-        return UpgradeRequestResponse.fromRequest(savedRequest);
+        UpgradeRequest saved = upgradeRepo.save(request);
+        return UpgradeRequestResponse.fromRequest(saved);
     }
 
     @Override
     @Transactional
-    public void updateRequestStatus(UUID requestId, String newStatus) {
-        if (verboseLogging) {
-            log.debug("[DEBUG] Execution started: handleUpgradeDecision | RequestID: {} | Status: {}", requestId, newStatus);
+    public void updateRequestStatus(UUID requestId, String status) {
+        UpgradeRequest r = upgradeRepo.findById(requestId).orElseThrow(() -> new RuntimeException("Not found"));
+        r.setStatus(status);
+
+        User requester = r.getRequesterUser();
+        requester.setStatus(UserStatus.ACTIVE);
+        if ("ACCEPTED".equalsIgnoreCase(status)) {
+            userService.promoteToJastiper(requester);
         }
-
-        UpgradeRequest request = upgradeRequestRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Upgrade request not found"));
-
-        request.setStatus(newStatus);
-
-        if ("ACCEPTED".equalsIgnoreCase(newStatus)) {
-            User user = request.getRequesterUser();
-            userService.promoteToJastiper(user);
-            if (verboseLogging) {
-                log.debug("[DEBUG] User promoted to JASTIPER: {}", user.getUsername());
-            }
-        }
-
-        upgradeRequestRepository.save(request);
-
-        if (verboseLogging) {
-            log.debug("[DEBUG] Execution finished: Status updated to {}", newStatus);
-        }
+        userRepository.save(requester);
+        upgradeRepo.save(r);
     }
 }

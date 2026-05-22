@@ -1,13 +1,19 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.wallet.service;
 
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.enums.TransactionType;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Transaction;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionStatus;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionType;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InvalidWalletTransactionException;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InsufficientBalanceException;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InvalidAmountException;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.model.Transaction;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.service.TransactionService;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Wallet;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -25,18 +31,115 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
     }
 
     @Override
-    public void topUp(String userId, BigDecimal amount) {
-        processTransaction(userId, amount, TransactionType.TOP_UP, "Top Up", true);
+    public Transaction requestTopUp(String userId, BigDecimal amount) {
+        validatePositiveAmount(amount);
+        Wallet wallet = walletService.findWallet(userId);
+
+        return transactionService.createTransaction(
+                wallet,
+                TransactionType.TOP_UP,
+                amount,
+                "Top Up Request"
+        );
     }
 
     @Override
-    public void withdraw(String userId, BigDecimal amount) {
-        processTransaction(userId, amount, TransactionType.WITHDRAW, "Withdraw", false);
+    @Transactional(readOnly = true)
+    public List<Transaction> getPendingTopUpRequests() {
+        return transactionService.getTransactionsByTypeAndStatus(TransactionType.TOP_UP, TransactionStatus.PENDING);
+    }
+
+    @Override
+    public void confirmTopUp(String transactionId) {
+        Transaction trx = transactionService.getTransactionByIdForUpdate(transactionId);
+
+        if (trx.getType() != TransactionType.TOP_UP) {
+            throw new InvalidWalletTransactionException("Only top up transactions can be confirmed");
+        }
+
+        if (trx.getStatus() == TransactionStatus.SUCCESS) {
+            return;
+        }
+
+        if (trx.getStatus() != TransactionStatus.PENDING) {
+            throw new InvalidWalletTransactionException("Only pending top up transactions can be confirmed");
+        }
+
+        walletService.credit(trx.getUserId().toString(), trx.getAmount());
+
+        transactionService.markSuccess(transactionId);
+    }
+
+    @Override
+    public void rejectTopUp(String transactionId) {
+        Transaction trx = transactionService.getTransactionByIdForUpdate(transactionId);
+
+        if (trx.getType() != TransactionType.TOP_UP) {
+            throw new InvalidWalletTransactionException(
+                    "Only top up transactions can be rejected"
+            );
+        }
+
+        if (trx.getStatus() == TransactionStatus.FAILED) {
+            return;
+        }
+
+        if (trx.getStatus() != TransactionStatus.PENDING) {
+            throw new InvalidWalletTransactionException(
+                    "Only pending top up transactions can be rejected"
+            );
+        }
+
+        transactionService.markFailed(transactionId);
+    }
+
+
+
+    @Override
+    public void requestWithdraw(String userId, BigDecimal amount) {
+        validatePositiveAmount(amount);
+        Wallet wallet = walletService.findWallet(userId);
+
+        if (wallet.getBalance().compareTo(amount) < 0) {
+            throw new InsufficientBalanceException();
+        }
+
+        Transaction trx = transactionService.createTransaction(
+                wallet,
+                TransactionType.WITHDRAW,
+                amount,
+                "Withdraw Request"
+        );
+
+        try {
+            walletService.debit(userId, amount);
+            transactionService.markSuccess(trx.getId().toString());
+
+        } catch (Exception e) {
+            transactionService.markFailed(trx.getId().toString());
+            throw e;
+        }
     }
 
     @Override
     public void refund(String userId, BigDecimal amount) {
-        processTransaction(userId, amount, TransactionType.REFUND, "Refund", true);
+        validatePositiveAmount(amount);
+        Wallet wallet = walletService.findWallet(userId);
+
+        Transaction trx = transactionService.createTransaction(
+                wallet,
+                TransactionType.REFUND,
+                amount,
+                "Refund"
+        );
+
+        try {
+            walletService.credit(userId, amount);
+            transactionService.markSuccess(trx.getId().toString());
+        } catch (Exception e) {
+            transactionService.markFailed(trx.getId().toString());
+            throw e;
+        }
     }
 
     @Override
@@ -44,28 +147,43 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
         return transactionService.getUserTransactions(userId);
     }
 
-    private void processTransaction(
-            String userId,
-            BigDecimal amount,
-            TransactionType type,
-            String description,
-            boolean isCredit
-    ) {
-        Wallet wallet = walletService.findWallet(userId);
-        Transaction transaction = transactionService.createTransaction(wallet, type, amount, description);
+    @Override
+    public Transaction requestPayment(String userId, String orderId, BigDecimal amount) {
+        validatePositiveAmount(amount);
+        if (orderId == null || orderId.isBlank()) {
+            throw new IllegalArgumentException("Order ID cannot be null or empty");
+        }
+
+        Wallet wallet = walletService.findWalletForUpdate(userId);
+
+        if (wallet.getBalance().compareTo(amount) < 0) {
+            throw new InsufficientBalanceException();
+        }
+
+        Transaction trx = transactionService.createTransaction(
+                wallet,
+                TransactionType.PAYMENT,
+                amount,
+                "Payment for order " + orderId
+        );
+
+        trx.setOrderId(UUID.fromString(orderId));
 
         try {
-            if (isCredit) {
-                walletService.credit(userId, amount);
-            } else {
-                walletService.debit(userId, amount);
-            }
-            transactionService.markSuccess(transaction.getId());
-        } catch (RuntimeException exception) {
-            if (transaction.getId() != null) {
-                transactionService.markFailed(transaction.getId());
-            }
-            throw exception;
+            walletService.debit(userId, amount);
+            transactionService.markSuccess(trx.getId().toString());
+
+            return trx;
+
+        } catch (Exception e) {
+            transactionService.markFailed(trx.getId().toString());
+            throw e;
+        }
+    }
+
+    private void validatePositiveAmount(BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidAmountException();
         }
     }
 }

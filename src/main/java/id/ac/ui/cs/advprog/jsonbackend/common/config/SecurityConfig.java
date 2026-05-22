@@ -31,12 +31,9 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Permit public endpoints
-                        .requestMatchers("/api/login/**", "/api/register/**", "/api/hello").permitAll()
-                        // Rest require authentication
+                        .requestMatchers("/api/login/**", "/api/register/**", "/api/user/profile/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                // Disable TRACE method
                 .addFilterBefore((request, response, chain) -> {
                     if ("TRACE".equalsIgnoreCase(((jakarta.servlet.http.HttpServletRequest) request).getMethod())) {
                         ((jakarta.servlet.http.HttpServletResponse) response).setStatus(jakarta.servlet.http.HttpServletResponse.SC_METHOD_NOT_ALLOWED);

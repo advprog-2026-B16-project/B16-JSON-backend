@@ -23,6 +23,10 @@ public class RegistrationServiceImpl implements RegistrationService {
     @Override
     @Transactional
     public void register(UserRegistrationRequest dto) {
+        if (dto.getUsername() == null || dto.getUsername().isBlank()) {
+            String localPart = dto.getEmail().split("@")[0];
+            dto.setUsername(localPart);
+        }
         if (userRepository.findByUsername(dto.getUsername()).isPresent()) {
             throw new RuntimeException("Username already exists");
         }
@@ -38,8 +42,8 @@ public class RegistrationServiceImpl implements RegistrationService {
                 .status(UserStatus.ACTIVE)
                 .build();
 
-        userRepository.save(user);
-        String userId = user.getId() != null ? user.getId().toString() : "";
+        User savedUser = userRepository.save(user);
+        String userId = savedUser.getId() != null ? savedUser.getId().toString() : "";
         eventPublisher.publishEvent(new UserCreatedEvent(userId));
     }
 }
