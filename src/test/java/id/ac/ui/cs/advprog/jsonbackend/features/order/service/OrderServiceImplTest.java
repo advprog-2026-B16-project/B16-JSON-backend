@@ -1,5 +1,7 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.order.service;
 
+import id.ac.ui.cs.advprog.jsonbackend.features.catalog.model.Product;
+import id.ac.ui.cs.advprog.jsonbackend.features.catalog.repository.ProductRepository;
 import id.ac.ui.cs.advprog.jsonbackend.features.order.dto.CreateOrderRequest;
 import id.ac.ui.cs.advprog.jsonbackend.features.order.dto.OrderResponse;
 import id.ac.ui.cs.advprog.jsonbackend.features.order.dto.RatingRequest;
@@ -13,13 +15,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
@@ -46,15 +48,24 @@ class OrderServiceImplTest {
     private OrderRepository orderRepository;
 
     @Mock
+    private ProductRepository productRepository;
+
+    @Mock
     private ApplicationEventPublisher eventPublisher;
 
-    @InjectMocks
     private OrderServiceImpl orderService;
+
+    @BeforeEach
+    void setUp() {
+        OrderPricingService orderPricingService = new OrderPricingService(productRepository);
+        orderService = new OrderServiceImpl(orderRepository, orderPricingService, eventPublisher);
+    }
 
     @Test
     void checkoutShouldPersistOrderPublishEventAndReturnMappedResponse() {
         CreateOrderRequest request = checkoutRequest("prod-abc-123", 2);
 
+        when(productRepository.findById("prod-abc-123")).thenReturn(Optional.of(product("prod-abc-123", 125000)));
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
             Order order = invocation.getArgument(0);
             order.setOrderId(ORDER_ID);
@@ -84,19 +95,17 @@ class OrderServiceImplTest {
     }
 
     @Test
-    void checkoutShouldUseDefaultPriceForUnknownProduct() {
+    void checkoutShouldRejectUnknownProduct() {
         CreateOrderRequest request = checkoutRequest("prod-unknown", 3);
 
-        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
-            Order order = invocation.getArgument(0);
-            order.setOrderId(ORDER_ID);
-            return order;
-        });
+        when(productRepository.findById("prod-unknown")).thenReturn(Optional.empty());
 
-        OrderResponse response = orderService.checkout(request);
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> orderService.checkout(request));
 
-        assertEquals(BigDecimal.valueOf(30000L), response.getTotalAmount());
-        verify(eventPublisher).publishEvent(any(OrderCreatedEvent.class));
+        assertEquals("Product not found", exception.getMessage());
+        verify(orderRepository, never()).save(any());
+        verifyNoInteractions(eventPublisher);
     }
 
     @ParameterizedTest
@@ -115,6 +124,7 @@ class OrderServiceImplTest {
         String reason = "Customer changed mind";
 
         when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(order));
+        when(productRepository.findById("prod-abc-123")).thenReturn(Optional.of(product("prod-abc-123", 125000)));
         when(orderRepository.save(order)).thenAnswer(invocation -> invocation.getArgument(0));
 
         OrderResponse response = orderService.cancelOrder(ORDER_ID.toString(), reason);
@@ -137,6 +147,7 @@ class OrderServiceImplTest {
     void cancelOrderShouldFallbackToDefaultReasonWhenReasonMissing(String inputReason, String expectedReason) throws Throwable {
         Order order = existingOrder(OrderStatus.PAID);
         when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(order));
+        when(productRepository.findById("prod-abc-123")).thenReturn(Optional.of(product("prod-abc-123", 125000)));
         when(orderRepository.save(order)).thenAnswer(invocation -> invocation.getArgument(0));
 
         OrderResponse response = orderService.cancelOrder(ORDER_ID.toString(), inputReason);
@@ -173,6 +184,7 @@ class OrderServiceImplTest {
         RatingRequest request = ratingRequest(5, 4);
 
         when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(order));
+        when(productRepository.findById("prod-abc-123")).thenReturn(Optional.of(product("prod-abc-123", 125000)));
         when(orderRepository.save(order)).thenAnswer(invocation -> invocation.getArgument(0));
 
         OrderResponse response = orderService.submitRating(ORDER_ID, request);
@@ -301,6 +313,7 @@ class OrderServiceImplTest {
     void updateOrderStatusShouldPersistNewStatus() {
         Order order = existingOrder(OrderStatus.PAID);
         when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(order));
+        when(productRepository.findById("prod-abc-123")).thenReturn(Optional.of(product("prod-abc-123", 125000)));
         when(orderRepository.save(order)).thenAnswer(invocation -> invocation.getArgument(0));
 
         OrderResponse response = orderService.updateOrderStatus(ORDER_ID, OrderStatus.SHIPPED);
@@ -364,6 +377,13 @@ class OrderServiceImplTest {
         request.setJastiperRating(jastiperRating);
         request.setProductRating(productRating);
         return request;
+    }
+
+    private static Product product(String id, double price) {
+        Product product = new Product();
+        product.setId(id);
+        product.setPrice(price);
+        return product;
     }
 
     private static Order existingOrder(OrderStatus status) {

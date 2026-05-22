@@ -16,6 +16,7 @@ import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InsufficientBal
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Wallet;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletService;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletTransactionService;
+import id.ac.ui.cs.advprog.jsonbackend.features.catalog.service.ProductStockService;
 import id.ac.ui.cs.advprog.jsonbackend.features.order.enums.OrderStatus;
 import id.ac.ui.cs.advprog.jsonbackend.features.order.model.Order;
 import id.ac.ui.cs.advprog.jsonbackend.features.order.repository.OrderRepository;
@@ -40,6 +41,7 @@ class PaymentServiceImplTest {
     private PaymentRepository paymentRepository;
     private OrderRepository orderRepository;
     private OrderPricingService orderPricingService;
+    private ProductStockService productStockService;
     private WalletService walletService;
     private WalletTransactionService walletTransactionService;
     private PaymentServiceImpl paymentService;
@@ -49,12 +51,14 @@ class PaymentServiceImplTest {
         paymentRepository = mock(PaymentRepository.class);
         orderRepository = mock(OrderRepository.class);
         orderPricingService = mock(OrderPricingService.class);
+        productStockService = mock(ProductStockService.class);
         walletService = mock(WalletService.class);
         walletTransactionService = mock(WalletTransactionService.class);
         paymentService = new PaymentServiceImpl(
                 paymentRepository,
                 orderRepository,
                 orderPricingService,
+                productStockService,
                 walletService,
                 walletTransactionService
         );
@@ -86,6 +90,7 @@ class PaymentServiceImplTest {
         assertTrue(result.getReferenceCode().startsWith("PAY-"));
         assertTrue(result.getExpiresAt().isAfter(LocalDateTime.now().plusMinutes(14)));
         assertTrue(result.getExpiresAt().isBefore(LocalDateTime.now().plusMinutes(16)));
+        verify(productStockService).reserveStock(order);
     }
 
     @Test
@@ -127,6 +132,8 @@ class PaymentServiceImplTest {
         assertEquals(PaymentStatus.EXPIRED, existingPayment.getStatus());
         assertEquals(PaymentStatus.PENDING, result.getStatus());
         assertNotSame(existingPayment, result);
+        verify(productStockService).releaseReservedStock(order);
+        verify(productStockService).reserveStock(order);
     }
 
     @Test
@@ -308,12 +315,14 @@ class PaymentServiceImplTest {
         Payment payment = buildPayment(user, order, PaymentStatus.PENDING, LocalDateTime.now().minusSeconds(1));
 
         when(paymentRepository.findByReferenceCodeForUpdate(payment.getReferenceCode())).thenReturn(Optional.of(payment));
+        when(orderRepository.findByIdForUpdate(order.getOrderId())).thenReturn(Optional.of(order));
         when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Payment result = paymentService.pay(user, payment.getReferenceCode());
 
         assertEquals(PaymentStatus.EXPIRED, result.getStatus());
-        verifyNoInteractions(orderRepository);
+        verify(orderRepository).findByIdForUpdate(order.getOrderId());
+        verify(productStockService).releaseReservedStock(order);
         verifyNoInteractions(walletService);
         verifyNoInteractions(walletTransactionService);
     }
@@ -379,7 +388,24 @@ class PaymentServiceImplTest {
 
         assertThrows(RuntimeException.class, () -> paymentService.pay(user, payment.getReferenceCode()));
         assertEquals(PaymentStatus.FAILED, payment.getStatus());
+        verify(productStockService).releaseReservedStock(order);
         verify(paymentRepository).save(payment);
+    }
+
+    @Test
+    void cancelPaymentReleasesReservedStock() {
+        User user = buildUser();
+        Order order = buildOrder(user.getId());
+        Payment payment = buildPayment(user, order, PaymentStatus.PENDING, LocalDateTime.now().plusMinutes(5));
+
+        when(paymentRepository.findByReferenceCodeForUpdate(payment.getReferenceCode())).thenReturn(Optional.of(payment));
+        when(orderRepository.findByIdForUpdate(order.getOrderId())).thenReturn(Optional.of(order));
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Payment result = paymentService.cancelPayment(user, payment.getReferenceCode());
+
+        assertEquals(PaymentStatus.CANCELLED, result.getStatus());
+        verify(productStockService).releaseReservedStock(order);
     }
 
     @Test
