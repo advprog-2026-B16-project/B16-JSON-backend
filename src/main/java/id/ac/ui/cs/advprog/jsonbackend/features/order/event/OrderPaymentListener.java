@@ -4,8 +4,10 @@ import id.ac.ui.cs.advprog.jsonbackend.features.order.enums.OrderStatus;
 import id.ac.ui.cs.advprog.jsonbackend.features.order.model.Order;
 import id.ac.ui.cs.advprog.jsonbackend.features.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
@@ -14,8 +16,9 @@ public class OrderPaymentListener {
 
     private final OrderRepository orderRepository;
 
+    @Async
     @EventListener
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handlePaymentResult(PaymentResultEvent event) {
         Order order = orderRepository.findById(event.orderId())
                 .orElseThrow(() -> new RuntimeException("Order tidak ditemukan saat memproses pembayaran!"));

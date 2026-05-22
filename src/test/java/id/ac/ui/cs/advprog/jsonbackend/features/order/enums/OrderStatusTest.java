@@ -33,13 +33,18 @@ class OrderStatusTest {
     }
 
     @Test
+    void testDoneValue() {
+        assertEquals("DONE", OrderStatus.DONE.getValue());
+    }
+
+    @Test
     void testCancelledValue() {
         assertEquals("CANCELLED", OrderStatus.CANCELLED.getValue());
     }
 
     @Test
-    void testEnumContainsSixValues() {
-        assertEquals(6, OrderStatus.values().length);
+    void testEnumContainsSevenValues() {
+        assertEquals(7, OrderStatus.values().length);
     }
 
     @Test

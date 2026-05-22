@@ -143,6 +143,11 @@ public class FakeProductRepository implements ProductRepository {
     }
 
     @Override
+    public Optional<Product> findByIdForUpdate(String id) {
+        return findById(id);
+    }
+
+    @Override
     public boolean existsById(String id) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'existsById'");

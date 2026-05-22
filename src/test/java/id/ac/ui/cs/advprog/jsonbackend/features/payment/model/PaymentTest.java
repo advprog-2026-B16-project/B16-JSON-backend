@@ -57,13 +57,24 @@ class PaymentTest {
     }
 
     @Test
-    void markExpiredAndFailedUpdateStatus() {
+    void pendingPaymentCanTransitionToExpiredOrFailed() {
         Payment payment = new Payment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "PAY-REF", BigDecimal.ONE, LocalDateTime.now().plusMinutes(1));
 
         payment.markExpired();
         assertEquals(PaymentStatus.EXPIRED, payment.getStatus());
 
-        payment.markFailed();
-        assertEquals(PaymentStatus.FAILED, payment.getStatus());
+        Payment anotherPayment = new Payment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "PAY-REF-2", BigDecimal.ONE, LocalDateTime.now().plusMinutes(1));
+        anotherPayment.markFailed();
+        assertEquals(PaymentStatus.FAILED, anotherPayment.getStatus());
+    }
+
+    @Test
+    void terminalPaymentCannotTransitionAgain() {
+        Payment payment = new Payment(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "PAY-REF", BigDecimal.ONE, LocalDateTime.now().plusMinutes(1));
+
+        payment.markExpired();
+
+        IllegalStateException exception = assertThrows(IllegalStateException.class, payment::markFailed);
+        assertEquals("EXPIRED payment cannot transition to another status", exception.getMessage());
     }
 }

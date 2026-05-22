@@ -13,6 +13,7 @@ import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InsufficientBal
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Wallet;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletService;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletTransactionService;
+import id.ac.ui.cs.advprog.jsonbackend.features.catalog.service.ProductStockService;
 import id.ac.ui.cs.advprog.jsonbackend.features.order.enums.OrderStatus;
 import id.ac.ui.cs.advprog.jsonbackend.features.order.model.Order;
 import id.ac.ui.cs.advprog.jsonbackend.features.order.repository.OrderRepository;
@@ -40,6 +41,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
     private final OrderPricingService orderPricingService;
+    private final ProductStockService productStockService;
     private final WalletService walletService;
     private final WalletTransactionService walletTransactionService;
     private final SecureRandom secureRandom = new SecureRandom();
@@ -48,12 +50,14 @@ public class PaymentServiceImpl implements PaymentService {
             PaymentRepository paymentRepository,
             OrderRepository orderRepository,
             OrderPricingService orderPricingService,
+            ProductStockService productStockService,
             WalletService walletService,
             WalletTransactionService walletTransactionService
     ) {
         this.paymentRepository = paymentRepository;
         this.orderRepository = orderRepository;
         this.orderPricingService = orderPricingService;
+        this.productStockService = productStockService;
         this.walletService = walletService;
         this.walletTransactionService = walletTransactionService;
     }
@@ -80,11 +84,13 @@ public class PaymentServiceImpl implements PaymentService {
         }
         if (existingPayment != null) {
             existingPayment.markExpired();
+            productStockService.releaseReservedStock(order);
             paymentRepository.save(existingPayment);
         }
 
         Wallet wallet = walletService.findWallet(user.getId().toString());
         BigDecimal amount = orderPricingService.calculateTotal(order);
+        productStockService.reserveStock(order);
         Payment payment = new Payment(
                 order.getOrderId(),
                 user.getId(),
@@ -114,6 +120,7 @@ public class PaymentServiceImpl implements PaymentService {
         }
         if (payment.isExpired(LocalDateTime.now())) {
             payment.markExpired();
+            releaseReservedStock(payment);
             return paymentRepository.save(payment);
         }
 
@@ -135,6 +142,7 @@ public class PaymentServiceImpl implements PaymentService {
             throw ex;
         } catch (Exception ex) {
             payment.markFailed();
+            productStockService.releaseReservedStock(order);
             paymentRepository.save(payment);
             throw ex;
         }
@@ -166,6 +174,7 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         payment.markCancelled();
+        releaseReservedStock(payment);
 
         return paymentRepository.save(payment);
     }
@@ -194,6 +203,12 @@ public class PaymentServiceImpl implements PaymentService {
         if (order.getOrderStatus() != OrderStatus.PENDING) {
             throw new PaymentNotAllowedException("Only pending orders can be paid");
         }
+    }
+
+    private void releaseReservedStock(Payment payment) {
+        Order order = orderRepository.findByIdForUpdate(payment.getOrderId())
+                .orElseThrow(() -> new PaymentNotAllowedException("Order not found"));
+        productStockService.releaseReservedStock(order);
     }
 
     private String generateReferenceCode() {

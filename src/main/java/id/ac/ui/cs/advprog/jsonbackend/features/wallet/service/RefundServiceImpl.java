@@ -10,7 +10,6 @@ import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.WalletUnauthori
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Refund;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.model.Transaction;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.service.TransactionService;
-import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Wallet;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.repository.RefundRepository;
 import id.ac.ui.cs.advprog.jsonbackend.features.order.enums.OrderStatus;
 import id.ac.ui.cs.advprog.jsonbackend.features.order.model.Order;
@@ -18,6 +17,7 @@ import id.ac.ui.cs.advprog.jsonbackend.features.order.repository.OrderRepository
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,21 +25,20 @@ import java.util.UUID;
 @Transactional
 public class RefundServiceImpl implements RefundService {
 
+    private static final int REFUND_WINDOW_DAYS = 3;
+
     private final RefundRepository refundRepository;
     private final OrderRepository orderRepository;
     private final TransactionService transactionService;
-    private final WalletService walletService;
 
     public RefundServiceImpl(
             RefundRepository refundRepository,
             OrderRepository orderRepository,
-            TransactionService transactionService,
-            WalletService walletService
+            TransactionService transactionService
     ) {
         this.refundRepository = refundRepository;
         this.orderRepository = orderRepository;
         this.transactionService = transactionService;
-        this.walletService = walletService;
     }
 
     @Override
@@ -51,27 +50,7 @@ public class RefundServiceImpl implements RefundService {
         Transaction originalTransaction = transactionService.getTransactionByIdForUpdate(request.getTransactionId().toString());
         validateRefundRequest(authenticatedUser, originalTransaction);
 
-        Refund refund = refundRepository.save(new Refund(originalTransaction, request.getReason()));
-
-        Transaction refundTransaction = transactionService.createTransaction(
-                walletService.findWallet(authenticatedUser.getId().toString()),
-                TransactionType.REFUND,
-                originalTransaction.getAmount(),
-                buildDescription(originalTransaction, request.getReason())
-        );
-        refundTransaction.setOrderId(originalTransaction.getOrderId());
-
-        try {
-            walletService.credit(authenticatedUser.getId().toString(), originalTransaction.getAmount());
-            transactionService.markSuccess(refundTransaction.getId().toString());
-            refund.markSuccess(refundTransaction.getId());
-            return refundRepository.save(refund);
-        } catch (Exception ex) {
-            transactionService.markFailed(refundTransaction.getId().toString());
-            refund.markFailed();
-            refundRepository.save(refund);
-            throw ex;
-        }
+        return refundRepository.save(new Refund(originalTransaction, request.getReason()));
     }
 
     @Override
@@ -101,10 +80,10 @@ public class RefundServiceImpl implements RefundService {
         if (refundRepository.existsByOriginalTransactionId(originalTransaction.getId())) {
             throw new RefundAlreadyExistsException(originalTransaction.getId());
         }
-        validateOrderIsCancelled(originalTransaction);
+        validateOrderIsEligibleForRefund(originalTransaction);
     }
 
-    private void validateOrderIsCancelled(Transaction originalTransaction) {
+    private void validateOrderIsEligibleForRefund(Transaction originalTransaction) {
         UUID orderId = originalTransaction.getOrderId();
         if (orderId == null) {
             throw new RefundNotAllowedException("Payment transaction is not linked to an order");
@@ -113,16 +92,16 @@ public class RefundServiceImpl implements RefundService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RefundNotAllowedException("Order linked to payment transaction was not found"));
 
-        if (order.getOrderStatus() != OrderStatus.CANCELLED) {
-            throw new RefundNotAllowedException("Order must be cancelled before refund can be requested");
+        if (order.getOrderStatus() != OrderStatus.COMPLETED) {
+            throw new RefundNotAllowedException("Order must be completed before refund can be requested");
         }
-    }
 
-    private String buildDescription(Transaction originalTransaction, String reason) {
-        String description = "Refund for transaction " + originalTransaction.getId();
-        if (reason == null || reason.isBlank()) {
-            return description;
+        LocalDateTime completedAt = order.getUpdatedAt();
+        if (completedAt == null) {
+            throw new RefundNotAllowedException("Completed order timestamp is missing");
         }
-        return description + ": " + reason.trim();
+        if (completedAt.plusDays(REFUND_WINDOW_DAYS).isBefore(LocalDateTime.now())) {
+            throw new RefundNotAllowedException("Refund can only be requested within 3 days after order completion");
+        }
     }
 }
