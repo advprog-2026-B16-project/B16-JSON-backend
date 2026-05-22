@@ -79,4 +79,24 @@ class TestWallet {
 
         assertEquals(new BigDecimal("100"), wallet.getBalance());
     }
+
+    @Test
+    void testBuilderSettersEqualsHashCodeAndToString() {
+        UUID walletId = UUID.randomUUID();
+        Wallet builtWallet = Wallet.builder()
+                .id(walletId)
+                .userId(USER_ID)
+                .balance(new BigDecimal("250"))
+                .version(1L)
+                .build();
+        Wallet sameWallet = new Wallet(walletId, USER_ID, new BigDecimal("250"), 1L);
+
+        assertEquals(walletId, builtWallet.getId());
+        assertEquals(USER_ID, builtWallet.getUserId());
+        assertEquals(new BigDecimal("250"), builtWallet.getBalance());
+        assertEquals(1L, builtWallet.getVersion());
+        assertEquals(builtWallet, sameWallet);
+        assertEquals(builtWallet.hashCode(), sameWallet.hashCode());
+        assertTrue(builtWallet.toString().contains("250"));
+    }
 }

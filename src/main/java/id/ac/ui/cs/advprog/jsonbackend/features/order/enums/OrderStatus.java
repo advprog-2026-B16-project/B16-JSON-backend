@@ -9,6 +9,7 @@ public enum OrderStatus {
     PURCHASED("PURCHASED"),
     SHIPPED("SHIPPED"),
     COMPLETED("COMPLETED"),
+    DONE("DONE"),
     CANCELLED("CANCELLED");
 
     private final String value;

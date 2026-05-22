@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.payment.model;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.payment.enums.PaymentStatus;
+import id.ac.ui.cs.advprog.jsonbackend.features.payment.state.PaymentStateFactory;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -79,24 +80,29 @@ public class Payment {
     }
 
     public void markSuccess(UUID transactionId) {
+        transitionTo(PaymentStatus.SUCCESS);
         this.transactionId = transactionId;
-        this.status = PaymentStatus.SUCCESS;
         this.paidAt = LocalDateTime.now();
         this.updatedAt = this.paidAt;
     }
 
     public void markExpired() {
-        this.status = PaymentStatus.EXPIRED;
+        transitionTo(PaymentStatus.EXPIRED);
         this.updatedAt = LocalDateTime.now();
     }
 
     public void markFailed() {
-        this.status = PaymentStatus.FAILED;
+        transitionTo(PaymentStatus.FAILED);
         this.updatedAt = LocalDateTime.now();
     }
 
     public void markCancelled() {
-        this.status = PaymentStatus.CANCELLED;
+        transitionTo(PaymentStatus.CANCELLED);
         this.updatedAt = LocalDateTime.now();
+    }
+
+    private void transitionTo(PaymentStatus nextStatus) {
+        PaymentStateFactory.getState(this.status).validateTransition(nextStatus);
+        this.status = nextStatus;
     }
 }

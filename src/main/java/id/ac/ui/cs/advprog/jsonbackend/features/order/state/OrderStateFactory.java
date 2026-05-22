@@ -34,6 +34,7 @@ public class OrderStateFactory {
         STATE_MAP.put(OrderStatus.PURCHASED, new PurchasedState());
         STATE_MAP.put(OrderStatus.SHIPPED,   new ShippedState());
         STATE_MAP.put(OrderStatus.COMPLETED, new CompletedState());
+        STATE_MAP.put(OrderStatus.DONE,      new DoneState());
         STATE_MAP.put(OrderStatus.CANCELLED, new CancelledState());
     }
 

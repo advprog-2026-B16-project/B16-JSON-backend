@@ -21,6 +21,8 @@ public interface PaymentRepository extends JpaRepository<Payment, UUID> {
 
     Optional<Payment> findFirstByOrderIdAndStatusInOrderByCreatedAtDesc(UUID orderId, Collection<PaymentStatus> statuses);
 
+    Optional<Payment> findFirstByOrderIdAndStatusOrderByCreatedAtDesc(UUID orderId, PaymentStatus status);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select p from Payment p where p.referenceCode = :referenceCode")
     Optional<Payment> findByReferenceCodeForUpdate(@Param("referenceCode") String referenceCode);

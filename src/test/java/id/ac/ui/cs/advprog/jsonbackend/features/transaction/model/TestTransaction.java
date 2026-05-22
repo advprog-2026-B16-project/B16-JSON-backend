@@ -45,4 +45,23 @@ class TestTransaction {
         transaction.markFailed();
         assertEquals(TransactionStatus.FAILED, transaction.getStatus());
     }
+
+    @Test
+    void testSettersEqualsHashCodeAndToString() {
+        UUID transactionId = UUID.randomUUID();
+        UUID orderId = UUID.randomUUID();
+        Transaction other = new Transaction(WALLET_ID, USER_ID, TYPE, AMOUNT, DESCRIPTION);
+
+        transaction.setId(transactionId);
+        transaction.setOrderId(orderId);
+        other.setId(transactionId);
+        other.setOrderId(orderId);
+
+        assertEquals(transactionId, transaction.getId());
+        assertEquals(USER_ID, transaction.getUserId());
+        assertEquals(orderId, transaction.getOrderId());
+        assertEquals(transaction, other);
+        assertEquals(transaction.hashCode(), other.hashCode());
+        assertTrue(transaction.toString().contains("Top up transaction"));
+    }
 }
