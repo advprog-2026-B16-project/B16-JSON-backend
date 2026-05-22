@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import jakarta.persistence.LockModeType;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,6 +19,14 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
     List<Transaction> findByWalletId(UUID walletId);
 
     List<Transaction> findByTypeAndStatusOrderByCreatedAtDesc(TransactionType type, TransactionStatus status);
+
+    long countByTypeAndStatus(TransactionType type, TransactionStatus status);
+
+    @Query("select coalesce(sum(t.amount), 0) from Transaction t where t.type = :type and t.status = :status")
+    BigDecimal sumAmountByTypeAndStatus(
+            @Param("type") TransactionType type,
+            @Param("status") TransactionStatus status
+    );
 
     Optional<Transaction> findByIdAndUserId(UUID transactionId, UUID userId);
 
