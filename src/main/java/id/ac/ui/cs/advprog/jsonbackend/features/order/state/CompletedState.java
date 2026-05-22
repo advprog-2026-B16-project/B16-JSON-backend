@@ -11,6 +11,8 @@ public class CompletedState implements OrderState{
 
     @Override
     public void validateTransition(OrderStatus nextStatus) {
-        throw new IllegalStateException("Completed order cannot change state");
+        if (nextStatus != OrderStatus.DONE) {
+            throw new IllegalStateException("COMPLETED can only transition to DONE");
+        }
     }
 }

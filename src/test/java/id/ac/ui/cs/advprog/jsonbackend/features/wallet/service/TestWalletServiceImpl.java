@@ -2,10 +2,13 @@ package id.ac.ui.cs.advprog.jsonbackend.features.wallet.service;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.model.Wallet;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.repository.WalletRepository;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.InvalidAmountException;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.WalletNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -53,5 +56,99 @@ class TestWalletServiceImpl {
         walletService.createWallet(USER_ID.toString());
 
         verify(walletRepository, never()).save(any());
+    }
+
+    @Test
+    void testCreditAddsBalance() {
+        UUID userId = UUID.randomUUID();
+        Wallet wallet = new Wallet(userId);
+
+        when(walletRepository.findByUserId(userId)).thenReturn(Optional.of(wallet));
+
+        walletService.credit(userId.toString(), new BigDecimal("150"));
+
+        assertEquals(new BigDecimal("150"), wallet.getBalance());
+    }
+
+    @Test
+    void testCreditRejectsInvalidAmount() {
+        UUID userId = UUID.randomUUID();
+
+        assertThrows(InvalidAmountException.class, () -> walletService.credit(userId.toString(), BigDecimal.ZERO));
+        assertThrows(InvalidAmountException.class, () -> walletService.credit(userId.toString(), null));
+
+        verify(walletRepository, never()).findByUserId(userId);
+    }
+
+    @Test
+    void testDebitSubtractsBalance() {
+        UUID userId = UUID.randomUUID();
+        Wallet wallet = new Wallet(userId);
+        wallet.setBalance(new BigDecimal("200"));
+
+        when(walletRepository.findByUserId(userId)).thenReturn(Optional.of(wallet));
+
+        walletService.debit(userId.toString(), new BigDecimal("75"));
+
+        assertEquals(new BigDecimal("125"), wallet.getBalance());
+    }
+
+    @Test
+    void testDebitRejectsInvalidAmount() {
+        UUID userId = UUID.randomUUID();
+
+        assertThrows(InvalidAmountException.class, () -> walletService.debit(userId.toString(), new BigDecimal("-1")));
+        assertThrows(InvalidAmountException.class, () -> walletService.debit(userId.toString(), null));
+
+        verify(walletRepository, never()).findByUserId(userId);
+    }
+
+    @Test
+    void testGetBalanceReturnsWalletBalance() {
+        UUID userId = UUID.randomUUID();
+        Wallet wallet = new Wallet(userId);
+        wallet.setBalance(new BigDecimal("250"));
+
+        when(walletRepository.findByUserId(userId)).thenReturn(Optional.of(wallet));
+
+        assertEquals(new BigDecimal("250"), walletService.getBalance(userId.toString()));
+    }
+
+    @Test
+    void testFindWalletReturnsWallet() {
+        UUID userId = UUID.randomUUID();
+        Wallet wallet = new Wallet(userId);
+
+        when(walletRepository.findByUserId(userId)).thenReturn(Optional.of(wallet));
+
+        assertSame(wallet, walletService.findWallet(userId.toString()));
+    }
+
+    @Test
+    void testFindWalletThrowsWhenMissing() {
+        UUID userId = UUID.randomUUID();
+
+        when(walletRepository.findByUserId(userId)).thenReturn(Optional.empty());
+
+        assertThrows(WalletNotFoundException.class, () -> walletService.findWallet(userId.toString()));
+    }
+
+    @Test
+    void testFindWalletForUpdateReturnsWallet() {
+        UUID userId = UUID.randomUUID();
+        Wallet wallet = new Wallet(userId);
+
+        when(walletRepository.findByUserIdForUpdate(userId)).thenReturn(Optional.of(wallet));
+
+        assertSame(wallet, walletService.findWalletForUpdate(userId.toString()));
+    }
+
+    @Test
+    void testFindWalletForUpdateThrowsWhenMissing() {
+        UUID userId = UUID.randomUUID();
+
+        when(walletRepository.findByUserIdForUpdate(userId)).thenReturn(Optional.empty());
+
+        assertThrows(WalletNotFoundException.class, () -> walletService.findWalletForUpdate(userId.toString()));
     }
 }

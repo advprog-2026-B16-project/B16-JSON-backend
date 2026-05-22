@@ -16,11 +16,19 @@ class CompletedStateTest {
     }
 
     @Test
-    void testValidateTransitionThrowsForAnyStatus() {
+    void testValidateTransitionAllowsDone() {
+        assertDoesNotThrow(() -> completedState.validateTransition(OrderStatus.DONE));
+    }
+
+    @Test
+    void testValidateTransitionRejectsNonDoneStatus() {
         for (OrderStatus status : OrderStatus.values()) {
+            if (status == OrderStatus.DONE) {
+                continue;
+            }
             IllegalStateException ex = assertThrows(IllegalStateException.class,
                     () -> completedState.validateTransition(status));
-            assertEquals("Completed order cannot change state", ex.getMessage());
+            assertEquals("COMPLETED can only transition to DONE", ex.getMessage());
         }
     }
 }

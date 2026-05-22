@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.authprofile.service;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.dto.UserLoginRequest;
+import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.event.UserLoggedInEvent;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.exception.BadCredentialsException;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.User;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.model.UserRole;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
@@ -31,6 +33,9 @@ class LoginServiceImplTest {
     @Mock
     private LoginAttemptService loginAttemptService;
 
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
     private LoginServiceImpl loginService;
     private User testUser;
     private UserLoginRequest loginRequest;
@@ -38,7 +43,7 @@ class LoginServiceImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        loginService = new LoginServiceImpl(userRepository, passwordEncoder, loginAttemptService);
+        loginService = new LoginServiceImpl(userRepository, passwordEncoder, loginAttemptService, eventPublisher);
 
         testUser = User.builder()
             .id(UUID.randomUUID())
@@ -66,6 +71,7 @@ class LoginServiceImplTest {
         assertEquals("testuser", result.getUsername());
         verify(loginAttemptService, times(1)).loginSucceeded("test@example.com");
         verify(loginAttemptService, never()).loginFailed(anyString());
+        verify(eventPublisher).publishEvent(any(UserLoggedInEvent.class));
     }
 
     @Test
@@ -79,6 +85,7 @@ class LoginServiceImplTest {
         assertTrue(exception.getMessage().contains("Account is locked"));
         verify(userRepository, never()).findByEmail(anyString());
         verify(passwordEncoder, never()).matches(anyString(), anyString());
+        verify(eventPublisher, never()).publishEvent(any());
     }
 
     @Test
@@ -93,6 +100,7 @@ class LoginServiceImplTest {
         assertEquals("Invalid credentials", exception.getMessage());
         verify(loginAttemptService, times(1)).loginFailed("test@example.com");
         verify(passwordEncoder, never()).matches(anyString(), anyString());
+        verify(eventPublisher, never()).publishEvent(any());
     }
 
     @Test
@@ -108,5 +116,6 @@ class LoginServiceImplTest {
         assertEquals("Invalid credentials", exception.getMessage());
         verify(loginAttemptService, times(1)).loginFailed("test@example.com");
         verify(loginAttemptService, never()).loginSucceeded(anyString());
+        verify(eventPublisher, never()).publishEvent(any());
     }
 }
