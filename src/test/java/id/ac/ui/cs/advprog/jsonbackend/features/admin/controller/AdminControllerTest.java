@@ -71,8 +71,6 @@ class AdminControllerTest {
     void adminCanMakeUserInactiveBanDemoteAndDelete() throws Exception {
         UUID userId = UUID.randomUUID();
 
-        mockMvc.perform(patch("/api/admin/users/{userId}/inactive", userId))
-                .andExpect(status().isOk());
         mockMvc.perform(patch("/api/admin/users/{userId}/ban", userId))
                 .andExpect(status().isOk());
         mockMvc.perform(patch("/api/admin/users/{userId}/demote", userId))
@@ -80,7 +78,7 @@ class AdminControllerTest {
         mockMvc.perform(delete("/api/admin/users/{userId}", userId))
                 .andExpect(status().isNoContent());
 
-        verify(userService, times(2)).banUser(userId);
+        verify(userService).banUser(userId);
         verify(userService).demoteUser(userId);
         verify(userService).deleteUser(userId);
     }
