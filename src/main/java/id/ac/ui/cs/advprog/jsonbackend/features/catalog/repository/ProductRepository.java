@@ -16,6 +16,11 @@ public interface ProductRepository extends JpaRepository<Product, String> {
 
     List<Product> findByJastiperId(String jastiperId);
 
+    long countByStockLessThanEqual(int stock);
+
+    @Query("select coalesce(sum(p.stock), 0) from Product p")
+    Long sumStock();
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select p from Product p where p.id = :id")
     Optional<Product> findByIdForUpdate(@Param("id") String id);
