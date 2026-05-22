@@ -17,6 +17,8 @@ import java.util.UUID;
 public interface PaymentRepository extends JpaRepository<Payment, UUID> {
     boolean existsByReferenceCode(String referenceCode);
 
+    long countByStatus(PaymentStatus status);
+
     List<Payment> findByUserId(UUID userId);
 
     Optional<Payment> findFirstByOrderIdAndStatusInOrderByCreatedAtDesc(UUID orderId, Collection<PaymentStatus> statuses);

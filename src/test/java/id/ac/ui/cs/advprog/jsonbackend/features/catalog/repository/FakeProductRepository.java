@@ -42,6 +42,20 @@ public class FakeProductRepository implements ProductRepository {
     }
 
     @Override
+    public long countByStockLessThanEqual(int stock) {
+        return products.stream()
+                .filter(product -> product.getStock() <= stock)
+                .count();
+    }
+
+    @Override
+    public Long sumStock() {
+        return products.stream()
+                .mapToLong(Product::getStock)
+                .sum();
+    }
+
+    @Override
     public void flush() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'flush'");
