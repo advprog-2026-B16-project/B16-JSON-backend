@@ -2,6 +2,8 @@ package id.ac.ui.cs.advprog.jsonbackend.features.wallet.service;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionStatus;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionType;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.repository.TransactionRepository;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.dto.TopUpRequestResponse;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.strategy.PaymentTransactionStrategy;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.strategy.RefundTransactionStrategy;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.strategy.TopUpTransactionStrategy;
@@ -26,16 +28,19 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
 
     private final WalletService walletService;
     private final TransactionService transactionService;
+    private final TransactionRepository transactionRepository;
     private final Map<TransactionType, WalletTransactionStrategy> transactionStrategies;
 
     @Autowired
     public WalletTransactionServiceImpl(
             WalletService walletService,
             TransactionService transactionService,
+            TransactionRepository transactionRepository,
             List<WalletTransactionStrategy> transactionStrategies
     ) {
         this.walletService = walletService;
         this.transactionService = transactionService;
+        this.transactionRepository = transactionRepository;
         this.transactionStrategies = buildStrategyMap(transactionStrategies);
     }
 
@@ -43,16 +48,15 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
             WalletService walletService,
             TransactionService transactionService
     ) {
-        this(
-                walletService,
-                transactionService,
-                List.of(
-                        new TopUpTransactionStrategy(walletService, transactionService),
-                        new WithdrawTransactionStrategy(walletService, transactionService),
-                        new RefundTransactionStrategy(walletService, transactionService),
-                        new PaymentTransactionStrategy(walletService, transactionService)
-                )
-        );
+        this.walletService = walletService;
+        this.transactionService = transactionService;
+        this.transactionRepository = null;
+        this.transactionStrategies = buildStrategyMap(List.of(
+                new TopUpTransactionStrategy(walletService, transactionService),
+                new WithdrawTransactionStrategy(walletService, transactionService),
+                new RefundTransactionStrategy(walletService, transactionService),
+                new PaymentTransactionStrategy(walletService, transactionService)
+        ));
     }
 
     @Override
@@ -65,6 +69,19 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
     @Transactional(readOnly = true)
     public List<Transaction> getPendingTopUpRequests() {
         return transactionService.getTransactionsByTypeAndStatus(TransactionType.TOP_UP, TransactionStatus.PENDING);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TopUpRequestResponse> getPendingTopUpRequestResponses() {
+        if (transactionRepository == null) {
+            return getPendingTopUpRequests().stream().map(TopUpRequestResponse::new).toList();
+        }
+
+        return transactionRepository.findPendingTopUpsForAdmin()
+                .stream()
+                .map(TopUpRequestResponse::new)
+                .toList();
     }
 
     @Override

@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import jakarta.persistence.LockModeType;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,6 +20,22 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
     List<Transaction> findByWalletId(UUID walletId);
 
     List<Transaction> findByTypeAndStatusOrderByCreatedAtDesc(TransactionType type, TransactionStatus status);
+
+    @Query(value = """
+            select
+                id as transactionId,
+                user_id as userId,
+                wallet_id as walletId,
+                amount as amount,
+                status as status,
+                created_at as createdAt,
+                description as description
+            from wallet_transactions
+            where upper(replace(type::text, '-', '_')) in ('TOP_UP', 'TOPUP')
+              and upper(status::text) = 'PENDING'
+            order by created_at desc
+            """, nativeQuery = true)
+    List<PendingTopUpView> findPendingTopUpsForAdmin();
 
     long countByTypeAndStatus(TransactionType type, TransactionStatus status);
 
@@ -33,4 +50,14 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select t from Transaction t where t.id = :transactionId")
     Optional<Transaction> findByIdForUpdate(@Param("transactionId") UUID transactionId);
+
+    interface PendingTopUpView {
+        UUID getTransactionId();
+        UUID getUserId();
+        UUID getWalletId();
+        BigDecimal getAmount();
+        String getStatus();
+        LocalDateTime getCreatedAt();
+        String getDescription();
+    }
 }

@@ -9,6 +9,7 @@ import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.repository.UserRepos
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionStatus;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionType;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.dto.WalletRequest;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.dto.TopUpRequestResponse;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.model.Transaction;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletService;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletTransactionService;
@@ -133,7 +134,7 @@ class TestWalletController {
         trx.setId(trxId);
         trx.setStatus(TransactionStatus.PENDING);
 
-        when(walletTransactionService.getPendingTopUpRequests()).thenReturn(List.of(trx));
+        when(walletTransactionService.getPendingTopUpRequestResponses()).thenReturn(List.of(new TopUpRequestResponse(trx)));
 
         authenticate(UUID.randomUUID(), UserRole.ADMIN);
         try {
@@ -149,7 +150,7 @@ class TestWalletController {
             SecurityContextHolder.clearContext();
         }
 
-        verify(walletTransactionService).getPendingTopUpRequests();
+        verify(walletTransactionService).getPendingTopUpRequestResponses();
     }
 
     @Test
@@ -162,7 +163,7 @@ class TestWalletController {
             SecurityContextHolder.clearContext();
         }
 
-        verify(walletTransactionService, never()).getPendingTopUpRequests();
+        verify(walletTransactionService, never()).getPendingTopUpRequestResponses();
     }
 
     @Test

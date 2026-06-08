@@ -69,11 +69,7 @@ public class WalletController {
             @AuthenticationPrincipal User authenticatedUser
     ) {
         requireAdmin(authenticatedUser);
-        List<TopUpRequestResponse> response = walletTransactionService.getPendingTopUpRequests()
-                .stream()
-                .map(TopUpRequestResponse::new)
-                .toList();
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(walletTransactionService.getPendingTopUpRequestResponses());
     }
 
     @PostMapping("/withdraw")
