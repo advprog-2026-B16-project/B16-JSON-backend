@@ -85,7 +85,10 @@ public class PaymentServiceImpl implements PaymentService {
         if (existingPayment != null) {
             existingPayment.markExpired();
             productStockService.releaseReservedStock(order);
+            order.cancel("Payment expired");
+            orderRepository.save(order);
             paymentRepository.save(existingPayment);
+            throw new PaymentNotAllowedException("Payment expired and order was cancelled");
         }
 
         Wallet wallet = walletService.findWallet(user.getId().toString());
@@ -120,7 +123,9 @@ public class PaymentServiceImpl implements PaymentService {
         }
         if (payment.isExpired(LocalDateTime.now())) {
             payment.markExpired();
-            releaseReservedStock(payment);
+            Order order = releaseReservedStock(payment);
+            order.cancel("Payment expired");
+            orderRepository.save(order);
             return paymentRepository.save(payment);
         }
 
@@ -174,7 +179,9 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         payment.markCancelled();
-        releaseReservedStock(payment);
+        Order order = releaseReservedStock(payment);
+        order.cancel("Payment cancelled by buyer");
+        orderRepository.save(order);
 
         return paymentRepository.save(payment);
     }
@@ -205,10 +212,11 @@ public class PaymentServiceImpl implements PaymentService {
         }
     }
 
-    private void releaseReservedStock(Payment payment) {
+    private Order releaseReservedStock(Payment payment) {
         Order order = orderRepository.findByIdForUpdate(payment.getOrderId())
                 .orElseThrow(() -> new PaymentNotAllowedException("Order not found"));
         productStockService.releaseReservedStock(order);
+        return order;
     }
 
     private String generateReferenceCode() {

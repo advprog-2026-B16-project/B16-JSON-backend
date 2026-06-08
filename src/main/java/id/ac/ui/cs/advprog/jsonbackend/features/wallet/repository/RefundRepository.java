@@ -21,6 +21,14 @@ public interface RefundRepository extends JpaRepository<Refund, UUID> {
 
     List<Refund> findByRequesterId(UUID requesterId);
 
+    @Query("""
+            select r from Refund r
+            join Order o on o.orderId = r.orderId
+            where o.jastiperId = :jastiperId
+            order by r.createdAt desc
+            """)
+    List<Refund> findByJastiperId(@Param("jastiperId") UUID jastiperId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select r from Refund r where r.id = :refundId")
     Optional<Refund> findByIdForUpdate(@Param("refundId") UUID refundId);

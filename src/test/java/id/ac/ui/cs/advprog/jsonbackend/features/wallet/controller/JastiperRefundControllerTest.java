@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,6 +39,28 @@ class JastiperRefundControllerTest {
 
         assertEquals(refund.getId(), controller.approveRefund(user, refund.getId()).getBody().getId());
         verify(refundService).approveRefund(user, refund.getId());
+    }
+
+    @Test
+    void getMyRefundsShouldDelegateToService() {
+        User user = user();
+        Refund refund = refund(user.getId());
+
+        when(refundService.getMyRefunds(user)).thenReturn(List.of(refund));
+
+        assertEquals(1, controller.getMyRefunds(user).getBody().size());
+        verify(refundService).getMyRefunds(user);
+    }
+
+    @Test
+    void rejectRefundShouldDelegateToService() {
+        User user = user();
+        Refund refund = refund(user.getId());
+
+        when(refundService.rejectRefund(user, refund.getId())).thenReturn(refund);
+
+        assertEquals(refund.getId(), controller.rejectRefund(user, refund.getId()).getBody().getId());
+        verify(refundService).rejectRefund(user, refund.getId());
     }
 
     private static User user() {
