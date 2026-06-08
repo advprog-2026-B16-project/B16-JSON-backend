@@ -65,6 +65,8 @@ public class JastiperRefundServiceImpl implements JastiperRefundService {
         transactionService.markSuccess(refundTransaction.getId().toString());
 
         refund.markSuccess(refundTransaction.getId());
+        order.updateStatus(OrderStatus.DONE);
+        orderRepository.save(order);
         return refundRepository.save(refund);
     }
 

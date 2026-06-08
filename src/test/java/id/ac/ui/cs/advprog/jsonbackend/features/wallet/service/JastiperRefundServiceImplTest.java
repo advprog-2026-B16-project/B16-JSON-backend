@@ -75,9 +75,11 @@ class JastiperRefundServiceImplTest {
 
         assertEquals(TransactionStatus.SUCCESS, result.getStatus());
         assertEquals(refundTransactionId, result.getRefundTransactionId());
+        assertEquals(OrderStatus.DONE, order.getOrderStatus());
         verify(walletService, never()).debit(any(), any());
         verify(walletService).credit(TITIPER_ID.toString(), refund.getAmount());
         verify(transactionService).markSuccess(refundTransactionId.toString());
+        verify(orderRepository).save(order);
     }
 
     @Test
