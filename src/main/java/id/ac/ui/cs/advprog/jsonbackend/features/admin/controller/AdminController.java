@@ -61,11 +61,7 @@ public class AdminController {
 
     @GetMapping("/topups")
     public ResponseEntity<List<TopUpRequestResponse>> getPendingTopUps() {
-        List<TopUpRequestResponse> response = walletTransactionService.getPendingTopUpRequests()
-                .stream()
-                .map(TopUpRequestResponse::new)
-                .toList();
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(walletTransactionService.getPendingTopUpRequestResponses());
     }
 
     @PostMapping("/topups/{transactionId}/confirm")

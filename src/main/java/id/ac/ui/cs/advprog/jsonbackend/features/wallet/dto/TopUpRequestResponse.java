@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.jsonbackend.features.wallet.dto;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionStatus;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.model.Transaction;
+import id.ac.ui.cs.advprog.jsonbackend.features.transaction.repository.TransactionRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -25,6 +26,18 @@ public record TopUpRequestResponse(
                 transaction.getStatus(),
                 transaction.getCreatedAt(),
                 transaction.getDescription()
+        );
+    }
+
+    public TopUpRequestResponse(TransactionRepository.PendingTopUpView topUp) {
+        this(
+                topUp.getTransactionId(),
+                topUp.getUserId(),
+                topUp.getWalletId(),
+                topUp.getAmount(),
+                TransactionStatus.valueOf(topUp.getStatus().toUpperCase()),
+                topUp.getCreatedAt(),
+                topUp.getDescription()
         );
     }
 }

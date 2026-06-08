@@ -8,8 +8,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.exception.BadCredentialsException;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.exception.WalletException;
+import lombok.extern.slf4j.Slf4j;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(WalletException.class)
@@ -39,6 +41,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ProblemDetail> handleGeneralException(Exception ex) {
+        log.error("Unhandled application exception", ex);
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
         problemDetail.setTitle("INTERNAL_SERVER_ERROR");
         problemDetail.setProperty("errorCode", "GEN_001");

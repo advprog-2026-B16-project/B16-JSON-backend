@@ -9,6 +9,7 @@ import id.ac.ui.cs.advprog.jsonbackend.features.authprofile.service.UserService;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionStatus;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.enums.TransactionType;
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.model.Transaction;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.dto.TopUpRequestResponse;
 import id.ac.ui.cs.advprog.jsonbackend.features.wallet.service.WalletTransactionService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,13 +94,23 @@ class AdminControllerTest {
         transaction.setId(transactionId);
         transaction.setStatus(TransactionStatus.PENDING);
 
-        when(walletTransactionService.getPendingTopUpRequests()).thenReturn(List.of(transaction));
+        when(walletTransactionService.getPendingTopUpRequestResponses()).thenReturn(List.of(new TopUpRequestResponse(transaction)));
 
         mockMvc.perform(get("/api/admin/topups"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].transactionId").value(transactionId.toString()))
                 .andExpect(jsonPath("$[0].status").value("PENDING"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void getPendingTopUpsReturnsEmptyListWhenNoRequests() throws Exception {
+        when(walletTransactionService.getPendingTopUpRequestResponses()).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/admin/topups"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
     }
 
     @Test
