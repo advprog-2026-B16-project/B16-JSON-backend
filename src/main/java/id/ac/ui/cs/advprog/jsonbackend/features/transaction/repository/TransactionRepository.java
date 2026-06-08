@@ -31,8 +31,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
                 created_at as createdAt,
                 description as description
             from wallet_transactions
-            where upper(replace(type::text, '-', '_')) in ('TOP_UP', 'TOPUP')
-              and upper(status::text) = 'PENDING'
+            where upper(replace(cast(type as text), '-', '_')) in ('TOP_UP', 'TOPUP')
+              and upper(cast(status as text)) = 'PENDING'
             order by created_at desc
             """, nativeQuery = true)
     List<PendingTopUpView> findPendingTopUpsForAdmin();
