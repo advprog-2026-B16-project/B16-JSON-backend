@@ -268,4 +268,85 @@ class UserServiceImplTest {
         verify(userRepository, times(1)).findById(userId);
         verify(userRepository, never()).save(any());
     }
+
+    @Test
+    void testDeleteUser_Success() {
+        when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
+
+        userService.deleteUser(userId);
+
+        verify(userRepository).findById(userId);
+        verify(userRepository).delete(testUser);
+    }
+
+    @Test
+    void testDeleteUser_CannotDeleteAdmin() {
+        User adminUser = User.builder()
+            .id(userId)
+            .username("admin")
+            .role(UserRole.ADMIN)
+            .status(UserStatus.ACTIVE)
+            .build();
+        when(userRepository.findById(userId)).thenReturn(Optional.of(adminUser));
+
+        userService.deleteUser(userId);
+
+        verify(userRepository).findById(userId);
+        verify(userRepository, never()).delete(any());
+    }
+
+    @Test
+    void testDeleteUser_UserNotFound() {
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        userService.deleteUser(userId);
+
+        verify(userRepository).findById(userId);
+        verify(userRepository, never()).delete(any());
+    }
+
+    @Test
+    void testUnbanUser_Success() {
+        User bannedUser = User.builder()
+            .id(userId)
+            .username("banned")
+            .role(UserRole.TITIPER)
+            .status(UserStatus.BANNED)
+            .build();
+        when(userRepository.findById(userId)).thenReturn(Optional.of(bannedUser));
+        when(userRepository.save(any(User.class))).thenReturn(bannedUser);
+
+        userService.unbanUser(userId);
+
+        assertEquals(UserStatus.ACTIVE, bannedUser.getStatus());
+        verify(userRepository).findById(userId);
+        verify(userRepository).save(bannedUser);
+    }
+
+    @Test
+    void testUnbanUser_CannotUnbanAdmin() {
+        User adminUser = User.builder()
+            .id(userId)
+            .username("admin")
+            .role(UserRole.ADMIN)
+            .status(UserStatus.BANNED)
+            .build();
+        when(userRepository.findById(userId)).thenReturn(Optional.of(adminUser));
+
+        userService.unbanUser(userId);
+
+        assertEquals(UserStatus.BANNED, adminUser.getStatus());
+        verify(userRepository).findById(userId);
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void testUnbanUser_UserNotFound() {
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        userService.unbanUser(userId);
+
+        verify(userRepository).findById(userId);
+        verify(userRepository, never()).save(any());
+    }
 }
