@@ -112,28 +112,27 @@ class PaymentServiceImplTest {
     }
 
     @Test
-    void createPaymentExpiresOldPendingPaymentAndCreatesNewOne() {
+    void createPaymentExpiresOldPendingPaymentAndCancelsOrder() {
         User user = buildUser();
         Order order = buildOrder(user.getId());
-        Wallet wallet = buildWallet(user.getId(), new BigDecimal("200000"));
         Payment existingPayment = buildPayment(user, order, PaymentStatus.PENDING, LocalDateTime.now().minusMinutes(1));
         PaymentRequest request = buildRequest(order.getOrderId());
 
         when(orderRepository.findByIdForUpdate(order.getOrderId())).thenReturn(Optional.of(order));
         when(paymentRepository.findFirstByOrderIdAndStatusInOrderByCreatedAtDesc(eq(order.getOrderId()), anySet()))
                 .thenReturn(Optional.of(existingPayment));
-        when(walletService.findWallet(user.getId().toString())).thenReturn(wallet);
-        when(orderPricingService.calculateTotal(order)).thenReturn(new BigDecimal("125000"));
-        when(paymentRepository.existsByReferenceCode(anyString())).thenReturn(false);
         when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Payment result = paymentService.createPayment(user, request);
+        PaymentNotAllowedException exception = assertThrows(PaymentNotAllowedException.class, () -> paymentService.createPayment(user, request));
 
+        assertEquals("Payment expired and order was cancelled", exception.getMessage());
         assertEquals(PaymentStatus.EXPIRED, existingPayment.getStatus());
-        assertEquals(PaymentStatus.PENDING, result.getStatus());
-        assertNotSame(existingPayment, result);
+        assertEquals(OrderStatus.CANCELLED, order.getOrderStatus());
+        assertEquals("Payment expired", order.getCancellationReason());
         verify(productStockService).releaseReservedStock(order);
-        verify(productStockService).reserveStock(order);
+        verify(orderRepository).save(order);
+        verify(paymentRepository).save(existingPayment);
+        verify(productStockService, never()).reserveStock(order);
     }
 
     @Test
@@ -321,8 +320,11 @@ class PaymentServiceImplTest {
         Payment result = paymentService.pay(user, payment.getReferenceCode());
 
         assertEquals(PaymentStatus.EXPIRED, result.getStatus());
+        assertEquals(OrderStatus.CANCELLED, order.getOrderStatus());
+        assertEquals("Payment expired", order.getCancellationReason());
         verify(orderRepository).findByIdForUpdate(order.getOrderId());
         verify(productStockService).releaseReservedStock(order);
+        verify(orderRepository).save(order);
         verifyNoInteractions(walletService);
         verifyNoInteractions(walletTransactionService);
     }
@@ -393,7 +395,7 @@ class PaymentServiceImplTest {
     }
 
     @Test
-    void cancelPaymentReleasesReservedStock() {
+    void cancelPaymentReleasesReservedStockAndCancelsOrder() {
         User user = buildUser();
         Order order = buildOrder(user.getId());
         Payment payment = buildPayment(user, order, PaymentStatus.PENDING, LocalDateTime.now().plusMinutes(5));
@@ -405,7 +407,10 @@ class PaymentServiceImplTest {
         Payment result = paymentService.cancelPayment(user, payment.getReferenceCode());
 
         assertEquals(PaymentStatus.CANCELLED, result.getStatus());
+        assertEquals(OrderStatus.CANCELLED, order.getOrderStatus());
+        assertEquals("Payment cancelled by buyer", order.getCancellationReason());
         verify(productStockService).releaseReservedStock(order);
+        verify(orderRepository).save(order);
     }
 
     @Test

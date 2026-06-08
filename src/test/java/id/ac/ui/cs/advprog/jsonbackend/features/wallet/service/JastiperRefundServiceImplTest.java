@@ -18,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -52,7 +53,7 @@ class JastiperRefundServiceImplTest {
     }
 
     @Test
-    void approveRefundShouldDebitJastiperCreditTitiperAndMarkRefundSuccess() {
+    void approveRefundShouldCreditTitiperAndMarkRefundSuccessWithoutDebitingJastiper() {
         User jastiper = user(JASTIPER_ID, UserRole.JASTIPER);
         Order order = order(OrderStatus.COMPLETED, JASTIPER_ID);
         Refund refund = refund();
@@ -74,7 +75,7 @@ class JastiperRefundServiceImplTest {
 
         assertEquals(TransactionStatus.SUCCESS, result.getStatus());
         assertEquals(refundTransactionId, result.getRefundTransactionId());
-        verify(walletService).debit(JASTIPER_ID.toString(), refund.getAmount());
+        verify(walletService, never()).debit(any(), any());
         verify(walletService).credit(TITIPER_ID.toString(), refund.getAmount());
         verify(transactionService).markSuccess(refundTransactionId.toString());
     }
@@ -106,8 +107,66 @@ class JastiperRefundServiceImplTest {
         RefundNotAllowedException exception = assertThrows(RefundNotAllowedException.class,
                 () -> refundService.approveRefund(jastiper, refund.getId()));
 
-        assertEquals("Jastiper can only approve refund for their own order", exception.getMessage());
+        assertEquals("Jastiper can only process refund for their own order", exception.getMessage());
         verify(walletService, never()).debit(any(), any());
+    }
+
+    @Test
+    void getMyRefundsShouldReturnRefundsForJastiperOrders() {
+        User jastiper = user(JASTIPER_ID, UserRole.JASTIPER);
+        Refund refund = refund();
+
+        when(refundRepository.findByJastiperId(JASTIPER_ID)).thenReturn(List.of(refund));
+
+        List<Refund> result = refundService.getMyRefunds(jastiper);
+
+        assertEquals(1, result.size());
+        assertEquals(refund.getId(), result.get(0).getId());
+        verify(refundRepository).findByJastiperId(JASTIPER_ID);
+    }
+
+    @Test
+    void rejectRefundShouldMarkPendingRefundFailedReleasePayoutAndMarkOrderDone() {
+        User jastiper = user(JASTIPER_ID, UserRole.JASTIPER);
+        Order order = order(OrderStatus.COMPLETED, JASTIPER_ID);
+        Refund refund = refund();
+        Wallet jastiperWallet = new Wallet(JASTIPER_ID);
+        UUID jastiperWalletId = UUID.randomUUID();
+        jastiperWallet.setId(jastiperWalletId);
+        Transaction payoutTransaction = new Transaction(jastiperWalletId, JASTIPER_ID, TransactionType.PAYOUT, refund.getAmount(), "Payout");
+        UUID payoutTransactionId = UUID.randomUUID();
+        payoutTransaction.setId(payoutTransactionId);
+
+        when(refundRepository.findByIdForUpdate(refund.getId())).thenReturn(Optional.of(refund));
+        when(orderRepository.findByIdForUpdate(ORDER_ID)).thenReturn(Optional.of(order));
+        when(walletService.findWallet(JASTIPER_ID.toString())).thenReturn(jastiperWallet);
+        when(transactionService.createTransaction(eq(jastiperWallet), eq(TransactionType.PAYOUT), eq(refund.getAmount()), any(String.class)))
+                .thenReturn(payoutTransaction);
+        when(refundRepository.save(refund)).thenReturn(refund);
+
+        Refund result = refundService.rejectRefund(jastiper, refund.getId());
+
+        assertEquals(TransactionStatus.FAILED, result.getStatus());
+        assertEquals(OrderStatus.DONE, order.getOrderStatus());
+        verify(walletService, never()).debit(any(), any());
+        verify(walletService).credit(JASTIPER_ID.toString(), refund.getAmount());
+        verify(transactionService).markSuccess(payoutTransactionId.toString());
+        verify(orderRepository).save(order);
+    }
+
+    @Test
+    void rejectRefundShouldRejectNonPendingRefund() {
+        User jastiper = user(JASTIPER_ID, UserRole.JASTIPER);
+        Refund refund = refund();
+        refund.markFailed();
+
+        when(refundRepository.findByIdForUpdate(refund.getId())).thenReturn(Optional.of(refund));
+
+        RefundNotAllowedException exception = assertThrows(RefundNotAllowedException.class,
+                () -> refundService.rejectRefund(jastiper, refund.getId()));
+
+        assertEquals("Only pending refund can be rejected", exception.getMessage());
+        verify(orderRepository, never()).findByIdForUpdate(any());
     }
 
     private static User user(UUID id, UserRole role) {
