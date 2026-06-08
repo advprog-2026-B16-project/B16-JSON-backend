@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.payment.service;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.catalog.service.ProductStockService;
+import id.ac.ui.cs.advprog.jsonbackend.features.order.enums.OrderStatus;
 import id.ac.ui.cs.advprog.jsonbackend.features.order.model.Order;
 import id.ac.ui.cs.advprog.jsonbackend.features.order.repository.OrderRepository;
 import id.ac.ui.cs.advprog.jsonbackend.features.payment.enums.PaymentStatus;
@@ -38,6 +39,10 @@ public class PaymentExpirationScheduler {
     private void expirePayment(Payment payment, Order order) {
         payment.markExpired();
         productStockService.releaseReservedStock(order);
+        if (order.getOrderStatus() == OrderStatus.PENDING) {
+            order.cancel("Payment expired");
+            orderRepository.save(order);
+        }
         paymentRepository.save(payment);
     }
 }
