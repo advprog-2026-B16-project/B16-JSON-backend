@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.jsonbackend.features.wallet.service;
 
 import id.ac.ui.cs.advprog.jsonbackend.features.transaction.model.Transaction;
+import id.ac.ui.cs.advprog.jsonbackend.features.wallet.dto.TopUpRequestResponse;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -9,6 +10,7 @@ public interface WalletTransactionService {
 
     Transaction requestTopUp(String userId, BigDecimal amount);
     List<Transaction> getPendingTopUpRequests();
+    List<TopUpRequestResponse> getPendingTopUpRequestResponses();
     void confirmTopUp(String transactionId);
     void rejectTopUp(String transactionId);
 
